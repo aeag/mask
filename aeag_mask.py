@@ -72,8 +72,9 @@ class aeag_mask:
     # run method that performs all the real work
     def run( self ):
         dest_crs = self.canvas.mapRenderer().destinationCrs()
+        mask_layer = QgsVectorLayer("MultiPolygon?crs=%s" % dest_crs.authid(), "Mask", "memory")
         
-        dlg = MainDialog()
+        dlg = MainDialog( mask_layer )
         r = dlg.exec_()
         if r == 1:
             poly = self.get_selected_polygons()
@@ -88,7 +89,7 @@ class aeag_mask:
                 mask = QgsGeometry.fromRect( rect )
                 geom = mask.difference( geom )
 
-            self.add_layer( geom, dest_crs )
+            self.add_layer( mask_layer, geom )
 
     def get_selected_polygons( self ):
         "return array of (polygon_feature,crs) from current selection"
@@ -120,28 +121,15 @@ class aeag_mask:
 
         return geom
 
-    def add_layer( self, geometry, crs ):
-        maskLayer = QgsVectorLayer("MultiPolygon?crs=%s" % crs.authid(), "Mask", "memory")
-        maskLayer.setCrs(crs)
-            
-        QgsMapLayerRegistry.instance().addMapLayer(maskLayer)
-            
-        pr = maskLayer.dataProvider()
+    def add_layer( self, layer, geometry ):
+
+        pr = layer.dataProvider()
         fet = QgsFeature()
         fet.setGeometry(geometry)
         pr.addFeatures([ fet ])
-        maskLayer.updateExtents()        
+        layer.updateExtents()        
             
-        # style
-        rendererV2 = maskLayer.rendererV2()
-        for s in rendererV2.symbols():
-            s.setAlpha(0.90)
-            s.setColor(QColor(255, 255, 255))
-                        
-            if isinstance(s, QgsLineSymbolV2):
-                s.setWidth(0)
-                    
-                # Refresh legend
-        self.iface.legendInterface().refreshLayerSymbology( maskLayer ) 
+        QgsMapLayerRegistry.instance().addMapLayer(layer)
+        self.iface.legendInterface().refreshLayerSymbology( layer ) 
         QgsMapLayerRegistry.instance().clearAllLayerCaches () #clean cache to allow mask layer to appear on refresh
         self.canvas.refresh()
