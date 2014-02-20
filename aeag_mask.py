@@ -78,7 +78,8 @@ class aeag_mask:
         r = dlg.exec_()
         if r == 1:
             poly = self.get_selected_polygons()
-            geom = self.get_final_geometry( poly, dest_crs )
+
+            geom = self.get_final_geometry( poly, dest_crs, dlg.do_simplify, dlg.simplify_tolerance )
 
             if dlg.do_buffer:
                 geom = geom.buffer( dlg.buffer_units, dlg.buffer_segments )
@@ -105,7 +106,7 @@ class aeag_mask:
                     geos.append( (feature, layer.crs()) )
         return geos
 
-    def get_final_geometry( self, geoms, dest_crs ):
+    def get_final_geometry( self, geoms, dest_crs, do_simplify = False, simplify_tol = 0.0 ):
         geom = None
         for f,crs in geoms:
             g = f.geometry()
@@ -113,6 +114,9 @@ class aeag_mask:
                 print "transform"
                 xform = QgsCoordinateTransform( crs, dest_crs )
                 g.transform( xform )
+
+            if do_simplify:
+                g = g.simplify( simplify_tol )
             if geom is None:
                 geom = QgsGeometry(g)
             else:

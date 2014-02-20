@@ -14,6 +14,7 @@ class MainDialog( QDialog ):
 
         self.ui.bufferUnits.setValidator(QDoubleValidator())
         self.ui.bufferSegments.setValidator(QIntValidator())
+        self.ui.simplifyTolerance.setValidator(QDoubleValidator())
 
         # create a dummy memory layer
         self.layer = layer
@@ -72,6 +73,8 @@ class MainDialog( QDialog ):
         self.do_buffer = self.ui.bufferGroup.isEnabled()
         self.buffer_units = float(self.ui.bufferUnits.text() or 0)
         self.buffer_segments = float(self.ui.bufferSegments.text() or 0)
+        self.do_simplify = self.ui.simplifyGroup.isEnabled()
+        self.simplify_tolerance = float(self.ui.simplifyTolerance.text() or 0)
 
         QDialog.accept( self )
 
