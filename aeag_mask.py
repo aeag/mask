@@ -79,6 +79,9 @@ class aeag_mask:
             poly = self.get_selected_polygons()
             geom = self.get_final_geometry( poly, dest_crs )
 
+            if dlg.do_buffer:
+                geom = geom.buffer( dlg.buffer_units, dlg.buffer_segments )
+
             if dlg.mask_mode == 'mask':
                 rect = self.canvas.extent()
                 rect.scale(2)
