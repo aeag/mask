@@ -31,6 +31,8 @@ import os
 from PyQt4.QtCore import * 
 from PyQt4.QtGui import *
 from qgis.core import *
+# for user-defined functions
+from qgis.utils import qgsfunction
 
 from maindialog import MainDialog
 
@@ -39,6 +41,14 @@ import resources_rc
 
 _fromUtf8 = lambda s: (s.decode("utf-8").encode("latin-1")) if s else s
 _toUtf8 = lambda s: s.decode("latin-1").encode("utf-8") if s else s
+
+class MaskGeometryFunction( QgsExpression.Function ):
+    def __init__( self, mask ):
+        QgsExpression.Function.__init__( self, "$mask_geometry", 0, "Python", "Help" )
+        self.mask = mask
+
+    def func( self, values, feature, parent ):
+        return self.mask.mask_geometry()
 
 class aeag_mask: 
 
@@ -49,7 +59,11 @@ class aeag_mask:
         self.act_aeag_mask = None
         self.act_aeag_toolbar_help = None
         self.canvas = self.iface.mapCanvas()
+        self.geometry = None
 
+        self.mask_geometry_function = MaskGeometryFunction( self )
+        QgsExpression.registerFunction( self.mask_geometry_function )
+        
     def initGui(self):  
         self.toolBar = self.iface.pluginToolBar()
         
@@ -68,6 +82,7 @@ class aeag_mask:
     def unload(self):
         self.toolBar.removeAction(self.act_aeag_mask)
         self.iface.removePluginMenu("&Mask", self.act_aeag_mask)
+        QgsExpression.unregisterFunction( "$mask_geometry" )
 
     # run method that performs all the real work
     def run( self ):
@@ -80,6 +95,9 @@ class aeag_mask:
             poly = self.get_selected_polygons()
 
             geom = self.get_final_geometry( poly, dest_crs, dlg.do_simplify, dlg.simplify_tolerance )
+            if not geom:
+                # TODO warn user
+                return
 
             if dlg.do_buffer:
                 geom = geom.buffer( dlg.buffer_units, dlg.buffer_segments )
@@ -89,6 +107,8 @@ class aeag_mask:
                 rect.scale(2)
                 mask = QgsGeometry.fromRect( rect )
                 geom = mask.difference( geom )
+
+            self.geometry = geom
 
             self.add_layer( mask_layer, geom )
 
@@ -137,3 +157,11 @@ class aeag_mask:
         self.iface.legendInterface().refreshLayerSymbology( layer ) 
         QgsMapLayerRegistry.instance().clearAllLayerCaches () #clean cache to allow mask layer to appear on refresh
         self.canvas.refresh()
+
+    def mask_geometry( self ):
+        if not self.geometry:
+            return QgsGeometry()
+        return self.geometry
+
+
+
