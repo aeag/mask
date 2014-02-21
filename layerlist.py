@@ -84,5 +84,34 @@ class LayerListWidget( QWidget ):
             self.model[layer.id()] = (layer, do_limit)
                 
 
+class LayerListDialog( QDialog ):
+    def __init__( self, parent ):
+        QDialog.__init__(self, parent)
 
+        # add a button box
+        self.layout = QVBoxLayout()
+
+        self.layer_list = LayerListWidget( self )
+        self.button_box = QDialogButtonBox( self )
+        self.button_box.setOrientation(Qt.Horizontal)
+        self.button_box.setStandardButtons(QDialogButtonBox.Cancel|QDialogButtonBox.Ok)
+        self.button_box.accepted.connect( self.accept )
+        self.button_box.rejected.connect( self.reject )
+
+        self.layout.addWidget( self.layer_list )
+        self.layout.addWidget( self.button_box )
+
+        self.setLayout( self.layout )
+
+    def set_labeling_model( self, model ):
+        self.layer_list.set_model( model )
+
+    def exec_( self ):
+        self.layer_list.update_from_layers()
+        return QDialog.exec_( self )
+
+    def accept( self ):
+        # update layers 
+        self.layer_list.update_labeling_from_list()
+        QDialog.accept( self )
 

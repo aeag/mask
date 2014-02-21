@@ -35,6 +35,7 @@ from qgis.core import *
 from qgis.utils import qgsfunction
 
 from maindialog import MainDialog
+from layerlist import LayerListDialog
 
 # Initialize Qt resources from file resources.py
 import resources_rc
@@ -89,14 +90,25 @@ class aeag_mask:
         # Add actions to the toolbar
         self.act_aeag_mask.triggered.connect(self.run)
         
-        #add a link to helpfile for toolbar & menu aeag , if not exist
 
+        self.act_layer_list = QAction(QIcon(":plugins/mask/aeag_mask.png"), _fromUtf8("Update labeling"), self.iface.mainWindow())
+        self.toolBar.addAction(self.act_layer_list)
+        self.act_layer_list.triggered.connect(self.on_layer_list)
+        self.iface.addPluginToMenu("&Mask", self.act_layer_list)
 
     def unload(self):
         self.toolBar.removeAction(self.act_aeag_mask)
         self.iface.removePluginMenu("&Mask", self.act_aeag_mask)
+        self.toolBar.removeAction(self.act_layer_list)
+        self.iface.removePluginMenu("&Mask", self.act_layer_list)
         QgsExpression.unregisterFunction( "$mask_geometry" )
         QgsExpression.unregisterFunction( "$mask_complement_geometry" )
+
+    def on_layer_list( self ):
+        dlg = LayerListDialog( None )
+        dlg.set_labeling_model( self.labeling_model )
+
+        dlg.exec_()
 
     # run method that performs all the real work
     def run( self ):
