@@ -26,11 +26,11 @@ TRANSLATIONS =
 
 PLUGINNAME = mask
 
-PY_FILES = aeag_mask.py maindialog.py __init__.py
+PY_FILES = aeag_mask.py maindialog.py __init__.py layerlist.py
 
 EXTRAS = aeag_mask.png metadata.txt
 
-UI_FILES = ui_plugin_mask.py
+UI_FILES = ui_plugin_mask.py ui_layer_list.py
 
 RESOURCE_FILES = resources_rc.py
 

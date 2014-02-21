@@ -4,13 +4,17 @@ from qgis.core import *
 from qgis.gui import *
 
 from ui_plugin_mask import Ui_MainDialog
+from layerlist import LayerListWidget
 
 class MainDialog( QDialog ):
+
     def __init__( self, layer ):
         QDialog.__init__( self, None )
 
         self.ui = Ui_MainDialog()
         self.ui.setupUi(self)
+        self.ui.layer_list = LayerListWidget( self.ui.labelingGroup )
+        self.ui.labelingLayout.addWidget( self.ui.layer_list )
 
         self.ui.bufferUnits.setValidator(QDoubleValidator())
         self.ui.bufferSegments.setValidator(QIntValidator())
@@ -66,6 +70,16 @@ class MainDialog( QDialog ):
             pix.convertFromImage( syms[0].bigSymbolPreviewImage() )
             self.ui.stylePreview.setPixmap( pix )
 
+    def set_labeling_model( self, model ):
+        self.ui.layer_list.set_model( model )
+
+    def get_labeling_model( self ):
+        return self.ui.layer_list.get_model()
+
+    def exec_( self ):
+        self.ui.layer_list.update_from_layers()
+        return QDialog.exec_( self )
+
     def accept( self ):
         # get data before closing
         idx = self.ui.contentCombo.currentIndex()
@@ -75,6 +89,9 @@ class MainDialog( QDialog ):
         self.buffer_segments = float(self.ui.bufferSegments.text() or 0)
         self.do_simplify = self.ui.simplifyGroup.isEnabled()
         self.simplify_tolerance = float(self.ui.simplifyTolerance.text() or 0)
+
+        # update layers 
+        self.ui.layer_list.update_labeling_from_list()
 
         QDialog.accept( self )
 

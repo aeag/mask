@@ -50,6 +50,14 @@ class MaskGeometryFunction( QgsExpression.Function ):
     def func( self, values, feature, parent ):
         return self.mask.mask_geometry()
 
+class MaskComplementGeometryFunction( QgsExpression.Function ):
+    def __init__( self, mask ):
+        QgsExpression.Function.__init__( self, "$mask_complement_geometry", 0, "Python", "Help" )
+        self.mask = mask
+
+    def func( self, values, feature, parent ):
+        return self.mask.mask_complement_geometry()
+
 class aeag_mask: 
 
     def __init__(self, iface):
@@ -60,9 +68,14 @@ class aeag_mask:
         self.act_aeag_toolbar_help = None
         self.canvas = self.iface.mapCanvas()
         self.geometry = None
+        self.complement_geometry = None
 
         self.mask_geometry_function = MaskGeometryFunction( self )
         QgsExpression.registerFunction( self.mask_geometry_function )
+        self.mask_complement_geometry_function = MaskComplementGeometryFunction( self )
+        QgsExpression.registerFunction( self.mask_complement_geometry_function )
+
+        self.labeling_model = {}
         
     def initGui(self):  
         self.toolBar = self.iface.pluginToolBar()
@@ -83,6 +96,7 @@ class aeag_mask:
         self.toolBar.removeAction(self.act_aeag_mask)
         self.iface.removePluginMenu("&Mask", self.act_aeag_mask)
         QgsExpression.unregisterFunction( "$mask_geometry" )
+        QgsExpression.unregisterFunction( "$mask_complement_geometry" )
 
     # run method that performs all the real work
     def run( self ):
@@ -90,6 +104,7 @@ class aeag_mask:
         mask_layer = QgsVectorLayer("MultiPolygon?crs=%s" % dest_crs.authid(), "Mask", "memory")
         
         dlg = MainDialog( mask_layer )
+        dlg.set_labeling_model( self.labeling_model )
         r = dlg.exec_()
         if r == 1:
             poly = self.get_selected_polygons()
@@ -97,20 +112,23 @@ class aeag_mask:
             geom = self.get_final_geometry( poly, dest_crs, dlg.do_simplify, dlg.simplify_tolerance )
             if not geom:
                 # TODO warn user
+                print "no geometry"
                 return
 
             if dlg.do_buffer:
                 geom = geom.buffer( dlg.buffer_units, dlg.buffer_segments )
 
-            if dlg.mask_mode == 'mask':
-                rect = self.canvas.extent()
-                rect.scale(2)
-                mask = QgsGeometry.fromRect( rect )
-                geom = mask.difference( geom )
-
             self.geometry = geom
 
-            self.add_layer( mask_layer, geom )
+            rect = self.canvas.extent()
+            rect.scale(2)
+            mask = QgsGeometry.fromRect( rect )
+            self.complement_geometry = mask.difference( geom )
+
+            if dlg.mask_mode == 'mask':
+                self.add_layer( mask_layer, self.complement_geometry )
+            else:
+                self.add_layer( mask_layer, self.geometry )
 
     def get_selected_polygons( self ):
         "return array of (polygon_feature,crs) from current selection"
@@ -162,6 +180,11 @@ class aeag_mask:
         if not self.geometry:
             return QgsGeometry()
         return self.geometry
+
+    def mask_complement_geometry( self ):
+        if not self.complement_geometry:
+            return QgsGeometry()
+        return self.complement_geometry
 
 
 

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>439</width>
-    <height>451</height>
+    <width>695</width>
+    <height>779</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -228,6 +228,20 @@
     </widget>
    </item>
    <item>
+    <widget class="QGroupBox" name="labelingGroup">
+     <property name="title">
+      <string>Limit labeling to mask's polygon</string>
+     </property>
+     <property name="checkable">
+      <bool>true</bool>
+     </property>
+     <property name="checked">
+      <bool>false</bool>
+     </property>
+     <layout class="QVBoxLayout" name="labelingLayout"/>
+    </widget>
+   </item>
+   <item>
     <widget class="QFrame" name="frame">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
@@ -245,7 +259,7 @@
       <item>
        <widget class="QLabel" name="label_3">
         <property name="text">
-         <string>Save as :</string>
+         <string>Save the mask layer as :</string>
         </property>
        </widget>
       </item>
