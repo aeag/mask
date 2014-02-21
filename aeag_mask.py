@@ -36,6 +36,7 @@ from qgis.utils import qgsfunction
 
 from maindialog import MainDialog
 from layerlist import LayerListDialog
+from mask_filter import *
 
 # Initialize Qt resources from file resources.py
 import resources_rc
@@ -77,6 +78,11 @@ class aeag_mask:
         QgsExpression.registerFunction( self.mask_complement_geometry_function )
 
         self.labeling_model = {}
+
+        #
+        self.disable_remove_mask_signal = False
+        self.registry = QgsMapLayerRegistry.instance()
+        self.registry.layerWillBeRemoved.connect( self.on_remove_mask )
         
     def initGui(self):  
         self.toolBar = self.iface.pluginToolBar()
@@ -104,6 +110,8 @@ class aeag_mask:
         QgsExpression.unregisterFunction( "$mask_geometry" )
         QgsExpression.unregisterFunction( "$mask_complement_geometry" )
 
+        self.registry.layerWillBeRemoved.disconnect( self.on_remove_mask )
+
     def on_layer_list( self ):
         dlg = LayerListDialog( None )
         dlg.set_labeling_model( self.labeling_model )
@@ -113,12 +121,22 @@ class aeag_mask:
     # run method that performs all the real work
     def run( self ):
         dest_crs = self.canvas.mapRenderer().destinationCrs()
+
         mask_layer = QgsVectorLayer("MultiPolygon?crs=%s" % dest_crs.authid(), "Mask", "memory")
         
         dlg = MainDialog( mask_layer )
         dlg.set_labeling_model( self.labeling_model )
         r = dlg.exec_()
         if r == 1:
+            # if a mask layer is already present, remove it
+            layers = self.registry.mapLayers()
+            for name, layer in layers.iteritems():
+                if layer.name() == "Mask":
+                    self.disable_remove_mask_signal = True
+                    self.registry.removeMapLayer( name )
+                    self.disable_remove_mask_signal = False
+                    break
+
             poly = self.get_selected_polygons()
 
             geom = self.get_final_geometry( poly, dest_crs, dlg.do_simplify, dlg.simplify_tolerance )
@@ -142,10 +160,26 @@ class aeag_mask:
             else:
                 self.add_layer( mask_layer, self.geometry )
 
+    def on_remove_mask( self, layer_id ):
+        if self.disable_remove_mask_signal:
+            return
+
+        layer = self.registry.mapLayer( layer_id )
+        if not layer:
+            return
+        if layer.name() == 'Mask':
+            for lid, v in self.labeling_model.iteritems():
+                do_limit, orig_pal = v
+                if do_limit:
+                    l = self.registry.mapLayer( lid )
+                    if l:
+                        orig_pal.writeToLayer( l )
+                        self.labeling_model[lid] = (False, orig_pal)
+
     def get_selected_polygons( self ):
         "return array of (polygon_feature,crs) from current selection"
         geos = []
-        layers = QgsMapLayerRegistry.instance().mapLayers()
+        layers = self.registry.mapLayers()
         for name, layer in layers.iteritems():
             if not layer.type() == QgsMapLayer.VectorLayer:
                 continue
@@ -176,16 +210,15 @@ class aeag_mask:
         return geom
 
     def add_layer( self, layer, geometry ):
-
         pr = layer.dataProvider()
         fet = QgsFeature()
         fet.setGeometry(geometry)
         pr.addFeatures([ fet ])
         layer.updateExtents()        
             
-        QgsMapLayerRegistry.instance().addMapLayer(layer)
+        self.registry.addMapLayer(layer)
         self.iface.legendInterface().refreshLayerSymbology( layer ) 
-        QgsMapLayerRegistry.instance().clearAllLayerCaches () #clean cache to allow mask layer to appear on refresh
+        self.registry.clearAllLayerCaches () #clean cache to allow mask layer to appear on refresh
         self.canvas.refresh()
 
     def mask_geometry( self ):

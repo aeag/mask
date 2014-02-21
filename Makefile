@@ -26,7 +26,7 @@ TRANSLATIONS =
 
 PLUGINNAME = mask
 
-PY_FILES = aeag_mask.py maindialog.py __init__.py layerlist.py
+PY_FILES = aeag_mask.py maindialog.py __init__.py layerlist.py mask_filter.py
 
 EXTRAS = aeag_mask.png metadata.txt
 
