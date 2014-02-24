@@ -24,7 +24,10 @@ class MainDialog( QDialog ):
         self.layer = layer
         self.style = QgsStyleV2()
 
+        # connect edit style
         self.ui.editStyleBtn.clicked.connect( self.on_style_edit )
+        # connect file browser
+        self.ui.browseBtn.clicked.connect( self.on_file_browse )
 
         # mask_mode: selection | mask
         self.mask_mode = None
@@ -33,7 +36,22 @@ class MainDialog( QDialog ):
         self.buffer_units = 0
         self.buffer_segments = 0
 
+        self.do_save_as = False
+        self.file_path = None
+        self.file_format = None
+
         self.update_style( self.layer )
+
+        # init save format list
+        for k,v in QgsVectorFileWriter.ogrDriverList().iteritems():
+            self.ui.formatCombo.addItem( k )
+
+    def on_file_browse( self ):
+        fn = QFileDialog.getSaveFileName( None, "Select a filename to save the mask layer to" )
+        if not fn:
+            return
+
+        self.ui.filePath.setText( fn )
 
     def on_style_edit( self ):
         # QgsRenderV2PropertiesDialog has a Cancel button that is not correctly plugged
@@ -52,6 +70,7 @@ class MainDialog( QDialog ):
         dlg.buttons.setStandardButtons(QDialogButtonBox.Cancel|QDialogButtonBox.Ok)
 
         def on_style_edit_accept( d ):
+            # this will update the layer's style
             dlg.widget.onOK()
             dlg.accept()  
 
@@ -89,6 +108,11 @@ class MainDialog( QDialog ):
         self.buffer_segments = float(self.ui.bufferSegments.text() or 0)
         self.do_simplify = self.ui.simplifyGroup.isEnabled()
         self.simplify_tolerance = float(self.ui.simplifyTolerance.text() or 0)
+
+        # get save as
+        self.do_save_as = self.ui.saveLayerGroup.isEnabled()
+        self.file_path = self.ui.filePath.text()
+        self.file_format = self.ui.formatCombo.currentText()
 
         # update layers 
         self.ui.layer_list.update_labeling_from_list()

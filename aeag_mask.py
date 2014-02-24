@@ -150,15 +150,17 @@ class aeag_mask:
 
             self.geometry = geom
 
+            # build the complement geometry
             rect = self.canvas.extent()
             rect.scale(2)
             mask = QgsGeometry.fromRect( rect )
             self.complement_geometry = mask.difference( geom )
 
-            if dlg.mask_mode == 'mask':
-                self.add_layer( mask_layer, self.complement_geometry )
-            else:
-                self.add_layer( mask_layer, self.geometry )
+            # add a layer (save on disk before if needed)
+            save_as = dlg.file_path if dlg.do_save_as else None
+            save_format = dlg.file_format if dlg.do_save_as else None
+            save_geom = self.complement_geometry if dlg.mask_mode == 'mask' else self.geometry
+            self.add_layer( mask_layer, save_geom, save_as, save_format )
 
     def on_remove_mask( self, layer_id ):
         if self.disable_remove_mask_signal:
@@ -209,12 +211,26 @@ class aeag_mask:
 
         return geom
 
-    def add_layer( self, layer, geometry ):
+    def add_layer( self, layer, geometry, save_as = None, save_format = None ):
         pr = layer.dataProvider()
         fet = QgsFeature()
         fet.setGeometry(geometry)
         pr.addFeatures([ fet ])
-        layer.updateExtents()        
+        layer.updateExtents()
+
+        if save_as:
+            error = QgsVectorFileWriter.writeAsVectorFormat( layer, save_as, "system", layer.crs(), save_format )
+            if error == 0:
+                symbology = layer.rendererV2().clone()
+                blend_mode = layer.blendMode()
+                feature_blend_mode = layer.featureBlendMode()
+                transparency = layer.layerTransparency()
+                # reload it
+                layer = QgsVectorLayer( save_as, "Mask", "ogr" )
+                layer.setLayerTransparency( transparency )
+                layer.setFeatureBlendMode( feature_blend_mode )
+                layer.setBlendMode( blend_mode )
+                layer.setRendererV2( symbology )
             
         self.registry.addMapLayer(layer)
         self.iface.legendInterface().refreshLayerSymbology( layer ) 

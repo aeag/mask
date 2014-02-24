@@ -242,59 +242,19 @@
     </widget>
    </item>
    <item>
-    <widget class="QFrame" name="frame">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
+    <widget class="QGroupBox" name="saveLayerGroup">
+     <property name="title">
+      <string>Save as</string>
      </property>
-     <property name="frameShape">
-      <enum>QFrame::StyledPanel</enum>
+     <property name="checkable">
+      <bool>true</bool>
      </property>
-     <property name="frameShadow">
-      <enum>QFrame::Raised</enum>
+     <property name="checked">
+      <bool>false</bool>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout">
       <item>
-       <widget class="QLabel" name="label_3">
-        <property name="text">
-         <string>Save the mask layer as :</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QRadioButton" name="saveAsMemoryRadio">
-        <property name="text">
-         <string>a memory layer</string>
-        </property>
-        <property name="checked">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QRadioButton" name="saveAsFileRadio">
-        <property name="text">
-         <string>a file</string>
-        </property>
-       </widget>
-      </item>
-      <item>
        <layout class="QHBoxLayout" name="horizontalLayout">
-        <item>
-         <spacer name="horizontalSpacer">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>40</width>
-            <height>20</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
         <item>
          <widget class="QLineEdit" name="filePath"/>
         </item>
@@ -304,6 +264,9 @@
            <string>...</string>
           </property>
          </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="formatCombo"/>
         </item>
        </layout>
       </item>
