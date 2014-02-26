@@ -26,6 +26,7 @@ todo:
  *                                                                         *
  ***************************************************************************/
 """
+
 # Import the PyQt and QGIS libraries
 import os
 from PyQt4.QtCore import * 
@@ -60,7 +61,7 @@ class MaskComplementGeometryFunction( QgsExpression.Function ):
     def func( self, values, feature, parent ):
         return self.mask.mask_complement_geometry()
 
-class aeag_mask: 
+class aeag_mask:
 
     def __init__(self, iface):
         # Save reference to the QGIS interface
@@ -72,6 +73,25 @@ class aeag_mask:
         self.geometry = None
         self.complement_geometry = None
 
+
+        # mask parameters
+        self.mask_mode = None
+        self.do_buffer = None
+        self.buffer_units = None
+        self.buffer_segments = None
+        self.do_simplify = None
+        self.simplify_tolerance = None
+        self.do_save_as = None
+        self.file_path = None
+        self.file_format = None
+
+        # mask layer
+        self.layer = None
+
+        self.geometries_backup = None
+        self.composers = {}
+
+    def initGui(self):  
         self.mask_geometry_function = MaskGeometryFunction( self )
         QgsExpression.registerFunction( self.mask_geometry_function )
         self.mask_complement_geometry_function = MaskComplementGeometryFunction( self )
@@ -83,8 +103,7 @@ class aeag_mask:
         self.disable_remove_mask_signal = False
         self.registry = QgsMapLayerRegistry.instance()
         self.registry.layerWillBeRemoved.connect( self.on_remove_mask )
-        
-    def initGui(self):  
+
         self.toolBar = self.iface.pluginToolBar()
         
         self.act_aeag_mask = QAction(QIcon(":plugins/mask/aeag_mask.png"), _fromUtf8("Create mask"), self.iface.mainWindow())
@@ -96,11 +115,18 @@ class aeag_mask:
         # Add actions to the toolbar
         self.act_aeag_mask.triggered.connect(self.run)
         
-
         self.act_layer_list = QAction(QIcon(":plugins/mask/aeag_mask.png"), _fromUtf8("Update labeling"), self.iface.mainWindow())
         self.toolBar.addAction(self.act_layer_list)
         self.act_layer_list.triggered.connect(self.on_layer_list)
         self.iface.addPluginToMenu("&Mask", self.act_layer_list)
+
+        # register composer signals
+        self.iface.composerAdded.connect( self.on_composer_added )
+        self.iface.composerWillBeRemoved.connect( self.on_composer_removed )
+
+        # register already existing composers
+        for compo in self.iface.activeComposers():
+            self.on_composer_added( compo )
 
     def unload(self):
         self.toolBar.removeAction(self.act_aeag_mask)
@@ -112,55 +138,162 @@ class aeag_mask:
 
         self.registry.layerWillBeRemoved.disconnect( self.on_remove_mask )
 
+        self.iface.composerAdded.disconnect( self.on_composer_added )
+        self.iface.composerWillBeRemoved.disconnect( self.on_composer_removed )
+        # remove composer signals
+        for compo in self.iface.activeComposers():
+            self.on_composer_removed( compo )
+
+    def on_composer_added( self, compo ):
+
+        composition = compo.composition()
+        self.composers[composition] = []
+        print "on_composer_added", composition
+        items = composition.composerMapItems()
+        composition.atlasComposition().renderBegun.connect( self.on_atlas_begin_render )
+        composition.atlasComposition().renderEnded.connect( self.on_atlas_end_render )
+
+        composition.composerMapAdded.connect( lambda item: self.on_composer_map_added(composition, item) )
+        composition.itemRemoved.connect( lambda item: self.on_composer_item_removed(composition,item) )
+        for item in items:
+            print item
+            if item.type() == QgsComposerItem.ComposerMap:
+                self.on_composer_map_added( composition, item )
+
+    def on_composer_map_added( self, compo, _ ):
+        # The second argument, which is supposed to be a QgsComposerMap is always a QObject.
+        # ?! So we circumvent this problem in passing the QgsComposition container
+        # and getting track of composer maps
+        for composer_map in compo.composerMapItems():
+            if composer_map not in self.composers[compo]:
+                print "new composer map", composer_map
+                self.composers[compo].append(composer_map)
+                composer_map.preparedForAtlas.connect( lambda : self.on_prepared_for_atlas(composer_map) )
+                break
+
+    def on_composer_item_removed( self, compo, _ ):
+        for composer_map in self.composers[compo]:
+            if composer_map not in compo.composerMapItems():
+                print "remove composer map", composer_map
+                self.composers[compo].remove(composer_map)
+                composer_map.preparedForAtlas.disconnect()
+                break
+
+    def on_composer_removed( self, compo ):
+        print "on_composer removed"
+        composition = compo.composition()
+        items = composition.composerMapItems()
+        composition.atlasComposition().renderBegun.disconnect( self.on_atlas_begin_render )
+        composition.atlasComposition().renderEnded.disconnect( self.on_atlas_end_render )
+        composition.composerMapAdded.disconnect()
+        composition.itemRemoved.disconnect()
+        for item in items:
+            self.on_composer_item_removed( composition, item )
+        del self.composers[composition]
+
     def on_layer_list( self ):
         dlg = LayerListDialog( None )
         dlg.set_labeling_model( self.labeling_model )
 
         dlg.exec_()
 
+    def compute_mask_geometries( self, poly, extent ):
+        dest_crs = self.canvas.mapRenderer().destinationCrs()
+        geom = self.get_final_geometry( poly, dest_crs, self.do_simplify, self.simplify_tolerance )
+
+        if self.do_buffer:
+            geom = geom.buffer( self.buffer_units, self.buffer_segments )
+
+        rgeometry = geom
+
+        # build the complement geometry
+        extent.scale(2)
+        mask = QgsGeometry.fromRect( extent )
+        rcomplement_geometry = mask.difference( geom )
+
+        return rgeometry, rcomplement_geometry
+
+    def on_prepared_for_atlas( self, item ):
+        print "prepared for atlas", item
+        if not self.layer:
+            return
+
+        atlas_layer = item.composition().atlasComposition().coverageLayer()
+        geom = QgsExpression.specialColumn("$atlasgeometry")
+        crs = atlas_layer.crs()
+        fet = QgsFeature()
+        fet.setGeometry(geom)
+        extent = item.currentMapExtent()
+        self.geometry, self.complement_geometry = self.compute_mask_geometries( [(fet,crs)], extent )
+        save_geom = self.complement_geometry if self.mask_mode == 'mask' else self.geometry
+        self.update_layer( self.layer, save_geom )
+
+    def on_atlas_begin_render( self ):
+        print "atlas begin render"
+        if not self.layer:
+            return
+        self.geometries_backup = (self.geometry, self.complement_geometry)
+
+    def on_atlas_end_render( self ):
+        print "atlas end render"
+        if not self.layer:
+            return
+        self.geometry, self.complement_geometry = self.geometries_backup
+        save_geom = self.complement_geometry if self.mask_mode == 'mask' else self.geometry
+        self.update_layer( self.layer, save_geom )
+
     # run method that performs all the real work
     def run( self ):
+        if False:
+            for compo in self.iface.activeComposers():
+                self.on_composer_added( compo )
+
         dest_crs = self.canvas.mapRenderer().destinationCrs()
 
-        mask_layer = QgsVectorLayer("MultiPolygon?crs=%s" % dest_crs.authid(), "Mask", "memory")
+        if not self.layer:
+            # try to reuse the 'mask' layer'
+            layers = self.registry.mapLayers()
+            for name, alayer in layers.iteritems():
+                if alayer.name() == 'Mask':
+                    self.layer = alayer
+                    break
+        if not self.layer:
+            # or create a new layer
+            self.layer = QgsVectorLayer("MultiPolygon?crs=%s" % dest_crs.authid(), "Mask", "memory")
         
-        dlg = MainDialog( mask_layer )
+        dlg = MainDialog( self.layer )
         dlg.set_labeling_model( self.labeling_model )
         r = dlg.exec_()
         if r == 1:
-            # if a mask layer is already present, remove it
-            layers = self.registry.mapLayers()
-            for name, layer in layers.iteritems():
-                if layer.name() == "Mask":
-                    self.disable_remove_mask_signal = True
-                    self.registry.removeMapLayer( name )
-                    self.disable_remove_mask_signal = False
-                    break
+            self.mask_mode = dlg.mask_mode
+            self.do_buffer = dlg.do_buffer
+            self.buffer_units = dlg.buffer_units
+            self.buffer_segments = dlg.buffer_segments
+            self.do_simplify = dlg.do_simplify
+            self.simplify_tolerance = dlg.simplify_tolerance
+            self.do_save_as = dlg.do_save_as
+            self.file_path = dlg.file_path
+            self.file_format = dlg.file_format
 
             poly = self.get_selected_polygons()
-
-            geom = self.get_final_geometry( poly, dest_crs, dlg.do_simplify, dlg.simplify_tolerance )
-            if not geom:
+            if not poly:
                 # TODO warn user
                 print "no geometry"
                 return
 
-            if dlg.do_buffer:
-                geom = geom.buffer( dlg.buffer_units, dlg.buffer_segments )
-
-            self.geometry = geom
-
-            # build the complement geometry
             rect = self.canvas.extent()
-            rect.scale(2)
-            mask = QgsGeometry.fromRect( rect )
-            self.complement_geometry = mask.difference( geom )
+            self.geometry, self.complement_geometry = self.compute_mask_geometries( poly, rect )
+            print self.geometry
 
             # add a layer (save on disk before if needed)
-            save_as = dlg.file_path if dlg.do_save_as else None
-            save_format = dlg.file_format if dlg.do_save_as else None
-            save_geom = self.complement_geometry if dlg.mask_mode == 'mask' else self.geometry
-            self.add_layer( mask_layer, save_geom, save_as, save_format )
+            if dlg.do_save_as:
+                self.save_layer( self.layer, self.file_path, self.file_format )
+
+            save_geom = self.complement_geometry if self.mask_mode == 'mask' else self.geometry
+            self.update_layer( self.layer, save_geom )
+
+            self.add_layer( self.layer )
+            self.canvas.refresh()
 
     def on_remove_mask( self, layer_id ):
         if self.disable_remove_mask_signal:
@@ -211,31 +344,48 @@ class aeag_mask:
 
         return geom
 
-    def add_layer( self, layer, geometry, save_as = None, save_format = None ):
+    def update_layer( self, layer, geometry ):
+        # insert or replace into ...
         pr = layer.dataProvider()
-        fet = QgsFeature()
-        fet.setGeometry(geometry)
-        pr.addFeatures([ fet ])
+        print "# features", pr.featureCount()
+        if pr.featureCount() == 0:
+            fet = QgsFeature()
+            fet.setGeometry(geometry)
+            pr.addFeatures([ fet ])
+        else:
+            pr.changeGeometryValues( { 1 : geometry } )
         layer.updateExtents()
 
-        if save_as:
-            error = QgsVectorFileWriter.writeAsVectorFormat( layer, save_as, "system", layer.crs(), save_format )
-            if error == 0:
-                symbology = layer.rendererV2().clone()
-                blend_mode = layer.blendMode()
-                feature_blend_mode = layer.featureBlendMode()
-                transparency = layer.layerTransparency()
-                # reload it
-                layer = QgsVectorLayer( save_as, "Mask", "ogr" )
-                layer.setLayerTransparency( transparency )
-                layer.setFeatureBlendMode( feature_blend_mode )
-                layer.setBlendMode( blend_mode )
-                layer.setRendererV2( symbology )
-            
+    def add_layer( self, layer ):
+        # add a layer to the registry, if not already there
+        layers = self.registry.mapLayers()
+        for name, alayer in layers.iteritems():
+            if alayer == layer:
+                return
+
         self.registry.addMapLayer(layer)
         self.iface.legendInterface().refreshLayerSymbology( layer ) 
         self.registry.clearAllLayerCaches () #clean cache to allow mask layer to appear on refresh
-        self.canvas.refresh()
+
+    def save_layer( self, layer, save_as, save_format ):
+        error = QgsVectorFileWriter.writeAsVectorFormat( layer, save_as, "system", layer.crs(), save_format )
+        if error == 0:
+            symbology = layer.rendererV2().clone()
+            blend_mode = layer.blendMode()
+            feature_blend_mode = layer.featureBlendMode()
+            transparency = layer.layerTransparency()
+
+            # reload it
+            nlayer = QgsVectorLayer( save_as, "Mask", "ogr" )
+            nlayer.setLayerTransparency( transparency )
+            nlayer.setFeatureBlendMode( feature_blend_mode )
+            nlayer.setBlendMode( blend_mode )
+            nlayer.setRendererV2( symbology )
+
+            self.disable_remove_mask_signal = True
+            self.registry.removeMapLayer( layer.id() )
+            self.disable_remove_mask_signal = False
+            self.registry.addMapLayer(nlayer)
 
     def mask_geometry( self ):
         if not self.geometry:

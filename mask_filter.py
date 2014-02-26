@@ -1,6 +1,6 @@
 from qgis.core import *
 
-SPATIAL_FILTER_BEGIN = "CASE WHEN contains($mask_geometry,$geometry) THEN "
+SPATIAL_FILTER_BEGIN = "CASE WHEN contains($mask_geometry,centroid($geometry)) THEN "
 SPATIAL_FILTER_END = " ELSE '' END"
 
 def has_mask_filter( layer ):

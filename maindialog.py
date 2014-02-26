@@ -160,7 +160,7 @@ class MainDialog( QDialog ):
         self.simplify_tolerance = float(self.ui.simplifyTolerance.text() or 0)
 
         # get save as
-        self.do_save_as = self.ui.saveLayerGroup.isEnabled()
+        self.do_save_as = self.ui.saveLayerGroup.isChecked()
         self.file_path = self.ui.filePath.text()
         self.file_format = self.ui.formatCombo.currentText()
 
