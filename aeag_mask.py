@@ -87,6 +87,8 @@ class aeag_mask:
 
         # mask layer
         self.layer = None
+        self.is_memory_layer = True
+        self.atlas_layer = None
 
         self.geometries_backup = None
         self.composers = {}
@@ -215,7 +217,7 @@ class aeag_mask:
 
     def on_prepared_for_atlas( self, item ):
         print "prepared for atlas", item
-        if not self.layer:
+        if not self.atlas_layer:
             return
 
         atlas_layer = item.composition().atlasComposition().coverageLayer()
@@ -226,21 +228,42 @@ class aeag_mask:
         extent = item.currentMapExtent()
         self.geometry, self.complement_geometry = self.compute_mask_geometries( [(fet,crs)], extent )
         save_geom = self.complement_geometry if self.mask_mode == 'mask' else self.geometry
-        self.update_layer( self.layer, save_geom )
+        self.update_layer( self.atlas_layer, save_geom )
 
     def on_atlas_begin_render( self ):
         print "atlas begin render"
         if not self.layer:
             return
-        self.geometries_backup = (self.geometry, self.complement_geometry)
+        if not self.atlas_layer:
+            # add a memory layer for atlas
+            dest_crs = self.canvas.mapRenderer().destinationCrs()
+            self.atlas_layer = QgsVectorLayer("MultiPolygon?crs=%s" % dest_crs.authid(), "Mask_temp", "memory")
+            self.copy_layer_style( self.layer, self.atlas_layer )
+            self.registry.addMapLayer( self.atlas_layer )
 
+            # insert it in place of the current 'mask' layer
+            ll = self.iface.mapCanvas().mapRenderer().layerSet()
+            ll.remove(self.atlas_layer.id())
+            p = ll.index(self.layer.id())
+            ll = ll[0:p] + [self.atlas_layer.id()] + ll[p:]
+            print ll
+            self.iface.mapCanvas().mapRenderer().setLayerSet(ll)
+
+            # make the 'mask' layer not visible
+            self.iface.legendInterface().setLayerVisible( self.layer, False )
+        self.geometries_backup = (self.geometry, self.complement_geometry)
+ 
     def on_atlas_end_render( self ):
         print "atlas end render"
-        if not self.layer:
+        if not self.atlas_layer:
             return
+
+        # remove the atlas layer
+        # restore the mask layer's visibility
+        self.registry.removeMapLayer( self.atlas_layer.id() )
+        self.atlas_layer = None
         self.geometry, self.complement_geometry = self.geometries_backup
-        save_geom = self.complement_geometry if self.mask_mode == 'mask' else self.geometry
-        self.update_layer( self.layer, save_geom )
+        self.iface.legendInterface().setLayerVisible( self.layer, True )
 
     # run method that performs all the real work
     def run( self ):
@@ -287,7 +310,8 @@ class aeag_mask:
 
             # add a layer (save on disk before if needed)
             if dlg.do_save_as:
-                self.save_layer( self.layer, self.file_path, self.file_format )
+                self.layer = self.save_layer( self.layer, self.file_path, self.file_format )
+                self.is_memory_layer = False
 
             save_geom = self.complement_geometry if self.mask_mode == 'mask' else self.geometry
             self.update_layer( self.layer, save_geom )
@@ -310,6 +334,7 @@ class aeag_mask:
                     if l:
                         orig_pal.writeToLayer( l )
                         self.labeling_model[lid] = (False, orig_pal)
+                        self.layer = None
 
     def get_selected_polygons( self ):
         "return array of (polygon_feature,crs) from current selection"
@@ -367,25 +392,29 @@ class aeag_mask:
         self.iface.legendInterface().refreshLayerSymbology( layer ) 
         self.registry.clearAllLayerCaches () #clean cache to allow mask layer to appear on refresh
 
+    def copy_layer_style( self, layer, nlayer ):
+        symbology = layer.rendererV2().clone()
+        blend_mode = layer.blendMode()
+        feature_blend_mode = layer.featureBlendMode()
+        transparency = layer.layerTransparency()
+
+        nlayer.setLayerTransparency( transparency )
+        nlayer.setFeatureBlendMode( feature_blend_mode )
+        nlayer.setBlendMode( blend_mode )
+        nlayer.setRendererV2( symbology )
+
     def save_layer( self, layer, save_as, save_format ):
         error = QgsVectorFileWriter.writeAsVectorFormat( layer, save_as, "system", layer.crs(), save_format )
         if error == 0:
-            symbology = layer.rendererV2().clone()
-            blend_mode = layer.blendMode()
-            feature_blend_mode = layer.featureBlendMode()
-            transparency = layer.layerTransparency()
-
-            # reload it
             nlayer = QgsVectorLayer( save_as, "Mask", "ogr" )
-            nlayer.setLayerTransparency( transparency )
-            nlayer.setFeatureBlendMode( feature_blend_mode )
-            nlayer.setBlendMode( blend_mode )
-            nlayer.setRendererV2( symbology )
+            self.copy_layer_style( layer, nlayer )
 
             self.disable_remove_mask_signal = True
+            print "removing layer", layer.id()
             self.registry.removeMapLayer( layer.id() )
             self.disable_remove_mask_signal = False
-            self.registry.addMapLayer(nlayer)
+            return nlayer
+        return None
 
     def mask_geometry( self ):
         if not self.geometry:
