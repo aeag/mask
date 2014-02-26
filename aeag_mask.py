@@ -198,6 +198,7 @@ class aeag_mask:
         dlg.set_labeling_model( self.labeling_model )
 
         dlg.exec_()
+        self.canvas.refresh()
 
     def compute_mask_geometries( self, poly, extent ):
         dest_crs = self.canvas.mapRenderer().destinationCrs()
@@ -267,9 +268,11 @@ class aeag_mask:
 
     # run method that performs all the real work
     def run( self ):
-        if False:
-            for compo in self.iface.activeComposers():
-                self.on_composer_added( compo )
+        poly = self.get_selected_polygons()
+        if not poly:
+            # TODO warn user
+            QMessageBox.critical( None, "Mask plugin error", "No polygon selection !" )
+            return
 
         dest_crs = self.canvas.mapRenderer().destinationCrs()
 
@@ -297,12 +300,6 @@ class aeag_mask:
             self.do_save_as = dlg.do_save_as
             self.file_path = dlg.file_path
             self.file_format = dlg.file_format
-
-            poly = self.get_selected_polygons()
-            if not poly:
-                # TODO warn user
-                print "no geometry"
-                return
 
             rect = self.canvas.extent()
             self.geometry, self.complement_geometry = self.compute_mask_geometries( poly, rect )
