@@ -90,8 +90,10 @@ class aeag_mask:
         self.is_memory_layer = True
         self.atlas_layer = None
 
-        self.geometries_backup = None
         self.composers = {}
+
+        # test qgis version for the presence of signals
+        self.has_atlas_signals = 'renderBegun' in dir(QgsAtlasComposition)
 
     def initGui(self):  
         self.mask_geometry_function = MaskGeometryFunction( self )
@@ -122,13 +124,17 @@ class aeag_mask:
         self.act_layer_list.triggered.connect(self.on_layer_list)
         self.iface.addPluginToMenu("&Mask", self.act_layer_list)
 
-        # register composer signals
-        self.iface.composerAdded.connect( self.on_composer_added )
-        self.iface.composerWillBeRemoved.connect( self.on_composer_removed )
+        if not self.has_atlas_signals:
+            print "no atlas signal"
 
-        # register already existing composers
-        for compo in self.iface.activeComposers():
-            self.on_composer_added( compo )
+        if self.has_atlas_signals:
+            # register composer signals
+            self.iface.composerAdded.connect( self.on_composer_added )
+            self.iface.composerWillBeRemoved.connect( self.on_composer_removed )
+
+            # register already existing composers
+            for compo in self.iface.activeComposers():
+                self.on_composer_added( compo )
 
     def unload(self):
         self.toolBar.removeAction(self.act_aeag_mask)
@@ -140,14 +146,14 @@ class aeag_mask:
 
         self.registry.layerWillBeRemoved.disconnect( self.on_remove_mask )
 
-        self.iface.composerAdded.disconnect( self.on_composer_added )
-        self.iface.composerWillBeRemoved.disconnect( self.on_composer_removed )
-        # remove composer signals
-        for compo in self.iface.activeComposers():
-            self.on_composer_removed( compo )
+        if self.has_atlas_signals:
+            self.iface.composerAdded.disconnect( self.on_composer_added )
+            self.iface.composerWillBeRemoved.disconnect( self.on_composer_removed )
+            # remove composer signals
+            for compo in self.iface.activeComposers():
+                self.on_composer_removed( compo )
 
     def on_composer_added( self, compo ):
-
         composition = compo.composition()
         self.composers[composition] = []
         print "on_composer_added", composition
@@ -162,7 +168,8 @@ class aeag_mask:
             if item.type() == QgsComposerItem.ComposerMap:
                 self.on_composer_map_added( composition, item )
 
-    def on_composer_map_added( self, compo, _ ):
+    def on_composer_map_added( self, compo, item ):
+        print "on_composer_map_added", item
         # The second argument, which is supposed to be a QgsComposerMap is always a QObject.
         # ?! So we circumvent this problem in passing the QgsComposition container
         # and getting track of composer maps
@@ -170,7 +177,7 @@ class aeag_mask:
             if composer_map not in self.composers[compo]:
                 print "new composer map", composer_map
                 self.composers[compo].append(composer_map)
-                composer_map.preparedForAtlas.connect( lambda : self.on_prepared_for_atlas(composer_map) )
+#                composer_map.preparedForAtlas.connect( lambda : self.on_prepared_for_atlas(composer_map) )
                 break
 
     def on_composer_item_removed( self, compo, _ ):
@@ -323,15 +330,20 @@ class aeag_mask:
         layer = self.registry.mapLayer( layer_id )
         if not layer:
             return
-        if layer.name() == 'Mask':
-            for lid, v in self.labeling_model.iteritems():
-                do_limit, orig_pal = v
-                if do_limit:
-                    l = self.registry.mapLayer( lid )
-                    if l:
-                        orig_pal.writeToLayer( l )
-                        self.labeling_model[lid] = (False, orig_pal)
-                        self.layer = None
+        if not layer.name() == 'Mask':
+            return
+        for name, layer in self.registry.mapLayers().iteritems():
+            if has_mask_filter( layer ):
+                # remove mask filter from layer, if any
+                pal = QgsPalLayerSettings()
+                pal.readFromLayer( layer )
+                pal = remove_mask_filter( pal )
+                pal.writeToLayer( layer )
+
+                if layer.id() in self.labeling_model.keys():
+                    self.labeling_model[lid] = (False, pal)
+
+        self.layer = None
 
     def get_selected_polygons( self ):
         "return array of (polygon_feature,crs) from current selection"
@@ -387,7 +399,7 @@ class aeag_mask:
 
         self.registry.addMapLayer(layer)
         self.iface.legendInterface().refreshLayerSymbology( layer ) 
-        self.registry.clearAllLayerCaches () #clean cache to allow mask layer to appear on refresh
+#        self.registry.clearAllLayerCaches () #clean cache to allow mask layer to appear on refresh
 
     def copy_layer_style( self, layer, nlayer ):
         symbology = layer.rendererV2().clone()
