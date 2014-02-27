@@ -9,7 +9,7 @@ from layerlist import LayerListWidget
 
 class MainDialog( QDialog ):
 
-    def __init__( self, layer ):
+    def __init__( self, layer, parameters ):
         QDialog.__init__( self, None )
 
         self.ui = Ui_MainDialog()
@@ -21,8 +21,8 @@ class MainDialog( QDialog ):
         self.ui.bufferSegments.setValidator(QIntValidator())
         self.ui.simplifyTolerance.setValidator(QDoubleValidator())
 
-        # create a dummy memory layer
         self.layer = layer
+        self.parameters = parameters
         self.style = QgsStyleV2()
 
         # connect edit style
@@ -33,17 +33,6 @@ class MainDialog( QDialog ):
         self.ui.saveDefaultsBtn = QPushButton( "Save as defaults", self.ui.buttonBox )
         self.ui.buttonBox.addButton( self.ui.saveDefaultsBtn, QDialogButtonBox.ActionRole )
         self.ui.saveDefaultsBtn.clicked.connect( self.on_save_defaults )
-
-        # mask_mode: selection | mask
-        self.mask_mode = None
-        #
-        self.do_buffer = False
-        self.buffer_units = 0
-        self.buffer_segments = 0
-
-        self.do_save_as = False
-        self.file_path = None
-        self.file_format = None
 
         # init save format list
         for k,v in QgsVectorFileWriter.ogrDriverList().iteritems():
@@ -139,32 +128,38 @@ class MainDialog( QDialog ):
             pix.convertFromImage( syms[0].bigSymbolPreviewImage() )
             self.ui.stylePreview.setPixmap( pix )
 
-    def set_labeling_model( self, model ):
-        self.ui.layer_list.set_model( model )
-
-    def get_labeling_model( self ):
-        return self.ui.layer_list.get_model()
-
     def exec_( self ):
         self.ui.layer_list.update_from_layers()
+
+        # update ui elements from parameters
+        self.ui.contentCombo.setCurrentIndex( ['selection','mask'].index(self.parameters.mask_mode) )
+        self.ui.bufferGroup.setChecked( self.parameters.do_buffer )
+        self.ui.saveLayerGroup.setChecked( self.parameters.do_save_as )
+        self.ui.bufferUnits.setText( str(self.parameters.buffer_units) )
+        self.ui.bufferSegments.setText( str(self.parameters.buffer_segments) )
+#        self.ui.formatCombo.setCurrentIndex( self.parameters.file_format )
+        self.ui.filePath.setText( self.parameters.file_path )
+
         return QDialog.exec_( self )
 
     def accept( self ):
         # get data before closing
         idx = self.ui.contentCombo.currentIndex()
-        self.mask_mode = ('selection', 'mask')[idx]
-        self.do_buffer = self.ui.bufferGroup.isChecked()
-        self.buffer_units = float(self.ui.bufferUnits.text() or 0)
-        self.buffer_segments = float(self.ui.bufferSegments.text() or 0)
-        self.do_simplify = self.ui.simplifyGroup.isChecked()
-        self.simplify_tolerance = float(self.ui.simplifyTolerance.text() or 0)
+        self.parameters.mask_mode = ('selection', 'mask')[idx]
+        self.parameters.do_buffer = self.ui.bufferGroup.isChecked()
+        self.parameters.buffer_units = float(self.ui.bufferUnits.text() or 0)
+        self.parameters.buffer_segments = float(self.ui.bufferSegments.text() or 0)
+        self.parameters.do_simplify = self.ui.simplifyGroup.isChecked()
+        self.parameters.simplify_tolerance = float(self.ui.simplifyTolerance.text() or 0)
 
         # get save as
-        self.do_save_as = self.ui.saveLayerGroup.isChecked()
-        self.file_path = self.ui.filePath.text()
-        self.file_format = self.ui.formatCombo.currentText()
+        self.parameters.do_save_as = self.ui.saveLayerGroup.isChecked()
+        self.parameters.file_path = self.ui.filePath.text()
+        self.parameters.file_format = self.ui.formatCombo.currentText()
 
-        # update layers 
+        self.parameters.limited = self.ui.layer_list.get_limited_layers()
+
+        # update labeling from parameters
         self.ui.layer_list.update_labeling_from_list()
 
         QDialog.accept( self )

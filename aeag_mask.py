@@ -38,6 +38,7 @@ from qgis.utils import qgsfunction
 from maindialog import MainDialog
 from layerlist import LayerListDialog
 from mask_filter import *
+from mask_parameters import *
 
 # Initialize Qt resources from file resources.py
 import resources_rc
@@ -70,20 +71,9 @@ class aeag_mask:
         self.act_aeag_mask = None
         self.act_aeag_toolbar_help = None
         self.canvas = self.iface.mapCanvas()
-        self.geometry = None
-        self.complement_geometry = None
-
 
         # mask parameters
-        self.mask_mode = None
-        self.do_buffer = None
-        self.buffer_units = None
-        self.buffer_segments = None
-        self.do_simplify = None
-        self.simplify_tolerance = None
-        self.do_save_as = None
-        self.file_path = None
-        self.file_format = None
+        self.parameters = MaskParameters()
 
         # mask layer
         self.layer = None
@@ -95,23 +85,24 @@ class aeag_mask:
         # test qgis version for the presence of signals
         self.has_atlas_signals = 'renderBegun' in dir(QgsAtlasComposition)
 
+        # Part of the hack to circumvent layers opened from MemoryLayerSaver
+        self.must_reload_from_layer = None
+
     def initGui(self):  
         self.mask_geometry_function = MaskGeometryFunction( self )
         QgsExpression.registerFunction( self.mask_geometry_function )
         self.mask_complement_geometry_function = MaskComplementGeometryFunction( self )
         QgsExpression.registerFunction( self.mask_complement_geometry_function )
 
-        self.labeling_model = {}
-
         #
         self.disable_remove_mask_signal = False
         self.registry = QgsMapLayerRegistry.instance()
+        self.registry.layerWasAdded.connect( self.on_add_layer )
         self.registry.layerWillBeRemoved.connect( self.on_remove_mask )
 
         self.toolBar = self.iface.pluginToolBar()
         
         self.act_aeag_mask = QAction(QIcon(":plugins/mask/aeag_mask.png"), _fromUtf8("Create mask"), self.iface.mainWindow())
-#        self.act_aeag_mask.setCheckable(True)
         self.toolBar.addAction(self.act_aeag_mask)
         
         self.iface.addPluginToMenu("&Mask", self.act_aeag_mask)    
@@ -119,10 +110,9 @@ class aeag_mask:
         # Add actions to the toolbar
         self.act_aeag_mask.triggered.connect(self.run)
         
-        self.act_layer_list = QAction(QIcon(":plugins/mask/aeag_mask.png"), _fromUtf8("Update labeling"), self.iface.mainWindow())
-        self.toolBar.addAction(self.act_layer_list)
-        self.act_layer_list.triggered.connect(self.on_layer_list)
-        self.iface.addPluginToMenu("&Mask", self.act_layer_list)
+        # look for existing mask layer
+        for name, layer in self.registry.mapLayers().iteritems():
+            self.on_add_layer( layer )
 
         if not self.has_atlas_signals:
             print "no atlas signal"
@@ -139,11 +129,10 @@ class aeag_mask:
     def unload(self):
         self.toolBar.removeAction(self.act_aeag_mask)
         self.iface.removePluginMenu("&Mask", self.act_aeag_mask)
-        self.toolBar.removeAction(self.act_layer_list)
-        self.iface.removePluginMenu("&Mask", self.act_layer_list)
         QgsExpression.unregisterFunction( "$mask_geometry" )
         QgsExpression.unregisterFunction( "$mask_complement_geometry" )
 
+        self.registry.layerWasAdded.disconnect( self.on_add_layer )
         self.registry.layerWillBeRemoved.disconnect( self.on_remove_mask )
 
         if self.has_atlas_signals:
@@ -200,19 +189,12 @@ class aeag_mask:
             self.on_composer_item_removed( composition, item )
         del self.composers[composition]
 
-    def on_layer_list( self ):
-        dlg = LayerListDialog( None )
-        dlg.set_labeling_model( self.labeling_model )
-
-        dlg.exec_()
-        self.canvas.refresh()
-
     def compute_mask_geometries( self, poly, extent ):
         dest_crs = self.canvas.mapRenderer().destinationCrs()
-        geom = self.get_final_geometry( poly, dest_crs, self.do_simplify, self.simplify_tolerance )
+        geom = self.get_final_geometry( poly, dest_crs, self.parameters.do_simplify, self.parameters.simplify_tolerance )
 
-        if self.do_buffer:
-            geom = geom.buffer( self.buffer_units, self.buffer_segments )
+        if self.parameters.do_buffer:
+            geom = geom.buffer( self.parameters.buffer_units, self.parameters.buffer_segments )
 
         rgeometry = geom
 
@@ -275,53 +257,48 @@ class aeag_mask:
 
     # run method that performs all the real work
     def run( self ):
-        poly = self.get_selected_polygons()
-        if not poly:
-            # TODO warn user
-            QMessageBox.critical( None, "Mask plugin error", "No polygon selection !" )
-            return
-
         dest_crs = self.canvas.mapRenderer().destinationCrs()
 
+        poly = self.get_selected_polygons()
         if not self.layer:
-            # try to reuse the 'mask' layer'
-            layers = self.registry.mapLayers()
-            for name, alayer in layers.iteritems():
-                if alayer.name() == 'Mask':
-                    self.layer = alayer
-                    break
-        if not self.layer:
+            if not poly:
+                QMessageBox.critical( None, "Mask plugin error", "No polygon selection !" )
+                return
             # or create a new layer
             self.layer = QgsVectorLayer("MultiPolygon?crs=%s" % dest_crs.authid(), "Mask", "memory")
+        else:
+            # else : set poly = geometry from mask layer
+            if not poly:
+                f = QgsFeature()
+                f.setGeometry(self.parameters.geometry)
+                poly = [(f,self.layer.crs())]
         
-        dlg = MainDialog( self.layer )
-        dlg.set_labeling_model( self.labeling_model )
+        dlg = MainDialog( self.layer, self.parameters )
         r = dlg.exec_()
         if r == 1:
-            self.mask_mode = dlg.mask_mode
-            self.do_buffer = dlg.do_buffer
-            self.buffer_units = dlg.buffer_units
-            self.buffer_segments = dlg.buffer_segments
-            self.do_simplify = dlg.do_simplify
-            self.simplify_tolerance = dlg.simplify_tolerance
-            self.do_save_as = dlg.do_save_as
-            self.file_path = dlg.file_path
-            self.file_format = dlg.file_format
-
             rect = self.canvas.extent()
-            self.geometry, self.complement_geometry = self.compute_mask_geometries( poly, rect )
-            print self.geometry
+            self.parameters.geometry, self.parameters.complement_geometry = self.compute_mask_geometries( poly, rect )
+            print "computed geometries", self.parameters.geometry
 
             # add a layer (save on disk before if needed)
-            if dlg.do_save_as:
-                self.layer = self.save_layer( self.layer, self.file_path, self.file_format )
+            if self.parameters.do_save_as:
+                self.layer = self.save_layer( self.layer, self.parameters.file_path, self.parameters.file_format )
                 self.is_memory_layer = False
 
-            save_geom = self.complement_geometry if self.mask_mode == 'mask' else self.geometry
-            self.update_layer( self.layer, save_geom )
+#            save_geom = self.parameters.complement_geometry if self.parameters.mask_mode == 'mask' else self.parameters.geometry
+#            self.update_layer( self.layer, save_geom )
+            self.parameters.save_to_layer( self.layer )
 
             self.add_layer( self.layer )
             self.canvas.refresh()
+
+    def on_add_layer( self, layer ):
+        if layer.name() == 'Mask':
+            # Part of the MemorySaverLayer hack
+            # We cannot access the memory layer yet, since the MemorySaveLayer slot may be called
+            # AFTER this one
+            # So we remember we must load parameters from this layer on the next access to $mask_geometry
+            self.must_reload_from_layer = layer
 
     def on_remove_mask( self, layer_id ):
         if self.disable_remove_mask_signal:
@@ -340,10 +317,10 @@ class aeag_mask:
                 pal = remove_mask_filter( pal )
                 pal.writeToLayer( layer )
 
-                if layer.id() in self.labeling_model.keys():
-                    self.labeling_model[lid] = (False, pal)
-
+        self.parameters.limited_layers = []
         self.layer = None
+        # disable memorysavelayerhack
+        self.must_reload_from_layer = None
 
     def get_selected_polygons( self ):
         "return array of (polygon_feature,crs) from current selection"
@@ -426,14 +403,22 @@ class aeag_mask:
         return None
 
     def mask_geometry( self ):
-        if not self.geometry:
+        if self.must_reload_from_layer:
+            print "reload_from_layer"
+            # will force loading of parameters the first time the mask geometry is accessed
+            # this will happen AFTER MemorySaveLayer has loaded memory layers
+            self.layer = self.must_reload_from_layer
+            self.parameters.load_from_layer( self.layer )
+            self.must_reload_from_layer = None
+
+        if not self.parameters.geometry:
             return QgsGeometry()
-        return self.geometry
+        return self.parameters.geometry
 
     def mask_complement_geometry( self ):
-        if not self.complement_geometry:
+        if not self.parameters.complement_geometry:
             return QgsGeometry()
-        return self.complement_geometry
+        return self.parameters.complement_geometry
 
 
 

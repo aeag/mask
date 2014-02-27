@@ -14,14 +14,14 @@ class LayerListWidget( QWidget ):
         self.ui = Ui_LayerListWidget()
         self.ui.setupUi( self )
 
-        # model layer_name => (do_limit_labeling (bool), original pal)
-        self.model = {}
+        # list of limited layers (list of layer id)
+        self.limited = []
 
-    def set_model( self, model ):
-        self.model = model
+    def set_limited_layers( self, limited ):
+        self.limited = limited
 
-    def get_model( self ):
-        return self.model
+    def get_limited_layers( self ):
+        return self.limited
 
     def update_from_layers( self ):
         layers = QgsMapLayerRegistry.instance().mapLayers()
@@ -34,12 +34,12 @@ class LayerListWidget( QWidget ):
             do_limit = False
             pal = QgsPalLayerSettings()
             pal.readFromLayer(layer)
-            if name not in self.model.keys():
-                do_limit = has_mask_filter( layer )
-                orig_pal = remove_mask_filter( pal )
-                self.model[name] = (do_limit, orig_pal)
-            else:
-                do_limit, _ = self.model[name]
+            did_limit = layer.id() in self.limited
+            do_limit = has_mask_filter( layer )
+            if do_limit and not did_limit:
+                self.limited.append( layer.id() )
+            if not do_limit and did_limit:
+                self.limited.remove( layer.id() )
 
             self.ui.layerTable.insertRow(n)
             name_item = QTableWidgetItem()
@@ -61,17 +61,17 @@ class LayerListWidget( QWidget ):
             do_limit = ll.cellWidget( i, 0 ).isChecked()
             layer = ll.item(i, 0).data( Qt.UserRole )
             pal.readFromLayer( layer )
-            did_limit, orig_pal = self.model[layer.id()]
+            did_limit = layer.id() in self.limited
 
             if not did_limit and do_limit:
                 # add spatial filtering
                 pal = add_mask_filter( pal )
+                self.limited.append( layer.id() )
             if did_limit and not do_limit:
                 pal = remove_mask_filter( pal )
+                self.limited.remove( layer.id() )
 
             pal.writeToLayer( layer )
-            self.model[layer.id()] = (do_limit, orig_pal)
-                
 
 class LayerListDialog( QDialog ):
     def __init__( self, parent ):
