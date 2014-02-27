@@ -166,7 +166,7 @@ class aeag_mask:
             if composer_map not in self.composers[compo]:
                 print "new composer map", composer_map
                 self.composers[compo].append(composer_map)
-#                composer_map.preparedForAtlas.connect( lambda : self.on_prepared_for_atlas(composer_map) )
+                composer_map.preparedForAtlas.connect( lambda : self.on_prepared_for_atlas(composer_map) )
                 break
 
     def on_composer_item_removed( self, compo, _ ):
@@ -216,9 +216,10 @@ class aeag_mask:
         fet = QgsFeature()
         fet.setGeometry(geom)
         extent = item.currentMapExtent()
-        self.geometry, self.complement_geometry = self.compute_mask_geometries( [(fet,crs)], extent )
-        save_geom = self.complement_geometry if self.mask_mode == 'mask' else self.geometry
-        self.update_layer( self.atlas_layer, save_geom )
+        self.parameters.geometry, self.parameters.complement_geometry = self.compute_mask_geometries( [(fet,crs)], extent )
+        self.parameters.save_to_layer( self.atlas_layer )
+#        save_geom = self.complement_geometry if self.mask_mode == 'mask' else self.geometry
+#        self.update_layer( self.atlas_layer, save_geom )
 
     def on_atlas_begin_render( self ):
         print "atlas begin render"
@@ -241,7 +242,7 @@ class aeag_mask:
 
             # make the 'mask' layer not visible
             self.iface.legendInterface().setLayerVisible( self.layer, False )
-        self.geometries_backup = (self.geometry, self.complement_geometry)
+        self.geometries_backup = (self.parameters.geometry, self.parameters.complement_geometry)
  
     def on_atlas_end_render( self ):
         print "atlas end render"
@@ -252,7 +253,7 @@ class aeag_mask:
         # restore the mask layer's visibility
         self.registry.removeMapLayer( self.atlas_layer.id() )
         self.atlas_layer = None
-        self.geometry, self.complement_geometry = self.geometries_backup
+        self.parameters.geometry, self.parameters.complement_geometry = self.geometries_backup
         self.iface.legendInterface().setLayerVisible( self.layer, True )
 
     # run method that performs all the real work
@@ -404,7 +405,6 @@ class aeag_mask:
 
     def mask_geometry( self ):
         if self.must_reload_from_layer:
-            print "reload_from_layer"
             # will force loading of parameters the first time the mask geometry is accessed
             # this will happen AFTER MemorySaveLayer has loaded memory layers
             self.layer = self.must_reload_from_layer
