@@ -54,14 +54,6 @@ class MaskGeometryFunction( QgsExpression.Function ):
     def func( self, values, feature, parent ):
         return self.mask.mask_geometry()
 
-class MaskComplementGeometryFunction( QgsExpression.Function ):
-    def __init__( self, mask ):
-        QgsExpression.Function.__init__( self, "$mask_complement_geometry", 0, "Python", "Help" )
-        self.mask = mask
-
-    def func( self, values, feature, parent ):
-        return self.mask.mask_complement_geometry()
-
 class aeag_mask:
 
     def __init__(self, iface):
@@ -91,8 +83,6 @@ class aeag_mask:
     def initGui(self):  
         self.mask_geometry_function = MaskGeometryFunction( self )
         QgsExpression.registerFunction( self.mask_geometry_function )
-        self.mask_complement_geometry_function = MaskComplementGeometryFunction( self )
-        QgsExpression.registerFunction( self.mask_complement_geometry_function )
 
         #
         self.disable_remove_mask_signal = False
@@ -130,7 +120,6 @@ class aeag_mask:
         self.toolBar.removeAction(self.act_aeag_mask)
         self.iface.removePluginMenu("&Mask", self.act_aeag_mask)
         QgsExpression.unregisterFunction( "$mask_geometry" )
-        QgsExpression.unregisterFunction( "$mask_complement_geometry" )
 
         self.registry.layerWasAdded.disconnect( self.on_add_layer )
         self.registry.layerWillBeRemoved.disconnect( self.on_remove_mask )
@@ -198,12 +187,7 @@ class aeag_mask:
 
         rgeometry = geom
 
-        # build the complement geometry
-        extent.scale(2)
-        mask = QgsGeometry.fromRect( extent )
-        rcomplement_geometry = mask.difference( geom )
-
-        return rgeometry, rcomplement_geometry
+        return rgeometry
 
     def on_prepared_for_atlas( self, item ):
         print "prepared for atlas", item
@@ -216,10 +200,8 @@ class aeag_mask:
         fet = QgsFeature()
         fet.setGeometry(geom)
         extent = item.currentMapExtent()
-        self.parameters.geometry, self.parameters.complement_geometry = self.compute_mask_geometries( [(fet,crs)], extent )
+        self.parameters.geometry = self.compute_mask_geometries( [(fet,crs)], extent )
         self.parameters.save_to_layer( self.atlas_layer )
-#        save_geom = self.complement_geometry if self.mask_mode == 'mask' else self.geometry
-#        self.update_layer( self.atlas_layer, save_geom )
 
     def on_atlas_begin_render( self ):
         print "atlas begin render"
@@ -242,7 +224,7 @@ class aeag_mask:
 
             # make the 'mask' layer not visible
             self.iface.legendInterface().setLayerVisible( self.layer, False )
-        self.geometries_backup = (self.parameters.geometry, self.parameters.complement_geometry)
+        self.geometries_backup = self.parameters.geometry
  
     def on_atlas_end_render( self ):
         print "atlas end render"
@@ -253,7 +235,7 @@ class aeag_mask:
         # restore the mask layer's visibility
         self.registry.removeMapLayer( self.atlas_layer.id() )
         self.atlas_layer = None
-        self.parameters.geometry, self.parameters.complement_geometry = self.geometries_backup
+        self.parameters.geometry = self.geometries_backup
         self.iface.legendInterface().setLayerVisible( self.layer, True )
 
     # run method that performs all the real work
@@ -278,7 +260,7 @@ class aeag_mask:
         r = dlg.exec_()
         if r == 1:
             rect = self.canvas.extent()
-            self.parameters.geometry, self.parameters.complement_geometry = self.compute_mask_geometries( poly, rect )
+            self.parameters.geometry = self.compute_mask_geometries( poly, rect )
             print "computed geometries", self.parameters.geometry
 
             # add a layer (save on disk before if needed)
@@ -286,8 +268,6 @@ class aeag_mask:
                 self.layer = self.save_layer( self.layer, self.parameters.file_path, self.parameters.file_format )
                 self.is_memory_layer = False
 
-#            save_geom = self.parameters.complement_geometry if self.parameters.mask_mode == 'mask' else self.parameters.geometry
-#            self.update_layer( self.layer, save_geom )
             self.parameters.save_to_layer( self.layer )
 
             self.add_layer( self.layer )
@@ -415,10 +395,6 @@ class aeag_mask:
             return QgsGeometry()
         return self.parameters.geometry
 
-    def mask_complement_geometry( self ):
-        if not self.parameters.complement_geometry:
-            return QgsGeometry()
-        return self.parameters.complement_geometry
 
 
 
