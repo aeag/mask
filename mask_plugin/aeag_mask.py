@@ -379,7 +379,20 @@ class aeag_mask:
         nlayer.setRendererV2( symbology )
 
     def save_layer( self, layer, save_as, save_format ):
-        error = QgsVectorFileWriter.writeAsVectorFormat( layer, save_as, "system", layer.crs(), save_format )
+        if layer.source() == save_as:
+            # same file, return
+            return layer
+        pr = layer.dataProvider()
+        if pr.featureCount() == 0:
+            # add a text attribute to store parameters
+            layer.startEditing()
+            ok = layer.addAttribute( QgsField( "params", QVariant.String ) )
+            if not ok:
+                print "problem adding attribute"
+            layer.commitChanges()
+
+        msg = ''
+        error = QgsVectorFileWriter.writeAsVectorFormat( layer, save_as, "system", layer.crs(), save_format, False, msg )
         if error == 0:
             nlayer = QgsVectorLayer( save_as, "Mask", "ogr" )
             self.copy_layer_style( layer, nlayer )
@@ -388,6 +401,8 @@ class aeag_mask:
             self.registry.removeMapLayer( layer.id() )
             self.disable_remove_mask_signal = False
             return nlayer
+        else:
+            print "write error", error, msg
         return None
 
     def mask_geometry( self, feature ):

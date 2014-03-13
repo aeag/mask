@@ -14,11 +14,11 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from qgis.core import *
 import pickle
+import base64
 
 class MaskParameters:
     def __init__( self ):
         # selection | mask
-        self.mask_mode = 'mask'
         self.do_buffer = False
         self.buffer_units = 1
         self.buffer_segments = 5
@@ -34,9 +34,12 @@ class MaskParameters:
 
         self.geometry = None
 
-    def serialize( self ):
-        return pickle.dumps([self.mask_mode,
-                             self.do_buffer,
+    def serialize( self, with_style = True ):
+        if with_style:
+            style = self.style
+        else:
+            style = None
+        return pickle.dumps([self.do_buffer,
                              self.buffer_units,
                              self.buffer_segments,
                              self.do_simplify,
@@ -45,11 +48,10 @@ class MaskParameters:
                              self.file_path,
                              self.file_format,
                              self.limited_layers,
-                             self.style])
+                             style])
 
     def unserialize( self, st ):
-        (self.mask_mode,
-         self.do_buffer,
+        (self.do_buffer,
          self.buffer_units,
          self.buffer_segments,
          self.do_simplify,
@@ -66,7 +68,6 @@ class MaskParameters:
         # return False on failure
         pr = layer.dataProvider()
         fields = pr.fields()
-        print fields
         if fields.size() < 1:
             return False
         if fields[0].name() != 'params':
@@ -75,27 +76,34 @@ class MaskParameters:
         it = pr.getFeatures()
         fet = QgsFeature()
         it.nextFeature(fet)
-        self.unserialize( fet.attributes()[0] )
+        st = fet.attributes()[0]
+        self.unserialize( base64.b64decode(st) )
         self.geometry = QgsGeometry( fet.geometry() )
 
         return True
 
     def save_to_layer( self, layer ):
-        # store parameters to the given layer
-        serialized = self.serialize()
+        # do not serialize style (for shapefiles)
+        serialized = base64.b64encode( self.serialize( with_style = False ) )
         # insert or replace into ...
         pr = layer.dataProvider()
         if pr.featureCount() == 0:
-            # add a text attribute to store parameters
-            layer.startEditing()
-            layer.addAttribute( QgsField( "params", QVariant.String ) )
+            if pr.fields().size() == 0:
+                layer.startEditing()
+                layer.addAttribute( QgsField( "params", QVariant.String) )
+                layer.commitChanges()
+
             # id1 : geometry + parameters
             fet1 = QgsFeature()
             fet1.setAttributes( [serialized] )
             fet1.setGeometry(self.geometry)
             pr.addFeatures([ fet1 ])
-            layer.commitChanges()
         else:
-            pr.changeAttributeValues( { 1 : { 0 : serialized } } )
-            pr.changeGeometryValues( { 1 : self.geometry } )
+            # get the first feature
+            it = pr.getFeatures()
+            fet = QgsFeature()
+            it.nextFeature(fet)
+
+            ok = pr.changeAttributeValues( { fet.id() : { 0 : serialized } } )
+            ok = pr.changeGeometryValues( { fet.id() : self.geometry } )
         layer.updateExtents()

@@ -65,7 +65,6 @@ class MainDialog( QDialog ):
 
     def update_ui_from_parameters( self, parameters ):
         self.update_style_from_parameters( parameters )
-        self.ui.contentCombo.setCurrentIndex( ['selection', 'mask'].index(parameters.mask_mode) )
         self.ui.bufferGroup.setChecked( parameters.do_buffer )
         self.ui.saveLayerGroup.setChecked( parameters.do_save_as )
         self.ui.bufferUnits.setText( str(parameters.buffer_units) )
@@ -77,7 +76,6 @@ class MainDialog( QDialog ):
 
     def update_parameters_from_ui( self, parameters ):
         self.update_parameters_from_style( parameters )
-        parameters.mask_mode = ['selection', 'mask'][self.ui.contentCombo.currentIndex()]
         parameters.do_buffer = self.ui.bufferGroup.isChecked()
         parameters.buffer_units = float(self.ui.bufferUnits.text() or 0)
         parameters.buffer_segments = int(self.ui.bufferSegments.text() or 0)
