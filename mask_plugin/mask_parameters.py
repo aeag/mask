@@ -22,17 +22,43 @@ class MaskParameters:
         self.do_buffer = False
         self.buffer_units = 1
         self.buffer_segments = 5
-        self.do_simplify = False
-        self.simplify_tolerance = 0
+        self.do_simplify = True
+        self.simplify_tolerance = 1.0
         self.do_save_as = False
         self.file_path = None
         self.file_format = None
+        self.style = None
 
         # layers (list of id) where labeling has to be limited
         self.limited_layers = []
 
         self.geometry = None
-        self.complement_geometry = None
+
+    def serialize( self ):
+        return pickle.dumps([self.mask_mode,
+                             self.do_buffer,
+                             self.buffer_units,
+                             self.buffer_segments,
+                             self.do_simplify,
+                             self.simplify_tolerance,
+                             self.do_save_as,
+                             self.file_path,
+                             self.file_format,
+                             self.limited_layers,
+                             self.style])
+
+    def unserialize( self, st ):
+        (self.mask_mode,
+         self.do_buffer,
+         self.buffer_units,
+         self.buffer_segments,
+         self.do_simplify,
+         self.simplify_tolerance,
+         self.do_save_as,
+         self.file_path,
+         self.file_format,
+         self.limited_layers,
+         self.style) = pickle.loads( st )
 
     def load_from_layer( self, layer ):
         # try to load parameters from a mask layer
@@ -48,33 +74,15 @@ class MaskParameters:
 
         it = pr.getFeatures()
         fet = QgsFeature()
-        it.nextFeature(fet):
-        [self.mask_mode,
-         self.do_buffer,
-         self.buffer_units,
-         self.buffer_segments,
-         self.do_simplify,
-         self.simplify_tolerance,
-         self.do_save_as,
-         self.file_path,
-         self.file_format,
-         self.limited_layers] = pickle.loads( fet.attributes()[0] )
+        it.nextFeature(fet)
+        self.unserialize( fet.attributes()[0] )
         self.geometry = QgsGeometry( fet.geometry() )
 
         return True
 
     def save_to_layer( self, layer ):
         # store parameters to the given layer
-        serialized = pickle.dumps([self.mask_mode,
-                                   self.do_buffer,
-                                   self.buffer_units,
-                                   self.buffer_segments,
-                                   self.do_simplify,
-                                   self.simplify_tolerance,
-                                   self.do_save_as,
-                                   self.file_path,
-                                   self.file_format,
-                                   self.limited_layers])
+        serialized = self.serialize()
         # insert or replace into ...
         pr = layer.dataProvider()
         if pr.featureCount() == 0:
