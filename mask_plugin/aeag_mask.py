@@ -52,15 +52,15 @@ class MaskGeometryFunction( QgsExpression.Function ):
         self.mask = mask
 
     def func( self, values, feature, parent ):
-        return self.mask.mask_geometry( feature )
+        return self.mask.mask_geometry( feature )[0]
 
 class InMaskFunction( QgsExpression.Function ):
     def __init__( self, mask ):
-        QgsExpression.Function.__init__( self, "in_mask", 1, "Python", "Help" )
+        QgsExpression.Function.__init__( self, "$in_mask", 0, "Python", "Help" )
         self.mask = mask
 
     def func( self, values, feature, parent ):
-        return self.mask.in_mask( values, feature )
+        return self.mask.in_mask( feature )
 
 class aeag_mask:
 
@@ -141,7 +141,7 @@ class aeag_mask:
         self.iface.removePluginMenu("&Mask", self.act_test)
 
         QgsExpression.unregisterFunction( "$mask_geometry" )
-        QgsExpression.unregisterFunction( "in_mask" )
+        QgsExpression.unregisterFunction( "$in_mask" )
 
         self.registry.layerWasAdded.disconnect( self.on_add_layer )
         self.registry.layerWillBeRemoved.disconnect( self.on_remove_mask )
@@ -201,11 +201,10 @@ class aeag_mask:
         if self.parameters.do_buffer:
             geom = geom.buffer( self.parameters.buffer_units, self.parameters.buffer_segments )
 
-        rgeometry = geom
         # reset the simplified geometries dict
         self.simplified_geometries = {}
 
-        return rgeometry
+        return geom
 
     def on_prepared_for_atlas( self, item ):
         if not self.atlas_layer:
@@ -250,6 +249,7 @@ class aeag_mask:
         self.registry.removeMapLayer( self.atlas_layer.id() )
         self.atlas_layer = None
         self.parameters.geometry = self.geometries_backup
+        self.simplified_geometries = {}
         self.iface.legendInterface().setLayerVisible( self.layer, True )
 
     # run method that performs all the real work
@@ -414,6 +414,9 @@ class aeag_mask:
                 geom, bbox = self.simplified_geometries[tol]
             else:
                 QgsMapToPixelSimplifier.simplifyGeometry( geom, 1, tol )
+                if not geom.isGeosValid():
+                    # make valid
+                    geom = geom.buffer( 0.0, 1 )
                 bbox = geom.boundingBox()
                 self.simplified_geometries[tol] = (QgsGeometry(geom), QgsRectangle(bbox) )
         else:
@@ -421,21 +424,24 @@ class aeag_mask:
 
         return geom, bbox
 
-    def in_mask( self, values, feature ):
+    def in_mask( self, feature ):
         mask_geom, bbox = self.mask_geometry( feature )
-        if len(values) > 0:
-            geom = feature.geometry()
-            if self.mask_method == 0:
-                # this method can only work when no geometry simplification is involved
-                return mask_geom.contains(geom)
-            elif self.mask_method == 1:
-                # the fastest method, but with possible inaccuracies
-                pt = geom.vertexAt(0)
-                return bbox.contains( pt ) and mask_geom.contains(geom.centroid())
-            elif self.mask_method == 2:
-                # will always work
-                pt = geom.vertexAt(0)
-                return bbox.contains( pt ) and mask_geom.contains(geom.pointOnSurface())
+        geom = feature.geometry()
+        if not geom.isGeosValid():
+            geom = geom.buffer( 0.0, 1 )
+#        print "mask", mask_geom.exportToWkt()
+#        print "geom", geom.exportToWkt()
+        if self.mask_method == 0:
+            # this method can only work when no geometry simplification is involved
+            return mask_geom.contains(geom)
+        elif self.mask_method == 1:
+            # the fastest method, but with possible inaccuracies
+            pt = geom.vertexAt(0)
+            return bbox.contains( pt ) and mask_geom.contains(geom.centroid())
+        elif self.mask_method == 2:
+            # will always work
+            pt = geom.vertexAt(0)
+            return bbox.contains( pt ) and mask_geom.contains(geom.pointOnSurface())
         else:
             return False
 

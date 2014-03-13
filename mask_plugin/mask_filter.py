@@ -1,6 +1,6 @@
 from qgis.core import *
 
-SPATIAL_FILTER_BEGIN = "CASE WHEN in_mask($geometry) THEN "
+SPATIAL_FILTER_BEGIN = "CASE WHEN $in_mask THEN "
 SPATIAL_FILTER_END = " ELSE '' END"
 
 def has_mask_filter( layer ):
