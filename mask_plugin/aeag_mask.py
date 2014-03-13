@@ -52,7 +52,15 @@ class MaskGeometryFunction( QgsExpression.Function ):
         self.mask = mask
 
     def func( self, values, feature, parent ):
-        return self.mask.mask_geometry()
+        return self.mask.mask_geometry( feature )
+
+class InMaskFunction( QgsExpression.Function ):
+    def __init__( self, mask ):
+        QgsExpression.Function.__init__( self, "in_mask", 1, "Python", "Help" )
+        self.mask = mask
+
+    def func( self, values, feature, parent ):
+        return self.mask.in_mask( values, feature )
 
 class aeag_mask:
 
@@ -80,9 +88,14 @@ class aeag_mask:
         # Part of the hack to circumvent layers opened from MemoryLayerSaver
         self.must_reload_from_layer = None
 
+        self.mask_method = 1
+        self.simplified_geometries = {}
+
     def initGui(self):  
         self.mask_geometry_function = MaskGeometryFunction( self )
         QgsExpression.registerFunction( self.mask_geometry_function )
+        self.in_mask_function = InMaskFunction( self )
+        QgsExpression.registerFunction( self.in_mask_function )
 
         #
         self.disable_remove_mask_signal = False
@@ -94,11 +107,15 @@ class aeag_mask:
         
         self.act_aeag_mask = QAction(QIcon(":plugins/mask/aeag_mask.png"), _fromUtf8("Create mask"), self.iface.mainWindow())
         self.toolBar.addAction(self.act_aeag_mask)
-        
         self.iface.addPluginToMenu("&Mask", self.act_aeag_mask)    
+
+        self.act_test = QAction(QIcon(":plugins/mask/aeag_mask.png"), _fromUtf8("Test"), self.iface.mainWindow())
+        self.toolBar.addAction( self.act_test )
+        self.iface.addPluginToMenu("&Mask", self.act_test)
         
         # Add actions to the toolbar
         self.act_aeag_mask.triggered.connect(self.run)
+        self.act_test.triggered.connect(self.do_test)
         
         # look for existing mask layer
         for name, layer in self.registry.mapLayers().iteritems():
@@ -119,7 +136,12 @@ class aeag_mask:
     def unload(self):
         self.toolBar.removeAction(self.act_aeag_mask)
         self.iface.removePluginMenu("&Mask", self.act_aeag_mask)
+
+        self.toolBar.removeAction(self.act_test)
+        self.iface.removePluginMenu("&Mask", self.act_test)
+
         QgsExpression.unregisterFunction( "$mask_geometry" )
+        QgsExpression.unregisterFunction( "in_mask" )
 
         self.registry.layerWasAdded.disconnect( self.on_add_layer )
         self.registry.layerWillBeRemoved.disconnect( self.on_remove_mask )
@@ -134,7 +156,6 @@ class aeag_mask:
     def on_composer_added( self, compo ):
         composition = compo.composition()
         self.composers[composition] = []
-        print "on_composer_added", composition
         items = composition.composerMapItems()
         composition.atlasComposition().renderBegun.connect( self.on_atlas_begin_render )
         composition.atlasComposition().renderEnded.connect( self.on_atlas_end_render )
@@ -142,18 +163,15 @@ class aeag_mask:
         composition.composerMapAdded.connect( lambda item: self.on_composer_map_added(composition, item) )
         composition.itemRemoved.connect( lambda item: self.on_composer_item_removed(composition,item) )
         for item in items:
-            print item
             if item.type() == QgsComposerItem.ComposerMap:
                 self.on_composer_map_added( composition, item )
 
     def on_composer_map_added( self, compo, item ):
-        print "on_composer_map_added", item
         # The second argument, which is supposed to be a QgsComposerMap is always a QObject.
         # ?! So we circumvent this problem in passing the QgsComposition container
         # and getting track of composer maps
         for composer_map in compo.composerMapItems():
             if composer_map not in self.composers[compo]:
-                print "new composer map", composer_map
                 self.composers[compo].append(composer_map)
                 composer_map.preparedForAtlas.connect( lambda : self.on_prepared_for_atlas(composer_map) )
                 break
@@ -161,13 +179,11 @@ class aeag_mask:
     def on_composer_item_removed( self, compo, _ ):
         for composer_map in self.composers[compo]:
             if composer_map not in compo.composerMapItems():
-                print "remove composer map", composer_map
                 self.composers[compo].remove(composer_map)
                 composer_map.preparedForAtlas.disconnect()
                 break
 
     def on_composer_removed( self, compo ):
-        print "on_composer removed"
         composition = compo.composition()
         items = composition.composerMapItems()
         composition.atlasComposition().renderBegun.disconnect( self.on_atlas_begin_render )
@@ -180,17 +196,18 @@ class aeag_mask:
 
     def compute_mask_geometries( self, poly, extent ):
         dest_crs = self.canvas.mapRenderer().destinationCrs()
-        geom = self.get_final_geometry( poly, dest_crs, self.parameters.do_simplify, self.parameters.simplify_tolerance )
+        geom = self.get_final_geometry( poly, dest_crs )
 
         if self.parameters.do_buffer:
             geom = geom.buffer( self.parameters.buffer_units, self.parameters.buffer_segments )
 
         rgeometry = geom
+        # reset the simplified geometries dict
+        self.simplified_geometries = {}
 
         return rgeometry
 
     def on_prepared_for_atlas( self, item ):
-        print "prepared for atlas", item
         if not self.atlas_layer:
             return
 
@@ -204,7 +221,6 @@ class aeag_mask:
         self.parameters.save_to_layer( self.atlas_layer )
 
     def on_atlas_begin_render( self ):
-        print "atlas begin render"
         if not self.layer:
             return
         if not self.atlas_layer:
@@ -219,7 +235,6 @@ class aeag_mask:
             ll.remove(self.atlas_layer.id())
             p = ll.index(self.layer.id())
             ll = ll[0:p] + [self.atlas_layer.id()] + ll[p:]
-            print ll
             self.iface.mapCanvas().mapRenderer().setLayerSet(ll)
 
             # make the 'mask' layer not visible
@@ -227,7 +242,6 @@ class aeag_mask:
         self.geometries_backup = self.parameters.geometry
  
     def on_atlas_end_render( self ):
-        print "atlas end render"
         if not self.atlas_layer:
             return
 
@@ -261,7 +275,6 @@ class aeag_mask:
         if r == 1:
             rect = self.canvas.extent()
             self.parameters.geometry = self.compute_mask_geometries( poly, rect )
-            print "computed geometries", self.parameters.geometry
 
             # add a layer (save on disk before if needed)
             if self.parameters.do_save_as:
@@ -317,17 +330,14 @@ class aeag_mask:
                     geos.append( (feature, layer.crs()) )
         return geos
 
-    def get_final_geometry( self, geoms, dest_crs, do_simplify = False, simplify_tol = 0.0 ):
+    def get_final_geometry( self, geoms, dest_crs ):
         geom = None
         for f,crs in geoms:
             g = f.geometry()
             if crs.authid() != dest_crs.authid():
-                print "transform"
                 xform = QgsCoordinateTransform( crs, dest_crs )
                 g.transform( xform )
 
-            if do_simplify:
-                g = g.simplify( simplify_tol )
             if geom is None:
                 geom = QgsGeometry(g)
             else:
@@ -339,7 +349,6 @@ class aeag_mask:
     def update_layer( self, layer, geometry ):
         # insert or replace into ...
         pr = layer.dataProvider()
-        print "# features", pr.featureCount()
         if pr.featureCount() == 0:
             fet = QgsFeature()
             fet.setGeometry(geometry)
@@ -357,7 +366,6 @@ class aeag_mask:
 
         self.registry.addMapLayer(layer)
         self.iface.legendInterface().refreshLayerSymbology( layer ) 
-#        self.registry.clearAllLayerCaches () #clean cache to allow mask layer to appear on refresh
 
     def copy_layer_style( self, layer, nlayer ):
         symbology = layer.rendererV2().clone()
@@ -377,13 +385,12 @@ class aeag_mask:
             self.copy_layer_style( layer, nlayer )
 
             self.disable_remove_mask_signal = True
-            print "removing layer", layer.id()
             self.registry.removeMapLayer( layer.id() )
             self.disable_remove_mask_signal = False
             return nlayer
         return None
 
-    def mask_geometry( self ):
+    def mask_geometry( self, feature ):
         if self.must_reload_from_layer:
             # will force loading of parameters the first time the mask geometry is accessed
             # this will happen AFTER MemorySaveLayer has loaded memory layers
@@ -392,8 +399,128 @@ class aeag_mask:
             self.must_reload_from_layer = None
 
         if not self.parameters.geometry:
-            return QgsGeometry()
-        return self.parameters.geometry
+            geom = QgsGeometry()
+            return geom
+
+        geom = QgsGeometry(self.parameters.geometry) # COPY !!
+
+        if self.parameters.do_simplify:
+            if hasattr( self.canvas, 'mapSettings' ):
+                tol = self.parameters.simplify_tolerance * self.canvas.mapSettings().mapUnitsPerPixel()
+            else:
+                tol = self.parameters.simplify_tolerance * self.canvas.mapRenderer().mapUnitsPerPixel()
+
+            if tol in self.simplified_geometries.keys():
+                geom, bbox = self.simplified_geometries[tol]
+            else:
+                QgsMapToPixelSimplifier.simplifyGeometry( geom, 1, tol )
+                bbox = geom.boundingBox()
+                self.simplified_geometries[tol] = (QgsGeometry(geom), QgsRectangle(bbox) )
+        else:
+            bbox = geom.boundingBox()
+
+        return geom, bbox
+
+    def in_mask( self, values, feature ):
+        mask_geom, bbox = self.mask_geometry( feature )
+        if len(values) > 0:
+            geom = feature.geometry()
+            if self.mask_method == 0:
+                # this method can only work when no geometry simplification is involved
+                return mask_geom.contains(geom)
+            elif self.mask_method == 1:
+                # the fastest method, but with possible inaccuracies
+                pt = geom.vertexAt(0)
+                return bbox.contains( pt ) and mask_geom.contains(geom.centroid())
+            elif self.mask_method == 2:
+                # will always work
+                pt = geom.vertexAt(0)
+                return bbox.contains( pt ) and mask_geom.contains(geom.pointOnSurface())
+        else:
+            return False
+
+    def do_test( self ):
+        # This test is hard to run without a full QGIS app running
+        # with renderer, canvas
+        # a layer with labeling filter enabled must be the current layer
+        import time
+
+        parameters = [
+            # simplify mask layer, simplify label layer, mask_method
+            ( False, False, 0 ),
+            ( True, True, 0 ), # cannot be used, for reference only
+            ( False, False, 1 ),
+            ( False, False, 2 ),
+            ( True, False, 1 ),
+            ( True, False, 2 ),
+            ( False, True, 1 ),
+            ( False, True, 2 ),
+            ( True, True, 1 ),
+            ( True, True, 2 )
+            ]
+
+        # (False, False, 0) 0.3265
+        # (True, True, 0) 0.1790
+        # (False, False, 1) 0.2520
+        # (False, False, 2) 0.3000
+        # (True, False, 1) 0.1950
+        # (True, False, 2) 0.2345
+        # (False, True, 1) 0.2195
+        # (False, True, 2) 0.2315
+        # (True, True, 1) 0.1550 <--
+        # (True, True, 2) 0.1850 <--
+
+        # the number of time each test must be run
+        N = 5
+
+        # layer with labels to filter
+        layer = self.iface.activeLayer()
+
+        class RenderCallback:
+            # this class deals with asyncrhonous render signals
+            def __init__( self, parent, params, layer ):
+                self.it = 0
+                self.nRefresh = 20
+                self.start = time.clock()
+                self.parent = parent
+                self.params = params
+                self.param_it = 0
+                self.layer = layer
+
+                self.setup( 0 )
+                self.parent.canvas.renderComplete.connect( self.update_render )
+                self.parent.canvas.refresh()
+
+            def setup( self, idx ):
+                simplify_mask, simplify_label, mask_method = self.params[idx]
+                self.parent.parameters.do_simplify = simplify_mask
+                self.parent.parameters.simplify_tolerance = 1.0
+
+                m = self.layer.simplifyMethod()
+                m.setSimplifyHints( QgsVectorSimplifyMethod.SimplifyHints( 1 if simplify_label else 0 ) )
+                self.layer.setSimplifyMethod( m )
+
+                self.parent.mask_method = mask_method
+                
+            def update_render( self, painter ):
+                self.it = self.it + 1
+                if self.it < self.nRefresh:
+                    self.parent.canvas.refresh()
+                else:
+                    end = time.clock()
+                    print self.params[self.param_it], "%.4f" % ((end-self.start) / self.nRefresh)
+                    self.param_it += 1
+                    if self.param_it < len(self.params):
+                        self.setup( self.param_it )
+                        self.it = 0
+                        self.start = end
+                        self.parent.canvas.refresh()
+                    else:
+                        print "end"
+                        self.parent.canvas.renderComplete.disconnect( self.update_render )
+
+        self.cb = RenderCallback( self, parameters, layer )
+
 
 
 

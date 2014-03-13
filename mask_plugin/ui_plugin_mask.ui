@@ -188,13 +188,13 @@
    <item>
     <widget class="QGroupBox" name="simplifyGroup">
      <property name="title">
-      <string>Simplify</string>
+      <string>On-the-fly simplification</string>
      </property>
      <property name="checkable">
       <bool>true</bool>
      </property>
      <property name="checked">
-      <bool>false</bool>
+      <bool>true</bool>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_5">
       <item>
@@ -219,6 +219,16 @@
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
+          </property>
+          <property name="text">
+           <string>1.0</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_3">
+          <property name="text">
+           <string>pixels</string>
           </property>
          </widget>
         </item>

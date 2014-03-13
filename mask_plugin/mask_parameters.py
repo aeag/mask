@@ -48,23 +48,18 @@ class MaskParameters:
 
         it = pr.getFeatures()
         fet = QgsFeature()
-        i = 0
-        while it.nextFeature(fet):
-            if i == 0:
-                [self.mask_mode,
-                 self.do_buffer,
-                 self.buffer_units,
-                 self.buffer_segments,
-                 self.do_simplify,
-                 self.simplify_tolerance,
-                 self.do_save_as,
-                 self.file_path,
-                 self.file_format,
-                 self.limited_layers] = pickle.loads( fet.attributes()[0] )
-                self.geometry = QgsGeometry( fet.geometry() )
-#            else:
-#                self.complement_geometry = QgsGeometry( fet.geometry() )
-            i+=1
+        it.nextFeature(fet):
+        [self.mask_mode,
+         self.do_buffer,
+         self.buffer_units,
+         self.buffer_segments,
+         self.do_simplify,
+         self.simplify_tolerance,
+         self.do_save_as,
+         self.file_path,
+         self.file_format,
+         self.limited_layers] = pickle.loads( fet.attributes()[0] )
+        self.geometry = QgsGeometry( fet.geometry() )
 
         return True
 
@@ -90,14 +85,9 @@ class MaskParameters:
             fet1 = QgsFeature()
             fet1.setAttributes( [serialized] )
             fet1.setGeometry(self.geometry)
-            # id2 : complement_geometry
-#            fet2 = QgsFeature(2)
-#            fet2.setGeometry(self.complement_geometry)
-#            pr.addFeatures([ fet1, fet2 ])
             pr.addFeatures([ fet1 ])
             layer.commitChanges()
         else:
             pr.changeAttributeValues( { 1 : { 0 : serialized } } )
-#            pr.changeGeometryValues( { 1 : self.geometry, 2 : self.complement_geometry } )
             pr.changeGeometryValues( { 1 : self.geometry } )
         layer.updateExtents()
