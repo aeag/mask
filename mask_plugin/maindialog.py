@@ -39,6 +39,8 @@ class MainDialog( QDialog ):
         self.ui.buttonBox.addButton( self.ui.loadDefaultsBtn, QDialogButtonBox.ActionRole )
         self.ui.loadDefaultsBtn.clicked.connect( self.load_defaults )
 
+        self.ui.layer_list.ui.operatorCombo.currentIndexChanged[int].connect( self.on_operator_changed )
+
         # init save format list
         for k,v in QgsVectorFileWriter.ogrDriverList().iteritems():
             self.ui.formatCombo.addItem( k )
@@ -46,6 +48,10 @@ class MainDialog( QDialog ):
         # save current style
         self.save_style_parameters = MaskParameters()
         self.update_parameters_from_style( self.save_style_parameters )
+
+    def on_operator_changed( self, idx ):
+        if idx == 0 and self.ui.simplifyGroup.isChecked():
+            self.ui.simplifyGroup.setChecked( False )
 
     def update_style_from_parameters( self, parameters ):
         if parameters.style is not None:
@@ -73,6 +79,7 @@ class MainDialog( QDialog ):
         self.ui.filePath.setText( parameters.file_path )
         self.ui.simplifyGroup.setChecked( parameters.do_simplify )
         self.ui.simplifyTolerance.setText( str(parameters.simplify_tolerance) )
+        self.ui.layer_list.ui.operatorCombo.setCurrentIndex( parameters.mask_method )
 
     def update_parameters_from_ui( self, parameters ):
         self.update_parameters_from_style( parameters )
@@ -84,6 +91,7 @@ class MainDialog( QDialog ):
         parameters.file_path = self.ui.filePath.text()
         parameters.do_simplify = self.ui.simplifyGroup.isChecked()
         parameters.simplify_tolerance = float(self.ui.simplifyTolerance.text() or 0.0)
+        parameters.mask_method = self.ui.layer_list.ui.operatorCombo.currentIndex()
 
     def load_defaults( self ):
         settings = QSettings("AEAG", "QGIS Mask")
@@ -172,6 +180,25 @@ class MainDialog( QDialog ):
 
         # update labeling from parameters
         self.ui.layer_list.update_labeling_from_list()
+
+        if self.parameters.mask_method == 0:
+            # test if some limited layers have simplification turned on
+            limited = self.ui.layer_list.get_limited_layers()
+            slayers = []
+            for name, layer in QgsMapLayerRegistry.instance().mapLayers().iteritems():
+                if layer.id() in limited and int(layer.simplifyMethod().simplifyHints()) > 0:
+                    # simplification is enabled
+                    slayers.append(layer)
+            if len(slayers) > 0:
+                r = QMessageBox.question( None, "Warning",
+                                         "Some layer have rendering simplification turned on, which is not compatible with the labeling filtering you choose. Force simplification disabling ?",
+                                          buttons = QMessageBox.Yes | QMessageBox.No )
+                if r == QMessageBox.Yes:
+                    for l in slayers:
+                        m = layer.simplifyMethod()
+                        m.setSimplifyHints( QgsVectorSimplifyMethod.SimplifyHints(0) )
+                        layer.setSimplifyMethod( m )
+
 
         QDialog.accept( self )
 

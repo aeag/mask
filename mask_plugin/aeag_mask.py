@@ -88,7 +88,6 @@ class aeag_mask:
         # Part of the hack to circumvent layers opened from MemoryLayerSaver
         self.must_reload_from_layer = None
 
-        self.mask_method = 1
         self.simplified_geometries = {}
 
     def initGui(self):  
@@ -446,14 +445,14 @@ class aeag_mask:
             geom = geom.buffer( 0.0, 1 )
 #        print "mask", mask_geom.exportToWkt()
 #        print "geom", geom.exportToWkt()
-        if self.mask_method == 0:
+        if self.parameters.mask_method == 0:
             # this method can only work when no geometry simplification is involved
             return mask_geom.contains(geom)
-        elif self.mask_method == 1:
+        elif self.parameters.mask_method == 1:
             # the fastest method, but with possible inaccuracies
             pt = geom.vertexAt(0)
             return bbox.contains( pt ) and mask_geom.contains(geom.centroid())
-        elif self.mask_method == 2:
+        elif self.parameters.mask_method == 2:
             # will always work
             pt = geom.vertexAt(0)
             return bbox.contains( pt ) and mask_geom.contains(geom.pointOnSurface())

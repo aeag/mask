@@ -15,6 +15,39 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>Function used for labeling filtering</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="operatorCombo">
+       <property name="currentIndex">
+        <number>1</number>
+       </property>
+       <item>
+        <property name="text">
+         <string>Exact (slow and will disable simplification)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Mask geometry contains the centroid</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Mask geometry contains a point on the surface</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
     <widget class="QTableWidget" name="layerTable">
      <attribute name="horizontalHeaderStretchLastSection">
       <bool>true</bool>

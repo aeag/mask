@@ -28,6 +28,8 @@ class MaskParameters:
         self.file_path = None
         self.file_format = None
         self.style = None
+        # mask method : 0: exact, 1: centroid, 2: pointOnSurface
+        self.mask_method = 0
 
         # layers (list of id) where labeling has to be limited
         self.limited_layers = []
@@ -48,7 +50,8 @@ class MaskParameters:
                              self.file_path,
                              self.file_format,
                              self.limited_layers,
-                             style])
+                             style,
+                             self.mask_method])
 
     def unserialize( self, st ):
         (self.do_buffer,
@@ -60,7 +63,8 @@ class MaskParameters:
          self.file_path,
          self.file_format,
          self.limited_layers,
-         self.style) = pickle.loads( st )
+         self.style,
+         self.mask_method) = pickle.loads( st )
 
     def load_from_layer( self, layer ):
         # try to load parameters from a mask layer
