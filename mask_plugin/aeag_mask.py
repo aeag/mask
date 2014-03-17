@@ -195,7 +195,18 @@ class aeag_mask:
 
     def compute_mask_geometries( self, poly, extent ):
         dest_crs = self.canvas.mapRenderer().destinationCrs()
-        geom = self.get_final_geometry( poly, dest_crs )
+        geom = None
+        for f,crs in poly:
+            g = f.geometry()
+            if crs.authid() != dest_crs.authid():
+                xform = QgsCoordinateTransform( crs, dest_crs )
+                g.transform( xform )
+
+            if geom is None:
+                geom = QgsGeometry(g)
+            else:
+                # do an union here
+                geom = geom.combine( g )
 
         if self.parameters.do_buffer:
             geom = geom.buffer( self.parameters.buffer_units, self.parameters.buffer_segments )
@@ -328,22 +339,6 @@ class aeag_mask:
                 if feature.geometry() and feature.geometry().type() == QGis.Polygon:
                     geos.append( (feature, layer.crs()) )
         return geos
-
-    def get_final_geometry( self, geoms, dest_crs ):
-        geom = None
-        for f,crs in geoms:
-            g = f.geometry()
-            if crs.authid() != dest_crs.authid():
-                xform = QgsCoordinateTransform( crs, dest_crs )
-                g.transform( xform )
-
-            if geom is None:
-                geom = QgsGeometry(g)
-            else:
-                # do an union here
-                geom = geom.combine( g )
-
-        return geom
 
     def update_layer( self, layer, geometry ):
         # insert or replace into ...

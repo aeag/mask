@@ -63,8 +63,10 @@ class MaskParameters:
          self.file_path,
          self.file_format,
          self.limited_layers,
-         self.style,
+         style,
          self.mask_method) = pickle.loads( st )
+        if style is not None:
+            self.style = style
 
     def load_from_layer( self, layer ):
         # try to load parameters from a mask layer
