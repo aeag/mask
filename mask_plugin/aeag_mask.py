@@ -108,13 +108,15 @@ class aeag_mask:
         self.toolBar.addAction(self.act_aeag_mask)
         self.iface.addPluginToMenu("&Mask", self.act_aeag_mask)    
 
-        self.act_test = QAction(QIcon(":plugins/mask/aeag_mask.png"), _fromUtf8("Test"), self.iface.mainWindow())
-        self.toolBar.addAction( self.act_test )
-        self.iface.addPluginToMenu("&Mask", self.act_test)
+        if False:
+            self.act_test = QAction(QIcon(":plugins/mask/aeag_mask.png"), _fromUtf8("Test"), self.iface.mainWindow())
+            self.toolBar.addAction( self.act_test )
+            self.iface.addPluginToMenu("&Mask", self.act_test)
         
         # Add actions to the toolbar
         self.act_aeag_mask.triggered.connect(self.run)
-        self.act_test.triggered.connect(self.do_test)
+        if False:
+            self.act_test.triggered.connect(self.do_test)
         
         # look for existing mask layer
         for name, layer in self.registry.mapLayers().iteritems():
@@ -136,8 +138,9 @@ class aeag_mask:
         self.toolBar.removeAction(self.act_aeag_mask)
         self.iface.removePluginMenu("&Mask", self.act_aeag_mask)
 
-        self.toolBar.removeAction(self.act_test)
-        self.iface.removePluginMenu("&Mask", self.act_test)
+        if False:
+            self.toolBar.removeAction(self.act_test)
+            self.iface.removePluginMenu("&Mask", self.act_test)
 
         QgsExpression.unregisterFunction( "$mask_geometry" )
         QgsExpression.unregisterFunction( "$in_mask" )
