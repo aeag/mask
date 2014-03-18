@@ -48,7 +48,7 @@ _toUtf8 = lambda s: s.decode("latin-1").encode("utf-8") if s else s
 
 class MaskGeometryFunction( QgsExpression.Function ):
     def __init__( self, mask ):
-        QgsExpression.Function.__init__( self, "$mask_geometry", 0, "Python", "Help" )
+        QgsExpression.Function.__init__( self, "$mask_geometry", 0, "Python", "Geometry of the current mask." )
         self.mask = mask
 
     def func( self, values, feature, parent ):
@@ -56,7 +56,7 @@ class MaskGeometryFunction( QgsExpression.Function ):
 
 class InMaskFunction( QgsExpression.Function ):
     def __init__( self, mask ):
-        QgsExpression.Function.__init__( self, "$in_mask", 0, "Python", "Help" )
+        QgsExpression.Function.__init__( self, "$in_mask", 0, "Python", "Test whether the current geometry is inside the current mask geometry." )
         self.mask = mask
 
     def func( self, values, feature, parent ):
@@ -199,13 +199,12 @@ class aeag_mask:
         del self.composers[composition]
 
     def compute_mask_geometries( self, poly, extent ):
-        dest_crs = self.canvas.mapRenderer().destinationCrs()
         geom = None
         for f,crs in poly:
             g = f.geometry()
-            if crs.authid() != dest_crs.authid():
-                xform = QgsCoordinateTransform( crs, dest_crs )
-                g.transform( xform )
+#            if crs.authid() != dest_crs.authid():
+#                xform = QgsCoordinateTransform( crs, dest_crs )
+#                g.transform( xform )
 
             if geom is None:
                 geom = QgsGeometry(g)
@@ -239,7 +238,7 @@ class aeag_mask:
             return
         if not self.atlas_layer:
             # add a memory layer for atlas
-            dest_crs = self.canvas.mapRenderer().destinationCrs()
+            dest_crs = self.layer.crs()
             self.atlas_layer = QgsVectorLayer("MultiPolygon?crs=%s" % dest_crs.authid(), "Mask_temp", "memory")
             self.copy_layer_style( self.layer, self.atlas_layer )
             self.registry.addMapLayer( self.atlas_layer )
@@ -269,7 +268,6 @@ class aeag_mask:
 
     # run method that performs all the real work
     def run( self ):
-        dest_crs = self.canvas.mapRenderer().destinationCrs()
 
         poly = self.get_selected_polygons()
         if not self.layer:
@@ -277,6 +275,7 @@ class aeag_mask:
                 QMessageBox.critical( None, "Mask plugin error", "No polygon selection !" )
                 return
             # or create a new layer
+            dest_crs = poly[0][1] # take the first CRS
             self.layer = QgsVectorLayer("MultiPolygon?crs=%s" % dest_crs.authid(), "Mask", "memory")
         else:
             # else : set poly = geometry from mask layer
