@@ -84,6 +84,8 @@ class aeag_mask:
 
         # test qgis version for the presence of signals
         self.has_atlas_signals = 'renderBegun' in dir(QgsAtlasComposition)
+        # test qgis version for the presence of the simplifier
+        self.has_simplifier = 'QgsMapToPixelSimplifier' in dir()
 
         # Part of the hack to circumvent layers opened from MemoryLayerSaver
         self.must_reload_from_layer = None
@@ -425,10 +427,11 @@ class aeag_mask:
             if tol in self.simplified_geometries.keys():
                 geom, bbox = self.simplified_geometries[tol]
             else:
-                QgsMapToPixelSimplifier.simplifyGeometry( geom, 1, tol )
-                if not geom.isGeosValid():
-                    # make valid
-                    geom = geom.buffer( 0.0, 1 )
+                if self.has_simplifier:
+                    QgsMapToPixelSimplifier.simplifyGeometry( geom, 1, tol )
+                    if not geom.isGeosValid():
+                        # make valid
+                        geom = geom.buffer( 0.0, 1 )
                 bbox = geom.boundingBox()
                 self.simplified_geometries[tol] = (QgsGeometry(geom), QgsRectangle(bbox) )
         else:
@@ -441,6 +444,8 @@ class aeag_mask:
         geom = feature.geometry()
         if not geom.isGeosValid():
             geom = geom.buffer( 0.0, 1 )
+        if geom is None:
+            return False
 #        print "mask", mask_geom.exportToWkt()
 #        print "geom", geom.exportToWkt()
         if self.parameters.mask_method == 0:

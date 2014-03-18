@@ -165,6 +165,11 @@ class MainDialog( QDialog ):
         else:
             self.update_ui_from_parameters( self.parameters )
 
+        # disable simplification if the simplifier is not available
+        if 'QgsMapToPixelSimplifier' not in dir():
+            self.ui.simplifyGroup.setEnabled( False )
+            self.parameters.do_simplify = False
+
         self.update_style_preview( self.layer )
 
         return QDialog.exec_( self )
