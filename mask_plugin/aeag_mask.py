@@ -86,6 +86,8 @@ class aeag_mask:
         self.has_atlas_signals = 'renderBegun' in dir(QgsAtlasComposition)
         # test qgis version for the presence of the simplifier
         self.has_simplifier = 'QgsMapToPixelSimplifier' in dir()
+        # test qgis version for the presence of pointOnSurface
+        self.has_point_on_surface = 'pointOnSurface' in dir(QgsGeometry)
 
         # Part of the hack to circumvent layers opened from MemoryLayerSaver
         self.must_reload_from_layer = None
@@ -447,6 +449,9 @@ class aeag_mask:
             return False
 #        print "mask", mask_geom.exportToWkt()
 #        print "geom", geom.exportToWkt()
+        if self.parameters.mask_method == 2 and not self.has_point_on_surface:
+            self.parameters.mask_method = 1
+
         if self.parameters.mask_method == 0:
             # this method can only work when no geometry simplification is involved
             return mask_geom.contains(geom)

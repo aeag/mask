@@ -169,6 +169,11 @@ class MainDialog( QDialog ):
         if 'QgsMapToPixelSimplifier' not in dir():
             self.ui.simplifyGroup.setEnabled( False )
             self.parameters.do_simplify = False
+        # disable pointOnSurface if not available
+        if 'pointOnSurface' not in dir(QgsGeometry):
+            self.ui.layer_list.ui.operatorCombo.removeItem(2)
+            if self.parameters.mask_method == 2:
+                self.parameters.mask_method = 1
 
         self.update_style_preview( self.layer )
 
