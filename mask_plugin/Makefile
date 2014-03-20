@@ -18,18 +18,15 @@ QGISDIR=.qgis2
 
 # Makefile for a PyQGIS plugin 
 
-# translation
-SOURCES = aeag_mask.py
-TRANSLATIONS = 
-
 # global
 
 PLUGINNAME = mask
 
-PY_FILES = aeag_mask.py maindialog.py __init__.py layerlist.py mask_filter.py mask_parameters.py
+#
+SOURCES = aeag_mask.py maindialog.py __init__.py layerlist.py mask_filter.py mask_parameters.py
+TRANSLATIONS = mask_fr.ts
 
 EXTRAS = aeag_mask.png metadata.txt
-
 UI_FILES = ui_plugin_mask.py ui_layer_list.py
 
 RESOURCE_FILES = resources_rc.py
@@ -55,11 +52,11 @@ compile: $(UI_FILES) $(RESOURCE_FILES)
 deploy: compile transcompile
 	mkdir -p $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
 	mkdir -p $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)/db
-	cp -vf $(PY_FILES) $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
+	cp -vf $(SOURCES) $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
 	cp -vf $(UI_FILES) $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
 	cp -vf $(RESOURCE_FILES) $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
 	cp -vf $(EXTRAS) $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
-#	cp -vfr i18n $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
+	cp -vf *.ts *.qm $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
 #	cp -vfr $(HELP) $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)/help
 
 # The dclean target removes compiled python files from plugin directory
@@ -103,7 +100,7 @@ transcompile: $(TRANSLATIONS:.ts=.qm)
 # transclean
 # deletes all .qm files
 transclean:
-	rm -f i18n/*.qm
+	rm -f *.qm
 
 clean:
 	rm $(UI_FILES) $(RESOURCE_FILES)

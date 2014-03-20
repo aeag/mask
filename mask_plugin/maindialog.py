@@ -31,11 +31,11 @@ class MainDialog( QDialog ):
         # connect file browser
         self.ui.browseBtn.clicked.connect( self.on_file_browse )
         # add a "save as defaults" button
-        self.ui.saveDefaultsBtn = QPushButton( "Save as defaults", self.ui.buttonBox )
+        self.ui.saveDefaultsBtn = QPushButton( self.tr("Save as defaults"), self.ui.buttonBox )
         self.ui.buttonBox.addButton( self.ui.saveDefaultsBtn, QDialogButtonBox.ActionRole )
         self.ui.saveDefaultsBtn.clicked.connect( self.on_save_defaults )
         # add a "load defaults" button
-        self.ui.loadDefaultsBtn = QPushButton( "Load defaults", self.ui.buttonBox )
+        self.ui.loadDefaultsBtn = QPushButton( self.tr("Load defaults"), self.ui.buttonBox )
         self.ui.buttonBox.addButton( self.ui.loadDefaultsBtn, QDialogButtonBox.ActionRole )
         self.ui.loadDefaultsBtn.clicked.connect( self.load_defaults )
 
@@ -200,8 +200,8 @@ class MainDialog( QDialog ):
                     # simplification is enabled
                     slayers.append(layer)
             if len(slayers) > 0:
-                r = QMessageBox.question( None, "Warning",
-                                         "Some layer have rendering simplification turned on, which is not compatible with the labeling filtering you choose. Force simplification disabling ?",
+                r = QMessageBox.question( None, self.tr("Warning"),
+                                         self.tr("Some layer have rendering simplification turned on, which is not compatible with the labeling filtering you choose. Force simplification disabling ?"),
                                           buttons = QMessageBox.Yes | QMessageBox.No )
                 if r == QMessageBox.Yes:
                     for l in slayers:

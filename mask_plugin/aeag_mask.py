@@ -65,6 +65,16 @@ class InMaskFunction( QgsExpression.Function ):
 class aeag_mask:
 
     def __init__(self, iface):
+        # install translator
+        self.plugin_dir = os.path.dirname(__file__)
+        locale = QSettings().value("locale/userLocale")[0:2]
+        localePath = os.path.join(self.plugin_dir, 'mask_{}.qm'.format(locale))
+        if os.path.exists(localePath):
+            self.translator = QTranslator()
+            self.translator.load(localePath)
+            if qVersion() > '4.3.3':
+                QCoreApplication.installTranslator(self.translator)
+
         # Save reference to the QGIS interface
         self.iface = iface
         self.toolBar = None
@@ -274,7 +284,7 @@ class aeag_mask:
         poly = self.get_selected_polygons()
         if not self.layer:
             if not poly:
-                QMessageBox.critical( None, "Mask plugin error", "No polygon selection !" )
+                QMessageBox.critical( None, self.tr("Mask plugin error"), self.tr("No polygon selection !") )
                 return
             # or create a new layer
             dest_crs = poly[0][1] # take the first CRS
