@@ -261,12 +261,12 @@ class aeag_mask(QObject):
             self.registry.addMapLayer( self.atlas_layer )
 
             # insert it in place of the current 'mask' layer
-            ll = self.iface.mapCanvas().mapRenderer().layerSet()
+            ll = self.iface.mapCanvas().mapSettings().layers()
             if self.atlas_layer.id() in ll:
                 ll.remove(self.atlas_layer.id())
             p = ll.index(self.layer.id())
             ll = ll[0:p] + [self.atlas_layer.id()] + ll[p:]
-            self.iface.mapCanvas().mapRenderer().setLayerSet(ll)
+            self.iface.mapCanvas().mapSettings().setLayers(ll)
 
             # make the 'mask' layer not visible
             self.iface.legendInterface().setLayerVisible( self.layer, False )
@@ -446,7 +446,7 @@ class aeag_mask(QObject):
             if hasattr( self.canvas, 'mapSettings' ):
                 tol = self.parameters.simplify_tolerance * self.canvas.mapSettings().mapUnitsPerPixel()
             else:
-                tol = self.parameters.simplify_tolerance * self.canvas.mapRenderer().mapUnitsPerPixel()
+                tol = self.parameters.simplify_tolerance * self.canvas.mapSettings().mapUnitsPerPixel()
 
             if tol in self.simplified_geometries.keys():
                 geom, bbox = self.simplified_geometries[tol]
