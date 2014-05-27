@@ -2,7 +2,7 @@
 
 [general]
 name=Mask
-qgisMinimumVersion=2.0
+qgisMinimumVersion=2.3
 description=Help to create mask
 version=0.6
 
@@ -11,8 +11,9 @@ version=0.6
 # Optional items:
 
 # Uncomment the following line and add your changelog entries:
-changelog=0.5 : QGis 2.0 Compatible
-	0.4 : Python console callable
+changelog=0.6 : Can be used with atlas, 2.4 compatible
+          0.5 : QGis 2.0 Compatible
+          0.4 : Python console callable
 
 # tags are comma separated with spaces allowed
 tags=mask feature
