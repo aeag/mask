@@ -66,9 +66,10 @@ class InMaskFunction( QgsExpression.Function ):
     def func( self, values, feature, parent ):
         return self.mask.in_mask( feature )
 
-class aeag_mask:
+class aeag_mask(QObject):
 
     def __init__(self, iface):
+        QObject.__init__( self )
         # install translator
         self.plugin_dir = os.path.dirname(__file__)
         locale = QSettings().value("locale/userLocale")[0:2]
@@ -261,7 +262,8 @@ class aeag_mask:
 
             # insert it in place of the current 'mask' layer
             ll = self.iface.mapCanvas().mapRenderer().layerSet()
-            ll.remove(self.atlas_layer.id())
+            if self.atlas_layer.id() in ll:
+                ll.remove(self.atlas_layer.id())
             p = ll.index(self.layer.id())
             ll = ll[0:p] + [self.atlas_layer.id()] + ll[p:]
             self.iface.mapCanvas().mapRenderer().setLayerSet(ll)
@@ -323,6 +325,7 @@ class aeag_mask:
             # AFTER this one
             # So we remember we must load parameters from this layer on the next access to $mask_geometry
             self.must_reload_from_layer = layer
+            self.layer = layer
 
     def on_remove_mask( self, layer_id ):
         if self.disable_remove_mask_signal:
