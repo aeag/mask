@@ -249,6 +249,13 @@ class aeag_mask(QObject):
         extent = item.currentMapExtent()
         self.parameters.geometry = self.compute_mask_geometries( [(fet,crs)], extent )
         self.parameters.save_to_layer( self.atlas_layer )
+ 
+        # update maps
+        for compoview in self.iface.activeComposers():
+            if compoview.composition().atlasMode() == QgsComposition.PreviewAtlas:
+                # process events to go out of the current rendering, if any
+                QCoreApplication.processEvents()
+                compoview.composition().refreshItems()
 
     def on_atlas_begin_render( self ):
         if not self.layer:
@@ -271,7 +278,7 @@ class aeag_mask(QObject):
             # make the 'mask' layer not visible
             self.iface.legendInterface().setLayerVisible( self.layer, False )
         self.geometries_backup = self.parameters.geometry
- 
+
     def on_atlas_end_render( self ):
         if not self.atlas_layer:
             return
@@ -283,6 +290,12 @@ class aeag_mask(QObject):
         self.parameters.geometry = self.geometries_backup
         self.simplified_geometries = {}
         self.iface.legendInterface().setLayerVisible( self.layer, True )
+
+        # process events to go out of the current rendering, if any
+        QCoreApplication.processEvents()
+        # update maps
+        for compoview in self.iface.activeComposers():
+            compoview.composition().refreshItems()
 
     # run method that performs all the real work
     def run( self ):
