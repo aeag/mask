@@ -8,6 +8,10 @@ from ui_plugin_mask import Ui_MainDialog
 from layerlist import LayerListWidget
 from mask_parameters import MaskParameters
 
+def is_in_qgis_core( sym ):
+    import qgis.core
+    return sym in dir(qgis.core)
+
 class MainDialog( QDialog ):
 
     def __init__( self, layer, parameters ):
@@ -166,7 +170,7 @@ class MainDialog( QDialog ):
             self.update_ui_from_parameters( self.parameters )
 
         # disable simplification if the simplifier is not available
-        if 'QgsMapToPixelSimplifier' not in dir():
+        if not is_in_qgis_core('QgsMapToPixelSimplifier'):
             self.ui.simplifyGroup.setEnabled( False )
             self.parameters.do_simplify = False
         # disable pointOnSurface if not available

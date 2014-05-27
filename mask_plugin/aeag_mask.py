@@ -46,6 +46,10 @@ import resources_rc
 _fromUtf8 = lambda s: (s.decode("utf-8").encode("latin-1")) if s else s
 _toUtf8 = lambda s: s.decode("latin-1").encode("utf-8") if s else s
 
+def is_in_qgis_core( sym ):
+    import qgis.core
+    return sym in dir(qgis.core)
+
 class MaskGeometryFunction( QgsExpression.Function ):
     def __init__( self, mask ):
         QgsExpression.Function.__init__( self, "$mask_geometry", 0, "Python", "Geometry of the current mask." )
@@ -95,7 +99,7 @@ class aeag_mask:
         # test qgis version for the presence of signals
         self.has_atlas_signals = 'renderBegun' in dir(QgsAtlasComposition)
         # test qgis version for the presence of the simplifier
-        self.has_simplifier = 'QgsMapToPixelSimplifier' in dir()
+        self.has_simplifier = is_in_qgis_core('QgsMapToPixelSimplifier')
         # test qgis version for the presence of pointOnSurface
         self.has_point_on_surface = 'pointOnSurface' in dir(QgsGeometry)
 
