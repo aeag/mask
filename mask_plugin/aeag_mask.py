@@ -382,6 +382,12 @@ class aeag_mask(QObject):
                 return
 
         self.registry.addMapLayer(layer)
+
+        # make sure the mask layer is on top of other layers
+        ll = self.iface.mapCanvas().mapSettings().layers()
+        ll = [layer.id()] + ll
+        self.iface.mapCanvas().mapSettings().setLayers(ll)
+
         self.iface.legendInterface().refreshLayerSymbology( layer ) 
 
     def copy_layer_style( self, layer, nlayer ):
