@@ -317,8 +317,7 @@ class aeag_mask(QObject):
                 poly = [(f,self.layer.crs())]
         
         dlg = MainDialog( layer, self.parameters, self.layer is None )
-        r = dlg.exec_()
-        if r == 1:
+        def on_apply_mask_parameters():
             # save the mask layer
             self.layer = layer
             rect = self.canvas.extent()
@@ -333,6 +332,11 @@ class aeag_mask(QObject):
 
             self.add_layer( self.layer )
             self.canvas.refresh()
+        dlg.applied.connect( on_apply_mask_parameters )
+
+        r = dlg.exec_()
+        if r == 1:
+            on_apply_mask_parameters()
 
         self.update_menus()
 

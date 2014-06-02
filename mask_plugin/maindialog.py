@@ -18,6 +18,8 @@ DEFAULT_PARAMETERS = "(lp0\nI00\naF1000.0\naI5\naI01\naF1.0\naI00\naV\np1\naVESR
 
 class MainDialog( QDialog ):
 
+    applied = pyqtSignal()
+
     def __init__( self, layer, parameters, is_new ):
         QDialog.__init__( self, None )
 
@@ -48,6 +50,12 @@ class MainDialog( QDialog ):
         self.ui.loadDefaultsBtn.clicked.connect( self.load_defaults )
 
         self.ui.layer_list.ui.operatorCombo.currentIndexChanged[int].connect( self.on_operator_changed )
+
+        # connect the "apply" button
+        for btn in self.ui.buttonBox.buttons():
+            if self.ui.buttonBox.buttonRole(btn) == QDialogButtonBox.ApplyRole:
+                btn.clicked.connect( self.on_apply )
+                break
 
         # init save format list
         for k,v in QgsVectorFileWriter.ogrDriverList().iteritems():
@@ -223,4 +231,9 @@ class MainDialog( QDialog ):
 
 
         QDialog.accept( self )
+
+    def on_apply( self ):
+        self.applied.emit()
+
+
 
