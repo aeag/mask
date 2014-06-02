@@ -472,7 +472,7 @@ class aeag_mask(QObject):
             if hasattr( self.canvas, 'mapSettings' ):
                 tol = self.parameters.simplify_tolerance * self.canvas.mapSettings().mapUnitsPerPixel()
             else:
-                tol = self.parameters.simplify_tolerance * self.canvas.mapSettings().mapUnitsPerPixel()
+                tol = self.parameters.simplify_tolerance * self.canvas.mapRenderer().mapUnitsPerPixel()
 
             if tol in self.simplified_geometries.keys():
                 geom, bbox = self.simplified_geometries[tol]

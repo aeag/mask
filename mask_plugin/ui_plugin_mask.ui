@@ -16,6 +16,9 @@
   <layout class="QVBoxLayout" name="verticalLayout_4">
    <item>
     <widget class="QGroupBox" name="groupBox">
+     <property name="toolTip">
+      <string>Style to use for mask layer</string>
+     </property>
      <property name="title">
       <string>Style</string>
      </property>
@@ -73,6 +76,9 @@
    </item>
    <item>
     <widget class="QGroupBox" name="bufferGroup">
+     <property name="toolTip">
+      <string>Buffer around the mask geometry</string>
+     </property>
      <property name="title">
       <string>Buffer</string>
      </property>
@@ -144,6 +150,9 @@
    </item>
    <item>
     <widget class="QGroupBox" name="simplifyGroup">
+     <property name="toolTip">
+      <string>On-the-fly simplification used for the mask geometry used in expressions ($mask_geometry)</string>
+     </property>
      <property name="title">
       <string>On-the-fly simplification</string>
      </property>
@@ -196,6 +205,9 @@
    </item>
    <item>
     <widget class="QGroupBox" name="labelingGroup">
+     <property name="toolTip">
+      <string>If a layer is checked here, its labeling options will be modified in order that its labels will be only visible from inside the mask's polygon</string>
+     </property>
      <property name="title">
       <string>Limit labeling to mask's polygon</string>
      </property>
@@ -210,6 +222,9 @@
    </item>
    <item>
     <widget class="QGroupBox" name="saveLayerGroup">
+     <property name="toolTip">
+      <string>Whether the save the mask layer. By default a memory layer is created</string>
+     </property>
      <property name="title">
       <string>Save as</string>
      </property>

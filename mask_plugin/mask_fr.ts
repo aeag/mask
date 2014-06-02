@@ -47,52 +47,52 @@
         <translation>Définir un masque</translation>
     </message>
     <message>
-        <location filename="ui_plugin_mask.ui" line="54"/>
+        <location filename="ui_plugin_mask.ui" line="57"/>
         <source>Edit</source>
         <translation>Editer</translation>
     </message>
     <message>
-        <location filename="ui_plugin_mask.ui" line="77"/>
+        <location filename="ui_plugin_mask.ui" line="83"/>
         <source>Buffer</source>
         <translation>Tampon</translation>
     </message>
     <message>
-        <location filename="ui_plugin_mask.ui" line="100"/>
+        <location filename="ui_plugin_mask.ui" line="106"/>
         <source>Units</source>
         <translation>Unités</translation>
     </message>
     <message>
-        <location filename="ui_plugin_mask.ui" line="123"/>
+        <location filename="ui_plugin_mask.ui" line="129"/>
         <source>Segments</source>
         <translation>Segments</translation>
     </message>
     <message>
-        <location filename="ui_plugin_mask.ui" line="148"/>
+        <location filename="ui_plugin_mask.ui" line="157"/>
         <source>On-the-fly simplification</source>
         <translation>Simplification à la volée</translation>
     </message>
     <message>
-        <location filename="ui_plugin_mask.ui" line="168"/>
+        <location filename="ui_plugin_mask.ui" line="177"/>
         <source>Tolerance</source>
         <translation>Tolérance</translation>
     </message>
     <message>
-        <location filename="ui_plugin_mask.ui" line="188"/>
+        <location filename="ui_plugin_mask.ui" line="197"/>
         <source>pixels</source>
         <translation>pixels</translation>
     </message>
     <message>
-        <location filename="ui_plugin_mask.ui" line="200"/>
+        <location filename="ui_plugin_mask.ui" line="212"/>
         <source>Limit labeling to mask&apos;s polygon</source>
         <translation>Limiter l&apos;étiquettage au polygone de masque</translation>
     </message>
     <message>
-        <location filename="ui_plugin_mask.ui" line="214"/>
+        <location filename="ui_plugin_mask.ui" line="229"/>
         <source>Save as</source>
         <translation>Sauvegarder sous</translation>
     </message>
     <message>
-        <location filename="ui_plugin_mask.ui" line="231"/>
+        <location filename="ui_plugin_mask.ui" line="246"/>
         <source>...</source>
         <translation>...</translation>
     </message>
@@ -127,19 +127,44 @@
         <translation>Mettre à jour le masque existant</translation>
     </message>
     <message>
-        <location filename="ui_plugin_mask.ui" line="20"/>
+        <location filename="ui_plugin_mask.ui" line="23"/>
         <source>Style</source>
         <translation>Style</translation>
     </message>
     <message>
-        <location filename="ui_plugin_mask.ui" line="136"/>
+        <location filename="ui_plugin_mask.ui" line="142"/>
         <source>5</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui_plugin_mask.ui" line="181"/>
+        <location filename="ui_plugin_mask.ui" line="190"/>
         <source>1.0</source>
         <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="ui_plugin_mask.ui" line="20"/>
+        <source>Style to use for mask layer</source>
+        <translation>Style à utiliser pour la couche de masque</translation>
+    </message>
+    <message>
+        <location filename="ui_plugin_mask.ui" line="80"/>
+        <source>Buffer around the mask geometry</source>
+        <translation>Tampon autour de la géométrie de masque</translation>
+    </message>
+    <message>
+        <location filename="ui_plugin_mask.ui" line="154"/>
+        <source>On-the-fly simplification used for the mask geometry used in expressions ($mask_geometry)</source>
+        <translation>Simplification à la volée utilisée pour la géométrie de masque dans les expressions ($mask_geometry)</translation>
+    </message>
+    <message>
+        <location filename="ui_plugin_mask.ui" line="209"/>
+        <source>If a layer is checked here, its labeling options will be modified in order that its labels will be only visible from inside the mask&apos;s polygon</source>
+        <translation>Si une couche est sélectionnée ici, ses options d&apos;étiquetage seront modifiées pour que les étiquettes ne soient visibles qu&apos;à l&apos;intérieur du polygone de masque</translation>
+    </message>
+    <message>
+        <location filename="ui_plugin_mask.ui" line="226"/>
+        <source>Whether the save the mask layer. By default a memory layer is created</source>
+        <translation>Est-ce que la couche de masque doit être sauvegardée. Par défaut une couche mémoire est créée.</translation>
     </message>
 </context>
 <context>
