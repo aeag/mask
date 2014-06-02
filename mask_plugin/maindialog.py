@@ -18,7 +18,7 @@ DEFAULT_PARAMETERS = "(lp0\nI00\naF1000.0\naI5\naI01\naF1.0\naI00\naV\np1\naVESR
 
 class MainDialog( QDialog ):
 
-    def __init__( self, layer, parameters ):
+    def __init__( self, layer, parameters, is_new ):
         QDialog.__init__( self, None )
 
         self.ui = Ui_MainDialog()
@@ -56,6 +56,11 @@ class MainDialog( QDialog ):
         # save current style
         self.save_style_parameters = MaskParameters()
         self.update_parameters_from_style( self.save_style_parameters )
+
+        if is_new:
+            self.setWindowTitle( self.tr("Create a mask") )
+        else:
+            self.setWindowTitle( self.tr("Update the current mask") )
 
     def on_operator_changed( self, idx ):
         if idx == 0 and self.ui.simplifyGroup.isChecked():

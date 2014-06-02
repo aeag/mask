@@ -123,7 +123,7 @@ class aeag_mask(QObject):
 
         self.toolBar = self.iface.pluginToolBar()
         
-        self.act_aeag_mask = QAction(QIcon(":plugins/mask/aeag_mask.png"), _fromUtf8("Create mask"), self.iface.mainWindow())
+        self.act_aeag_mask = QAction(QIcon(":plugins/mask/aeag_mask.png"), self.tr("Create a mask"), self.iface.mainWindow())
         self.toolBar.addAction(self.act_aeag_mask)
         self.iface.addPluginToMenu("&Mask", self.act_aeag_mask)    
 
@@ -307,17 +307,20 @@ class aeag_mask(QObject):
                 return
             # or create a new layer
             dest_crs = poly[0][1] # take the first CRS
-            self.layer = QgsVectorLayer("MultiPolygon?crs=%s" % dest_crs.authid(), "Mask", "memory")
+            layer = QgsVectorLayer("MultiPolygon?crs=%s" % dest_crs.authid(), "Mask", "memory")
         else:
+            layer = self.layer
             # else : set poly = geometry from mask layer
             if not poly:
                 f = QgsFeature()
                 f.setGeometry(self.parameters.geometry)
                 poly = [(f,self.layer.crs())]
         
-        dlg = MainDialog( self.layer, self.parameters )
+        dlg = MainDialog( layer, self.parameters, self.layer is None )
         r = dlg.exec_()
         if r == 1:
+            # save the mask layer
+            self.layer = layer
             rect = self.canvas.extent()
             self.parameters.geometry = self.compute_mask_geometries( poly, rect )
 
@@ -330,6 +333,15 @@ class aeag_mask(QObject):
 
             self.add_layer( self.layer )
             self.canvas.refresh()
+
+        self.update_menus()
+
+    def update_menus( self ):
+        # update menus based on whether the layer mask exists or not
+        if self.layer is not None:
+            self.act_aeag_mask.setText(self.tr("Update the current mask"))
+        else:
+            self.act_aeag_mask.setText(self.tr("Create a mask"))
 
     def on_add_layer( self, layer ):
         if layer.name() == 'Mask':
@@ -448,6 +460,7 @@ class aeag_mask(QObject):
             self.layer = self.must_reload_from_layer
             self.parameters.load_from_layer( self.layer )
             self.must_reload_from_layer = None
+            self.update_menus()
 
         if not self.parameters.geometry:
             geom = QgsGeometry()

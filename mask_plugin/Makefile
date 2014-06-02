@@ -91,7 +91,7 @@ upload: zip
 # transup
 # update .ts translation files
 transup:
-	pylupdate4 Makefile
+	pylupdate4 $(SOURCES) $(UI_FILES:.py=.ui) -ts $(TRANSLATIONS)
 
 # transcompile
 # compile translation files into .qm binary format

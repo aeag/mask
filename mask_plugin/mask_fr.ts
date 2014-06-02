@@ -33,6 +33,11 @@
         <source>Layer</source>
         <translation>Couche</translation>
     </message>
+    <message>
+        <location filename="ui_layer_list.ui" line="14"/>
+        <source>Form</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>MainDialog</name>
@@ -92,37 +97,72 @@
         <translation>...</translation>
     </message>
     <message>
-        <location filename="maindialog.py" line="34"/>
+        <location filename="maindialog.py" line="42"/>
         <source>Save as defaults</source>
         <translation>Sauver comme valeurs par défaut</translation>
     </message>
     <message>
-        <location filename="maindialog.py" line="38"/>
+        <location filename="maindialog.py" line="46"/>
         <source>Load defaults</source>
         <translation>Charger les valeurs par défaut</translation>
     </message>
     <message>
-        <location filename="maindialog.py" line="203"/>
+        <location filename="maindialog.py" line="215"/>
         <source>Warning</source>
         <translation>Attention</translation>
     </message>
     <message>
-        <location filename="maindialog.py" line="203"/>
+        <location filename="maindialog.py" line="215"/>
         <source>Some layer have rendering simplification turned on, which is not compatible with the labeling filtering you choose. Force simplification disabling ?</source>
         <translation>La simplification à la volée est activée sur certaines couches, ce qui n&apos;est pas compatible avec la méthode de filtrage des étiquettes choisie. Désactiver la simplification à la volée sur ces couches ?</translation>
+    </message>
+    <message>
+        <location filename="maindialog.py" line="61"/>
+        <source>Create a mask</source>
+        <translation>Créer un masque</translation>
+    </message>
+    <message>
+        <location filename="maindialog.py" line="63"/>
+        <source>Update the current mask</source>
+        <translation>Mettre à jour le masque existant</translation>
+    </message>
+    <message>
+        <location filename="ui_plugin_mask.ui" line="20"/>
+        <source>Style</source>
+        <translation>Style</translation>
+    </message>
+    <message>
+        <location filename="ui_plugin_mask.ui" line="136"/>
+        <source>5</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="ui_plugin_mask.ui" line="181"/>
+        <source>1.0</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>aeag_mask</name>
     <message>
-        <location filename="aeag_mask.py" line="287"/>
+        <location filename="aeag_mask.py" line="306"/>
         <source>Mask plugin error</source>
         <translation>Erreur du plugin Mask</translation>
     </message>
     <message>
-        <location filename="aeag_mask.py" line="287"/>
+        <location filename="aeag_mask.py" line="306"/>
         <source>No polygon selection !</source>
         <translation>Aucune sélection !</translation>
+    </message>
+    <message>
+        <location filename="aeag_mask.py" line="344"/>
+        <source>Create a mask</source>
+        <translation>Créer un masque</translation>
+    </message>
+    <message>
+        <location filename="aeag_mask.py" line="342"/>
+        <source>Update the current mask</source>
+        <translation>Mettre à jour le masque existant</translation>
     </message>
 </context>
 </TS>
