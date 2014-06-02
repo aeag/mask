@@ -30,10 +30,17 @@ class LayerListWidget( QWidget ):
 
             if layer.name() == 'Mask':
                 continue
+            # skip non vector layers
+            if not isinstance(layer, QgsVectorLayer):
+                continue
 
-            do_limit = False
             pal = QgsPalLayerSettings()
             pal.readFromLayer(layer)
+            # skip layers without labels
+            if not pal.enabled:
+                continue
+
+            do_limit = False
             did_limit = layer.id() in self.limited
             do_limit = has_mask_filter( layer )
             if do_limit and not did_limit:
