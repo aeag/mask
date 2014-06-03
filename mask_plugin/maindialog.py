@@ -133,9 +133,14 @@ class MainDialog( QDialog ):
     def on_file_browse( self ):
         settings = QSettings()
 
-        dir = settings.value("mask_plugin/file_dir", '')
+        # look for directory
+        path = QgsProject.instance().homePath()
+        if path == '':
+            path = settings.value("mask_plugin/file_dir", '')
+            if path == '':
+                path = QDir.homePath()
 
-        fn = QFileDialog.getSaveFileName( None, "Select a filename to save the mask layer to", dir )
+        fn = QFileDialog.getSaveFileName( None, "Select a filename to save the mask layer to", path )
         if not fn:
             return
 
