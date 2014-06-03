@@ -306,42 +306,41 @@ class aeag_mask(QObject):
                 return
             # or create a new layer
             dest_crs = poly[0][1] # take the first CRS
-            layer = QgsVectorLayer("MultiPolygon?crs=%s" % dest_crs.authid(), "Mask", "memory")
+            self.layer = QgsVectorLayer("MultiPolygon?crs=%s" % dest_crs.authid(), "Mask", "memory")
         else:
-            layer = self.layer
             # else : set poly = geometry from mask layer
             if not poly:
                 f = QgsFeature()
                 f.setGeometry(self.parameters.geometry)
                 poly = [(f,self.layer.crs())]
         
-        dlg = MainDialog( layer, self.parameters, self.layer is None )
-        def on_apply_mask_parameters():
+        dlg = MainDialog( self.layer, self.parameters, self.layer is None )
+        def on_apply_mask_parameters( s ):
             # save the mask layer
-            self.layer = layer
-            rect = self.canvas.extent()
-            self.parameters.geometry = self.compute_mask_geometries( poly, rect )
+            rect = s.canvas.extent()
+            s.parameters.geometry = s.compute_mask_geometries( poly, rect )
 
             # save on disk if needed
             nlayer = None
-            if self.parameters.do_save_as:
-                nlayer = self.save_layer( self.layer, self.parameters.file_path, self.parameters.file_format )
+            if s.parameters.do_save_as:
+                nlayer = s.save_layer( s.layer, s.parameters.file_path, s.parameters.file_format )
                 if nlayer is None:
-                    QMessageBox.critical( None, self.tr("Mask plugin error"), self.tr("Problem saving the mask layer") )
+                    QMessageBox.critical( None, s.tr("Mask plugin error"), s.tr("Problem saving the mask layer") )
                     return
-                if nlayer == self.layer:
+                if nlayer == s.layer:
                     nlayer = None
-            elif self.layer.dataProvider().name() != "memory":
+            elif s.layer.dataProvider().name() != "memory":
                 # recreate a memory layer
                 nlayer = QgsVectorLayer("MultiPolygon?crs=%s" % poly[0][1].authid(), "Mask", "memory")
             if nlayer is not None:
                 # copy layer style
-                self.copy_layer_style( self.layer, nlayer )
+                s.copy_layer_style( s.layer, nlayer )
                 # remove old layer
-                self.disable_remove_mask_signal = True
-                self.registry.removeMapLayer( self.layer.id() )
-                self.disable_remove_mask_signal = False
-                self.layer = nlayer
+                s.disable_remove_mask_signal = True
+                s.registry.removeMapLayer( s.layer.id() )
+                s.disable_remove_mask_signal = False
+                s.layer = nlayer
+                s.parameters.layer = s.layer
 
             # save current parameters
             self.parameters.save_to_layer( self.layer )
@@ -352,11 +351,11 @@ class aeag_mask(QObject):
             self.canvas.clearCache()
             self.canvas.refresh()
 
-        dlg.applied.connect( on_apply_mask_parameters )
+        dlg.applied.connect( lambda s=self : on_apply_mask_parameters(s) )
 
         r = dlg.exec_()
         if r == 1:
-            on_apply_mask_parameters()
+            on_apply_mask_parameters( self )
 
         self.update_menus()
 
@@ -451,9 +450,6 @@ class aeag_mask(QObject):
         nlayer.setRendererV2( symbology )
 
     def save_layer( self, layer, save_as, save_format ):
-        if layer.source() == save_as:
-            # same file, return
-            return layer
         pr = layer.dataProvider()
         if pr.featureCount() == 0:
             # add a text attribute to store parameters
@@ -463,12 +459,20 @@ class aeag_mask(QObject):
                 print "problem adding attribute"
             layer.commitChanges()
 
+        if os.path.isfile( save_as ):
+            # delete first if already exists
+            if save_as.endswith(".shp"):
+                QgsVectorFileWriter.deleteShapeFile( save_as )
+            else:
+                os.unlink( save_as )
         msg = ''
         error = QgsVectorFileWriter.writeAsVectorFormat( layer,
                                                          save_as,
                                                          "system",
                                                          layer.crs(),
-                                                         save_format )
+                                                         save_format,
+                                                         False,
+                                                         msg )
         if error == 0:
             nlayer = QgsVectorLayer( save_as, "Mask", "ogr" )
             if not nlayer.dataProvider().isValid():
