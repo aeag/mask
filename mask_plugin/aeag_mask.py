@@ -331,6 +331,7 @@ class aeag_mask(QObject):
             self.parameters.save_to_layer( self.layer )
 
             self.add_layer( self.layer )
+            self.canvas.clearCache()
             self.canvas.refresh()
         dlg.applied.connect( on_apply_mask_parameters )
 
@@ -416,8 +417,6 @@ class aeag_mask(QObject):
         ll = self.iface.mapCanvas().mapSettings().layers()
         ll = [layer.id()] + ll
         self.iface.mapCanvas().mapSettings().setLayers(ll)
-
-        self.iface.legendInterface().refreshLayerSymbology( layer ) 
 
     def copy_layer_style( self, layer, nlayer ):
         symbology = layer.rendererV2().clone()
