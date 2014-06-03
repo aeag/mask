@@ -97,32 +97,32 @@
         <translation>...</translation>
     </message>
     <message>
-        <location filename="maindialog.py" line="42"/>
+        <location filename="maindialog.py" line="46"/>
         <source>Save as defaults</source>
         <translation>Sauver comme valeurs par défaut</translation>
     </message>
     <message>
-        <location filename="maindialog.py" line="46"/>
+        <location filename="maindialog.py" line="50"/>
         <source>Load defaults</source>
         <translation>Charger les valeurs par défaut</translation>
     </message>
     <message>
-        <location filename="maindialog.py" line="215"/>
+        <location filename="maindialog.py" line="271"/>
         <source>Warning</source>
         <translation>Attention</translation>
     </message>
     <message>
-        <location filename="maindialog.py" line="215"/>
+        <location filename="maindialog.py" line="271"/>
         <source>Some layer have rendering simplification turned on, which is not compatible with the labeling filtering you choose. Force simplification disabling ?</source>
         <translation>La simplification à la volée est activée sur certaines couches, ce qui n&apos;est pas compatible avec la méthode de filtrage des étiquettes choisie. Désactiver la simplification à la volée sur ces couches ?</translation>
     </message>
     <message>
-        <location filename="maindialog.py" line="61"/>
+        <location filename="maindialog.py" line="67"/>
         <source>Create a mask</source>
         <translation>Créer un masque</translation>
     </message>
     <message>
-        <location filename="maindialog.py" line="63"/>
+        <location filename="maindialog.py" line="69"/>
         <source>Update the current mask</source>
         <translation>Mettre à jour le masque existant</translation>
     </message>
@@ -166,28 +166,51 @@
         <source>Whether the save the mask layer. By default a memory layer is created</source>
         <translation>Est-ce que la couche de masque doit être sauvegardée. Par défaut une couche mémoire est créée.</translation>
     </message>
+    <message>
+        <location filename="maindialog.py" line="163"/>
+        <source>Select a filename to save the mask layer to</source>
+        <translation>Sélectionnez un nom de fichier pour sauvegarder la couche de masque</translation>
+    </message>
+    <message>
+        <location filename="ui_plugin_mask.ui" line="253"/>
+        <source>&apos;&apos;</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>aeag_mask</name>
     <message>
-        <location filename="aeag_mask.py" line="306"/>
+        <location filename="aeag_mask.py" line="305"/>
         <source>Mask plugin error</source>
         <translation>Erreur du plugin Mask</translation>
     </message>
     <message>
-        <location filename="aeag_mask.py" line="306"/>
+        <location filename="aeag_mask.py" line="305"/>
         <source>No polygon selection !</source>
         <translation>Aucune sélection !</translation>
     </message>
     <message>
-        <location filename="aeag_mask.py" line="344"/>
+        <location filename="aeag_mask.py" line="367"/>
         <source>Create a mask</source>
         <translation>Créer un masque</translation>
     </message>
     <message>
-        <location filename="aeag_mask.py" line="342"/>
+        <location filename="aeag_mask.py" line="365"/>
         <source>Update the current mask</source>
         <translation>Mettre à jour le masque existant</translation>
+    </message>
+</context>
+<context>
+    <name>s</name>
+    <message>
+        <location filename="aeag_mask.py" line="328"/>
+        <source>Mask plugin error</source>
+        <translation>Erreur du plugin Mask</translation>
+    </message>
+    <message>
+        <location filename="aeag_mask.py" line="328"/>
+        <source>Problem saving the mask layer</source>
+        <translation>Problème lors de la sauvegarde de la couche masque</translation>
     </message>
 </context>
 </TS>
