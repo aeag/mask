@@ -92,7 +92,6 @@ class aeag_mask(QObject):
 
         # mask layer
         self.layer = None
-        self.is_memory_layer = True
         self.atlas_layer = None
 
         self.composers = {}
@@ -323,16 +322,36 @@ class aeag_mask(QObject):
             rect = self.canvas.extent()
             self.parameters.geometry = self.compute_mask_geometries( poly, rect )
 
-            # add a layer (save on disk before if needed)
+            # save on disk if needed
+            nlayer = None
             if self.parameters.do_save_as:
-                self.layer = self.save_layer( self.layer, self.parameters.file_path, self.parameters.file_format )
-                self.is_memory_layer = False
+                nlayer = self.save_layer( self.layer, self.parameters.file_path, self.parameters.file_format )
+                if nlayer is None:
+                    QMessageBox.critical( None, self.tr("Mask plugin error"), self.tr("Problem saving the mask layer") )
+                    return
+                if nlayer == self.layer:
+                    nlayer = None
+            elif self.layer.dataProvider().name() != "memory":
+                # recreate a memory layer
+                nlayer = QgsVectorLayer("MultiPolygon?crs=%s" % poly[0][1].authid(), "Mask", "memory")
+            if nlayer is not None:
+                # copy layer style
+                self.copy_layer_style( self.layer, nlayer )
+                # remove old layer
+                self.disable_remove_mask_signal = True
+                self.registry.removeMapLayer( self.layer.id() )
+                self.disable_remove_mask_signal = False
+                self.layer = nlayer
 
+            # save current parameters
             self.parameters.save_to_layer( self.layer )
 
+            # add it back
             self.add_layer( self.layer )
+            # refresh
             self.canvas.clearCache()
             self.canvas.refresh()
+
         dlg.applied.connect( on_apply_mask_parameters )
 
         r = dlg.exec_()
@@ -356,6 +375,7 @@ class aeag_mask(QObject):
             # So we remember we must load parameters from this layer on the next access to $mask_geometry
             self.must_reload_from_layer = layer
             self.layer = layer
+            self.update_menus()
 
     def on_remove_mask( self, layer_id ):
         if self.disable_remove_mask_signal:
@@ -378,6 +398,7 @@ class aeag_mask(QObject):
         self.layer = None
         # disable memorysavelayerhack
         self.must_reload_from_layer = None
+        self.update_menus()
 
     def get_selected_polygons( self ):
         "return array of (polygon_feature,crs) from current selection"
@@ -414,9 +435,9 @@ class aeag_mask(QObject):
         self.registry.addMapLayer(layer)
 
         # make sure the mask layer is on top of other layers
-        ll = self.iface.mapCanvas().mapSettings().layers()
-        ll = [layer.id()] + ll
-        self.iface.mapCanvas().mapSettings().setLayers(ll)
+        #ll = self.iface.mapCanvas().mapSettings().layers()
+        #ll = [layer.id()] + ll
+        #self.iface.mapCanvas().mapSettings().setLayers(ll)
 
     def copy_layer_style( self, layer, nlayer ):
         symbology = layer.rendererV2().clone()
@@ -443,14 +464,17 @@ class aeag_mask(QObject):
             layer.commitChanges()
 
         msg = ''
-        error = QgsVectorFileWriter.writeAsVectorFormat( layer, save_as, "system", layer.crs(), save_format, False, msg )
+        error = QgsVectorFileWriter.writeAsVectorFormat( layer,
+                                                         save_as,
+                                                         "system",
+                                                         layer.crs(),
+                                                         save_format )
         if error == 0:
             nlayer = QgsVectorLayer( save_as, "Mask", "ogr" )
-            self.copy_layer_style( layer, nlayer )
-
-            self.disable_remove_mask_signal = True
-            self.registry.removeMapLayer( layer.id() )
-            self.disable_remove_mask_signal = False
+            if not nlayer.dataProvider().isValid():
+                return None
+            if not nlayer.hasGeometryType():
+                return None
             return nlayer
         else:
             print "write error", error, msg
@@ -463,7 +487,6 @@ class aeag_mask(QObject):
             self.layer = self.must_reload_from_layer
             self.parameters.load_from_layer( self.layer )
             self.must_reload_from_layer = None
-            self.update_menus()
 
         if not self.parameters.geometry:
             geom = QgsGeometry()

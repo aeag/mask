@@ -96,7 +96,9 @@ class MaskParameters:
         if pr.featureCount() == 0:
             if pr.fields().size() == 0:
                 layer.startEditing()
-                layer.addAttribute( QgsField( "params", QVariant.String) )
+                ok = layer.addAttribute( QgsField( "params", QVariant.String) )
+                if not ok:
+                    print "problem adding attribute (save_to_layer)"
                 layer.commitChanges()
 
             # id1 : geometry + parameters

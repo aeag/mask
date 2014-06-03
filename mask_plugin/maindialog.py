@@ -34,6 +34,8 @@ class MainDialog( QDialog ):
 
         self.layer = layer
         self.parameters = parameters
+        if self.parameters.file_format is None:
+            self.parameters.file_format = "ESRI Shapefile"
         self.style = QgsStyleV2()
 
         # connect edit style
@@ -56,10 +58,6 @@ class MainDialog( QDialog ):
             if self.ui.buttonBox.buttonRole(btn) == QDialogButtonBox.ApplyRole:
                 btn.clicked.connect( self.on_apply )
                 break
-
-        # init save format list
-        for k,v in QgsVectorFileWriter.ogrDriverList().iteritems():
-            self.ui.formatCombo.addItem( k )
 
         # save current style
         self.save_style_parameters = MaskParameters()
@@ -96,7 +94,7 @@ class MainDialog( QDialog ):
         self.ui.saveLayerGroup.setChecked( parameters.do_save_as )
         self.ui.bufferUnits.setText( str(parameters.buffer_units) )
         self.ui.bufferSegments.setText( str(parameters.buffer_segments) )
-        self.ui.formatCombo.setCurrentIndex( -1 if parameters.file_format is None else QgsVectorFileWriter.ogrDriverList().keys().index(parameters.file_format) )
+        self.ui.formatLbl.setText( '' if parameters.file_format is None else parameters.file_format )
         self.ui.filePath.setText( parameters.file_path )
         self.ui.simplifyGroup.setChecked( parameters.do_simplify )
         self.ui.simplifyTolerance.setText( str(parameters.simplify_tolerance) )
@@ -108,7 +106,7 @@ class MainDialog( QDialog ):
         parameters.buffer_units = float(self.ui.bufferUnits.text() or 0)
         parameters.buffer_segments = int(self.ui.bufferSegments.text() or 0)
         parameters.do_save_as = self.ui.saveLayerGroup.isChecked()
-        parameters.file_format = None if self.ui.formatCombo.currentIndex() == -1 else QgsVectorFileWriter.ogrDriverList().keys()[self.ui.formatCombo.currentIndex()]
+        parameters.file_format = self.parameters.file_format
         parameters.file_path = self.ui.filePath.text()
         parameters.do_simplify = self.ui.simplifyGroup.isChecked()
         parameters.simplify_tolerance = float(self.ui.simplifyTolerance.text() or 0.0)
@@ -140,11 +138,52 @@ class MainDialog( QDialog ):
             if path == '':
                 path = QDir.homePath()
 
-        fn = QFileDialog.getSaveFileName( None, "Select a filename to save the mask layer to", path )
-        if not fn:
-            return
+        drivers = QgsVectorFileWriter.ogrDriverList()
+        filterList = []
+        filterMap = {}
+        for ln, n in drivers.iteritems():
+            # grrr, driverMetadata is not really consistent
+            if n == "ESRI Shapefile":
+                ext = "shp"
+                glob = "*.shp"
+            else:
+                md = QgsVectorFileWriter.MetaData()
+                if QgsVectorFileWriter.driverMetadata( n, md ):
+                    ext = md.ext
+                    glob = md.glob
+                else:
+                    continue
 
-        self.ui.filePath.setText( fn )
+            fn = "%s (%s)" % (ln,glob)
+            filterMap[fn] = (n, ext, glob)
+            filterList += [ fn ]
+
+
+        fileFilters = ';;'.join( filterList )
+        fd = QFileDialog( None, self.tr("Select a filename to save the mask layer to"), path, fileFilters )
+        save_format_name = self.parameters.file_format
+        self.save_format = None
+        for k,v in filterMap.iteritems():
+            if v[0] == save_format_name:
+                self.save_format = v
+                fd.selectNameFilter( k )
+                break
+
+        def on_filter_selected( ff ):
+            self.save_format = filterMap[ff]
+
+        fd.filterSelected.connect( on_filter_selected )
+        fd.setAcceptMode( QFileDialog.AcceptSave )
+        r = fd.exec_()
+        if r == 1:
+            fn = fd.selectedFiles()[0]
+            driver, ext, glob = self.save_format
+            if not fn.endswith("." + ext):
+                fn += "." + ext
+
+            self.ui.filePath.setText( fn )
+            self.ui.formatLbl.setText( self.save_format[0] )
+            self.parameters.file_format = self.save_format[0]
 
     def on_style_edit( self ):
         # QgsRenderV2PropertiesDialog has a Cancel button that is not correctly plugged
@@ -210,6 +249,10 @@ class MainDialog( QDialog ):
         QDialog.reject( self )
 
     def accept( self ):
+        self.apply()
+        QDialog.accept( self )
+
+    def apply( self ):
         # get data before closing
         self.update_parameters_from_ui( self.parameters )
 
@@ -235,9 +278,8 @@ class MainDialog( QDialog ):
                         layer.setSimplifyMethod( m )
 
 
-        QDialog.accept( self )
-
     def on_apply( self ):
+        self.apply()
         self.applied.emit()
 
 
