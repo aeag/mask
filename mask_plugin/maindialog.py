@@ -115,25 +115,25 @@ class MainDialog( QDialog ):
         parameters.mask_method = self.ui.layer_list.ui.operatorCombo.currentIndex()
 
     def load_defaults( self ):
-        settings = QSettings("AEAG", "QGIS Mask")
+        settings = QSettings()
 
         parameters = MaskParameters()
-        defaults = settings.value( "defaults", DEFAULT_PARAMETERS )
+        defaults = settings.value( "mask_plugin/defaults", DEFAULT_PARAMETERS )
         parameters.unserialize( defaults )
         self.update_ui_from_parameters( parameters )
 
     def on_save_defaults( self ):
-        settings = QSettings("AEAG", "QGIS Mask")
+        settings = QSettings()
 
         parameters = MaskParameters()
         self.update_parameters_from_ui( parameters )
         defaults = parameters.serialize()
-        settings.setValue( "defaults", defaults )
+        settings.setValue( "mask_plugin/defaults", defaults )
 
     def on_file_browse( self ):
-        settings = QSettings("AEAG", "QGIS Mask")
+        settings = QSettings()
 
-        dir = settings.value("file_dir", '')
+        dir = settings.value("mask_plugin/file_dir", '')
 
         fn = QFileDialog.getSaveFileName( None, "Select a filename to save the mask layer to", dir )
         if not fn:
