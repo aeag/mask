@@ -402,15 +402,10 @@ class aeag_mask(QObject):
     def get_selected_polygons( self ):
         "return array of (polygon_feature,crs) from current selection"
         geos = []
-        layers = self.registry.mapLayers()
-        for name, layer in layers.iteritems():
-            if not layer.type() == QgsMapLayer.VectorLayer:
-                continue
-            if not layer.isValid():
-                continue
-            for feature in layer.selectedFeatures():
-                if feature.geometry() and feature.geometry().type() == QGis.Polygon:
-                    geos.append( (feature, layer.crs()) )
+        layer = self.iface.activeLayer()
+        for feature in layer.selectedFeatures():
+            if feature.geometry() and feature.geometry().type() == QGis.Polygon:
+                geos.append( (feature, layer.crs()) )
         return geos
 
     def update_layer( self, layer, geometry ):
