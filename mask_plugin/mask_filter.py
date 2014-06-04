@@ -3,6 +3,8 @@ from qgis.core import *
 SPATIAL_FILTER = "$in_mask"
 
 def has_mask_filter( layer ):
+    if not isinstance(layer, QgsVectorLayer):
+        return False
     # check if a layer has already a mask filter enabled
     pal = QgsPalLayerSettings()
     pal.readFromLayer( layer )
