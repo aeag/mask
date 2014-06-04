@@ -291,6 +291,9 @@ class aeag_mask(QObject):
             return
         self.create_atlas_layer()
         self.geometries_backup = self.parameters.geometry
+        # disable canvas rendering
+        self.old_render_flag = self.canvas.renderFlag()
+        self.canvas.setRenderFlag( False )
 
     def on_atlas_end_render( self ):
         if not self.atlas_layer:
@@ -309,6 +312,10 @@ class aeag_mask(QObject):
         # update maps
         for compoview in self.iface.activeComposers():
             compoview.composition().refreshItems()
+
+        if self.old_render_flag:
+            self.canvas.setRenderFlag( True )
+            self.canvas.refresh()
 
     def apply_mask_parameters( self, poly ):
         # save the mask layer
