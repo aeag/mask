@@ -263,6 +263,8 @@ class MainDialog( QDialog ):
             limited = self.ui.layer_list.get_limited_layers()
             slayers = []
             for name, layer in QgsMapLayerRegistry.instance().mapLayers().iteritems():
+                if not isinstance( layer, QgsVectorLayer ):
+                    continue
                 if layer.id() in limited and int(layer.simplifyMethod().simplifyHints()) > 0:
                     # simplification is enabled
                     slayers.append(layer)
