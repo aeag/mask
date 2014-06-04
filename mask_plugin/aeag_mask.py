@@ -214,7 +214,7 @@ class aeag_mask(QObject):
             self.on_composer_item_removed( composition, item )
         del self.composers[composition]
 
-    def compute_mask_geometries( self, poly, extent ):
+    def compute_mask_geometries( self, poly ):
         geom = None
         for f,crs in poly:
             g = f.geometry()
@@ -245,8 +245,7 @@ class aeag_mask(QObject):
         crs = atlas_layer.crs()
         fet = QgsFeature()
         fet.setGeometry(geom)
-        extent = item.currentMapExtent()
-        self.parameters.geometry = self.compute_mask_geometries( [(fet,crs)], extent )
+        self.parameters.geometry = self.compute_mask_geometries( [(fet,crs)] )
         self.parameters.save_to_layer( self.atlas_layer )
  
         # update maps
@@ -296,6 +295,41 @@ class aeag_mask(QObject):
         for compoview in self.iface.activeComposers():
             compoview.composition().refreshItems()
 
+    def apply_mask_parameters( self, poly ):
+        # save the mask layer
+        self.parameters.geometry = self.compute_mask_geometries( poly )
+
+        # save on disk if needed
+        nlayer = None
+        if self.parameters.do_save_as:
+            nlayer = self.save_layer( self.layer, self.parameters.file_path, self.parameters.file_format )
+            if nlayer is None:
+                QMessageBox.critical( None, self.tr("Mask plugin error"), self.tr("Problem saving the mask layer") )
+                return
+            if nlayer == self.layer:
+                nlayer = None
+        elif self.layer.dataProvider().name() != "memory":
+            # recreate a memory layer
+            nlayer = QgsVectorLayer("MultiPolygon?crs=%s" % poly[0][1].authid(), "Mask", "memory")
+        if nlayer is not None:
+            # copy layer style
+            self.copy_layer_style( self.layer, nlayer )
+            # remove old layer
+            self.disable_remove_mask_signal = True
+            self.registry.removeMapLayer( self.layer.id() )
+            self.disable_remove_mask_signal = False
+            self.layer = nlayer
+            self.parameters.layer = self.layer
+
+        # save current parameters
+        self.parameters.save_to_layer( self.layer )
+
+        # add it back
+        self.add_layer( self.layer )
+        # refresh
+        self.canvas.clearCache()
+        self.canvas.refresh()
+
     # run method that performs all the real work
     def run( self ):
 
@@ -314,48 +348,14 @@ class aeag_mask(QObject):
                 f.setGeometry(self.parameters.geometry)
                 poly = [(f,self.layer.crs())]
         
-        dlg = MainDialog( self.layer, self.parameters, self.layer is None )
-        def on_apply_mask_parameters( s ):
-            # save the mask layer
-            rect = s.canvas.extent()
-            s.parameters.geometry = s.compute_mask_geometries( poly, rect )
+        self.parameters.layer = self.layer
+        dlg = MainDialog( self.parameters )
 
-            # save on disk if needed
-            nlayer = None
-            if s.parameters.do_save_as:
-                nlayer = s.save_layer( s.layer, s.parameters.file_path, s.parameters.file_format )
-                if nlayer is None:
-                    QMessageBox.critical( None, s.tr("Mask plugin error"), s.tr("Problem saving the mask layer") )
-                    return
-                if nlayer == s.layer:
-                    nlayer = None
-            elif s.layer.dataProvider().name() != "memory":
-                # recreate a memory layer
-                nlayer = QgsVectorLayer("MultiPolygon?crs=%s" % poly[0][1].authid(), "Mask", "memory")
-            if nlayer is not None:
-                # copy layer style
-                s.copy_layer_style( s.layer, nlayer )
-                # remove old layer
-                s.disable_remove_mask_signal = True
-                s.registry.removeMapLayer( s.layer.id() )
-                s.disable_remove_mask_signal = False
-                s.layer = nlayer
-                s.parameters.layer = s.layer
-
-            # save current parameters
-            self.parameters.save_to_layer( self.layer )
-
-            # add it back
-            self.add_layer( self.layer )
-            # refresh
-            self.canvas.clearCache()
-            self.canvas.refresh()
-
-        dlg.applied.connect( lambda s=self : on_apply_mask_parameters(s) )
+        dlg.applied.connect( lambda p=poly : self.apply_mask_parameters(p) )
 
         r = dlg.exec_()
         if r == 1:
-            on_apply_mask_parameters( self )
+            self.apply_mask_parameters( poly )
 
         self.update_menus()
 

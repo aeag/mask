@@ -20,7 +20,7 @@ class MainDialog( QDialog ):
 
     applied = pyqtSignal()
 
-    def __init__( self, layer, parameters, is_new ):
+    def __init__( self, parameters ):
         QDialog.__init__( self, None )
 
         self.ui = Ui_MainDialog()
@@ -32,7 +32,6 @@ class MainDialog( QDialog ):
         self.ui.bufferSegments.setValidator(QIntValidator())
         self.ui.simplifyTolerance.setValidator(QDoubleValidator())
 
-        self.layer = layer
         self.parameters = parameters
         if self.parameters.file_format is None:
             self.parameters.file_format = "ESRI Shapefile"
@@ -63,7 +62,7 @@ class MainDialog( QDialog ):
         self.save_style_parameters = MaskParameters()
         self.update_parameters_from_style( self.save_style_parameters )
 
-        if is_new:
+        if self.parameters.layer is None:
             self.setWindowTitle( self.tr("Create a mask") )
         else:
             self.setWindowTitle( self.tr("Update the current mask") )
@@ -77,15 +76,15 @@ class MainDialog( QDialog ):
             doc = QDomDocument( "qgis" )
             doc.setContent( parameters.style )
             errorMsg = ''
-            self.layer.readSymbology( doc.firstChildElement("qgis"), errorMsg )
-            self.update_style_preview( self.layer )
+            self.parameters.layer.readSymbology( doc.firstChildElement("qgis"), errorMsg )
+            self.update_style_preview( self.parameters.layer )
 
     def update_parameters_from_style( self, parameters ):
         doc = QDomDocument( QDomImplementation().createDocumentType( "qgis", "http://mrcc.com/qgis.dtd", "SYSTEM" ) )
         rootNode = doc.createElement( "qgis" );
         doc.appendChild( rootNode );
         errorMsg = ''
-        self.layer.writeSymbology( rootNode, doc, errorMsg )
+        self.parameters.layer.writeSymbology( rootNode, doc, errorMsg )
         parameters.style = doc.toByteArray()
 
     def update_ui_from_parameters( self, parameters ):
@@ -191,7 +190,7 @@ class MainDialog( QDialog ):
         dlg = QDialog(self)
 
         dlg.layout = QVBoxLayout( dlg )
-        dlg.widget = QgsRendererV2PropertiesDialog(self.layer, self.style, True)
+        dlg.widget = QgsRendererV2PropertiesDialog(self.parameters.layer, self.style, True)
         dlg.widget.setLayout( dlg.layout )
         dlg.buttons = QDialogButtonBox( dlg )
 
@@ -211,7 +210,7 @@ class MainDialog( QDialog ):
 
         r = dlg.exec_()
         if r == 1:
-            self.update_style_preview( self.layer )
+            self.update_style_preview( self.parameters.layer )
 
     def update_style_preview( self, layer ):
         syms = layer.rendererV2().symbols()
@@ -239,7 +238,7 @@ class MainDialog( QDialog ):
             if self.parameters.mask_method == 2:
                 self.parameters.mask_method = 1
 
-        self.update_style_preview( self.layer )
+        self.update_style_preview( self.parameters.layer )
 
         return QDialog.exec_( self )
 
