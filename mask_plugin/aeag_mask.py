@@ -426,12 +426,14 @@ class aeag_mask(QObject):
             if alayer == layer:
                 return
 
-        self.registry.addMapLayer(layer)
-
+        QgsMapLayerRegistry.instance().addMapLayer(layer)
         # make sure the mask layer is on top of other layers
-        #ll = self.iface.mapCanvas().mapSettings().layers()
-        #ll = [layer.id()] + ll
-        #self.iface.mapCanvas().mapSettings().setLayers(ll)
+        lt = QgsProject.instance().layerTreeRoot()
+        node = lt.findLayer(layer.id())
+        # insert a new on top
+        lt.insertChildNode( 0, QgsLayerTreeLayer(layer) )
+        # remove the old one
+        lt.removeChildNode( node )
 
     def copy_layer_style( self, layer, nlayer ):
         symbology = layer.rendererV2().clone()
