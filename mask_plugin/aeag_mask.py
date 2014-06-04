@@ -236,9 +236,40 @@ class aeag_mask(QObject):
 
         return geom
 
-    def on_prepared_for_atlas( self, item ):
+    def create_atlas_layer( self ):
         if not self.atlas_layer:
-            return
+            # add a memory layer for atlas
+            dest_crs = self.layer.crs()
+            self.atlas_layer = QgsVectorLayer("MultiPolygon?crs=%s" % dest_crs.authid(), "Mask_atlas_preview", "memory")
+            self.copy_layer_style( self.layer, self.atlas_layer )
+
+            self.registry.addMapLayer( self.atlas_layer )
+
+            # insert it in place of the current 'mask' layer
+            root = QgsProject.instance().layerTreeRoot()
+            old = root.findLayer( self.atlas_layer.id() )
+            node = root.findLayer( self.layer.id() )
+            # find its idx
+            parent = node.parent()
+            if parent is None:
+                parent = root
+            idx = None
+            for i, n in enumerate(parent.findLayers()):
+                if n.layer().id() == self.layer.id():
+                    idx = i
+                    break
+            if idx is not None:
+                parent.insertChildNode( idx, QgsLayerTreeLayer( self.atlas_layer ) )
+            # remove the first
+            self.disable_remove_mask_signal = True
+            parent.removeChildNode( old )
+            self.disable_remove_mask_signal = False
+
+            # make the 'mask' layer not visible
+            self.iface.legendInterface().setLayerVisible( self.layer, False )
+
+    def on_prepared_for_atlas( self, item ):
+        self.create_atlas_layer()
 
         atlas_layer = item.composition().atlasComposition().coverageLayer()
         geom = QgsExpression.specialColumn("$atlasgeometry")
@@ -258,23 +289,7 @@ class aeag_mask(QObject):
     def on_atlas_begin_render( self ):
         if not self.layer:
             return
-        if not self.atlas_layer:
-            # add a memory layer for atlas
-            dest_crs = self.layer.crs()
-            self.atlas_layer = QgsVectorLayer("MultiPolygon?crs=%s" % dest_crs.authid(), "Mask_temp", "memory")
-            self.copy_layer_style( self.layer, self.atlas_layer )
-            self.registry.addMapLayer( self.atlas_layer )
-
-            # insert it in place of the current 'mask' layer
-            ll = self.iface.mapCanvas().mapSettings().layers()
-            if self.atlas_layer.id() in ll:
-                ll.remove(self.atlas_layer.id())
-            p = ll.index(self.layer.id())
-            ll = ll[0:p] + [self.atlas_layer.id()] + ll[p:]
-            self.iface.mapCanvas().mapSettings().setLayers(ll)
-
-            # make the 'mask' layer not visible
-            self.iface.legendInterface().setLayerVisible( self.layer, False )
+        self.create_atlas_layer()
         self.geometries_backup = self.parameters.geometry
 
     def on_atlas_end_render( self ):
@@ -382,6 +397,9 @@ class aeag_mask(QObject):
 
         layer = self.registry.mapLayer( layer_id )
         if not layer:
+            return
+        if layer.name() == "Mask_atlas_preview":
+            self.atlas_layer = None
             return
         if not layer.name() == 'Mask':
             return
