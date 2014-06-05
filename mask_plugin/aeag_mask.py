@@ -56,15 +56,15 @@ class MaskGeometryFunction( QgsExpression.Function ):
         self.mask = mask
 
     def func( self, values, feature, parent ):
-        return self.mask.mask_geometry( feature )[0]
+        return self.mask.mask_geometry()[0]
 
 class InMaskFunction( QgsExpression.Function ):
     def __init__( self, mask ):
-        QgsExpression.Function.__init__( self, "$in_mask", 0, "Python", "Test whether the current geometry is inside the current mask geometry." )
+        QgsExpression.Function.__init__( self, "in_mask", 1, "Python", "Test whether the current geometry is inside the current mask geometry." )
         self.mask = mask
 
     def func( self, values, feature, parent ):
-        return self.mask.in_mask( feature )
+        return self.mask.in_mask( feature, values[0] )
 
 class aeag_mask(QObject):
 
@@ -161,7 +161,7 @@ class aeag_mask(QObject):
             self.iface.removePluginMenu("&Mask", self.act_test)
 
         QgsExpression.unregisterFunction( "$mask_geometry" )
-        QgsExpression.unregisterFunction( "$in_mask" )
+        QgsExpression.unregisterFunction( "in_mask" )
 
         self.registry.layerWasAdded.disconnect( self.on_add_layer )
         self.registry.layerWillBeRemoved.disconnect( self.on_remove_mask )
@@ -218,10 +218,6 @@ class aeag_mask(QObject):
         geom = None
         for f,crs in poly:
             g = f.geometry()
-#            if crs.authid() != dest_crs.authid():
-#                xform = QgsCoordinateTransform( crs, dest_crs )
-#                g.transform( xform )
-
             if geom is None:
                 geom = QgsGeometry(g)
             else:
@@ -506,7 +502,7 @@ class aeag_mask(QObject):
             print "write error", error, msg
         return None
 
-    def mask_geometry( self, feature ):
+    def mask_geometry( self ):
         if self.must_reload_from_layer:
             # will force loading of parameters the first time the mask geometry is accessed
             # this will happen AFTER MemorySaveLayer has loaded memory layers
@@ -541,29 +537,48 @@ class aeag_mask(QObject):
 
         return geom, bbox
 
-    def in_mask( self, feature ):
-        mask_geom, bbox = self.mask_geometry( feature )
-        geom = feature.geometry()
+    def in_mask( self, feature, srid ):
+        if self.layer is None:
+            return False
+        mask_geom, bbox = self.mask_geometry()
+        geom = QgsGeometry( feature.geometry() )
         if not geom.isGeosValid():
             geom = geom.buffer( 0.0, 1 )
         if geom is None:
             return False
-#        print "mask", mask_geom.exportToWkt()
-#        print "geom", geom.exportToWkt()
-        if self.parameters.mask_method == 2 and not self.has_point_on_surface:
-            self.parameters.mask_method = 1
 
-        if self.parameters.mask_method == 0:
-            # this method can only work when no geometry simplification is involved
-            return mask_geom.contains(geom)
-        elif self.parameters.mask_method == 1:
-            # the fastest method, but with possible inaccuracies
-            pt = geom.vertexAt(0)
-            return bbox.contains( pt ) and mask_geom.contains(geom.centroid())
-        elif self.parameters.mask_method == 2:
-            # will always work
-            pt = geom.vertexAt(0)
-            return bbox.contains( pt ) and mask_geom.contains(geom.pointOnSurface())
+        if self.layer.crs().postgisSrid() != srid:
+            src_crs = QgsCoordinateReferenceSystem( srid )
+            dest_crs = self.layer.crs()
+            xform = QgsCoordinateTransform( src_crs, dest_crs )
+            geom.transform( xform )
+        
+        if geom.type() == QGis.Polygon:
+            if self.parameters.polygon_mask_method == 2 and not self.has_point_on_surface:
+                self.parameters.polygon_mask_method = 1
+
+            if self.parameters.polygon_mask_method == 0:
+                # this method can only work when no geometry simplification is involved
+                return mask_geom.contains(geom)
+            elif self.parameters.polygon_mask_method == 1:
+                # the fastest method, but with possible inaccuracies
+                pt = geom.vertexAt(0)
+                return bbox.contains( pt ) and mask_geom.contains(geom.centroid())
+            elif self.parameters.polygon_mask_method == 2:
+                # will always work
+                pt = geom.vertexAt(0)
+                return bbox.contains( pt ) and mask_geom.contains(geom.pointOnSurface())
+            else:
+                return False
+        elif geom.type() == QGis.Line:
+            if self.parameters.line_mask_method == 0:
+                return mask_geom.intersects(geom)
+            elif self.parameters.line_mask_method == 1:
+                return mask_geom.contains(geom)
+            else:
+                return False
+        elif geom.type() == QGis.Point:
+            return mask_geom.intersects(geom)
         else:
             return False
 

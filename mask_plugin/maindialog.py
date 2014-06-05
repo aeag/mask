@@ -14,7 +14,7 @@ def is_in_qgis_core( sym ):
 
 # default parameters
 # an inverted polygon styling with a white semi-transparent filling
-DEFAULT_PARAMETERS = "(lp0\nI00\naF1000.0\naI5\naI01\naF1.0\naI00\naV\np1\naVESRI Shapefile\np2\na(lp3\nacsip\n_unpickle_type\np4\n(S'PyQt4.QtCore'\np5\nS'QByteArray'\np6\n(S'<!DOCTYPE qgis PUBLIC \\'http://mrcc.com/qgis.dtd\\' \\'SYSTEM\\'>\\n<qgis simplifyDrawingHints=\"1\" minLabelScale=\"0\" maxLabelScale=\"1e+08\" simplifyDrawingTol=\"1\" simplifyMaxScale=\"1\" simplifyLocal=\"1\" scaleBasedLabelVisibilityFlag=\"0\">\\n <renderer-v2 type=\"invertedPolygonRenderer\">\\n  <renderer-v2 symbollevels=\"0\" type=\"singleSymbol\">\\n   <symbols>\\n    <symbol alpha=\"1\" type=\"fill\" name=\"0\">\\n     <layer pass=\"0\" class=\"SimpleFill\" locked=\"0\">\\n      <prop k=\"border_width_map_unit_scale\" v=\"0,0\"/>\\n      <prop k=\"border_width_unit\" v=\"MM\"/>\\n      <prop k=\"color\" v=\"255,255,255,255\"/>\\n      <prop k=\"color_border\" v=\"0,0,0,255\"/>\\n      <prop k=\"joinstyle\" v=\"bevel\"/>\\n      <prop k=\"offset\" v=\"0,0\"/>\\n      <prop k=\"offset_map_unit_scale\" v=\"0,0\"/>\\n      <prop k=\"offset_unit\" v=\"MM\"/>\\n      <prop k=\"style\" v=\"solid\"/>\\n      <prop k=\"style_border\" v=\"solid\"/>\\n      <prop k=\"width_border\" v=\"0.26\"/>\\n     </layer>\\n    </symbol>\\n   </symbols>\\n   <rotation/>\\n   <sizescale scalemethod=\"area\"/>\\n  </renderer-v2>\\n </renderer-v2>\\n <customproperties/>\\n <blendMode>0</blendMode>\\n <featureBlendMode>0</featureBlendMode>\\n <layerTransparency>17</layerTransparency>\\n <displayfield>params</displayfield>\\n <label>0</label>\\n <labelattributes>\\n  <label fieldname=\"\" text=\"\\xc3\\x89tiquette\"/>\\n  <family fieldname=\"\" name=\"Ubuntu\"/>\\n  <size fieldname=\"\" units=\"pt\" value=\"12\"/>\\n  <bold fieldname=\"\" on=\"0\"/>\\n  <italic fieldname=\"\" on=\"0\"/>\\n  <underline fieldname=\"\" on=\"0\"/>\\n  <strikeout fieldname=\"\" on=\"0\"/>\\n  <color fieldname=\"\" red=\"0\" blue=\"0\" green=\"0\"/>\\n  <x fieldname=\"\"/>\\n  <y fieldname=\"\"/>\\n  <offset x=\"0\" y=\"0\" units=\"pt\" yfieldname=\"\" xfieldname=\"\"/>\\n  <angle fieldname=\"\" value=\"0\" auto=\"0\"/>\\n  <alignment fieldname=\"\" value=\"center\"/>\\n  <buffercolor fieldname=\"\" red=\"255\" blue=\"255\" green=\"255\"/>\\n  <buffersize fieldname=\"\" units=\"pt\" value=\"1\"/>\\n  <bufferenabled fieldname=\"\" on=\"\"/>\\n  <multilineenabled fieldname=\"\" on=\"\"/>\\n  <selectedonly on=\"\"/>\\n </labelattributes>\\n <edittypes>\\n  <edittype labelontop=\"0\" editable=\"0\" name=\"params\"/>\\n </edittypes>\\n <editform>.</editform>\\n <editforminit></editforminit>\\n <featformsuppress>0</featformsuppress>\\n <annotationform>.</annotationform>\\n <editorlayout>generatedlayout</editorlayout>\\n <excludeAttributesWMS/>\\n <excludeAttributesWFS/>\\n <attributeactions/>\\n</qgis>\\n'\np7\ntp8\ntp9\nRp10\naI1\na."
+DEFAULT_PARAMETERS = "(lp0\nI00\naF1.0\naI5\naI01\naF1.0\naI00\naV\np1\naS'ESRI Shapefile'\np2\na(lp3\nacsip\n_unpickle_type\np4\n(S'PyQt4.QtCore'\np5\nS'QByteArray'\np6\n(S'<!DOCTYPE qgis PUBLIC \\'http://mrcc.com/qgis.dtd\\' \\'SYSTEM\\'>\\n<qgis simplifyDrawingHints=\"1\" minLabelScale=\"0\" maxLabelScale=\"1e+08\" simplifyDrawingTol=\"1\" simplifyMaxScale=\"1\" simplifyLocal=\"1\" scaleBasedLabelVisibilityFlag=\"0\">\\n <renderer-v2 type=\"invertedPolygonRenderer\">\\n  <renderer-v2 symbollevels=\"0\" type=\"singleSymbol\">\\n   <symbols>\\n    <symbol alpha=\"1\" type=\"fill\" name=\"0\">\\n     <layer pass=\"0\" class=\"SimpleFill\" locked=\"0\">\\n      <prop k=\"border_width_map_unit_scale\" v=\"0,0\"/>\\n      <prop k=\"border_width_unit\" v=\"MM\"/>\\n      <prop k=\"color\" v=\"255,255,255,255\"/>\\n      <prop k=\"color_border\" v=\"0,0,0,255\"/>\\n      <prop k=\"joinstyle\" v=\"bevel\"/>\\n      <prop k=\"offset\" v=\"0,0\"/>\\n      <prop k=\"offset_map_unit_scale\" v=\"0,0\"/>\\n      <prop k=\"offset_unit\" v=\"MM\"/>\\n      <prop k=\"style\" v=\"solid\"/>\\n      <prop k=\"style_border\" v=\"solid\"/>\\n      <prop k=\"width_border\" v=\"0.26\"/>\\n     </layer>\\n    </symbol>\\n   </symbols>\\n   <rotation/>\\n   <sizescale scalemethod=\"area\"/>\\n  </renderer-v2>\\n </renderer-v2>\\n <customproperties/>\\n <blendMode>0</blendMode>\\n <featureBlendMode>0</featureBlendMode>\\n <layerTransparency>17</layerTransparency>\\n <displayfield>params</displayfield>\\n <label>0</label>\\n <labelattributes>\\n  <label fieldname=\"\" text=\"\\xc3\\x89tiquette\"/>\\n  <family fieldname=\"\" name=\"Ubuntu\"/>\\n  <size fieldname=\"\" units=\"pt\" value=\"12\"/>\\n  <bold fieldname=\"\" on=\"0\"/>\\n  <italic fieldname=\"\" on=\"0\"/>\\n  <underline fieldname=\"\" on=\"0\"/>\\n  <strikeout fieldname=\"\" on=\"0\"/>\\n  <color fieldname=\"\" red=\"0\" blue=\"0\" green=\"0\"/>\\n  <x fieldname=\"\"/>\\n  <y fieldname=\"\"/>\\n  <offset x=\"0\" y=\"0\" units=\"pt\" yfieldname=\"\" xfieldname=\"\"/>\\n  <angle fieldname=\"\" value=\"0\" auto=\"0\"/>\\n  <alignment fieldname=\"\" value=\"center\"/>\\n  <buffercolor fieldname=\"\" red=\"255\" blue=\"255\" green=\"255\"/>\\n  <buffersize fieldname=\"\" units=\"pt\" value=\"1\"/>\\n  <bufferenabled fieldname=\"\" on=\"\"/>\\n  <multilineenabled fieldname=\"\" on=\"\"/>\\n  <selectedonly on=\"\"/>\\n </labelattributes>\\n <edittypes>\\n  <edittype labelontop=\"0\" editable=\"0\" name=\"params\"/>\\n </edittypes>\\n <editform>.</editform>\\n <editforminit></editforminit>\\n <featformsuppress>0</featformsuppress>\\n <annotationform>.</annotationform>\\n <editorlayout>generatedlayout</editorlayout>\\n <excludeAttributesWMS/>\\n <excludeAttributesWFS/>\\n <attributeactions/>\\n</qgis>\\n'\np7\ntp8\ntp9\nRp10\naI1\naI1\na."
 
 class MainDialog( QDialog ):
 
@@ -50,7 +50,7 @@ class MainDialog( QDialog ):
         self.ui.buttonBox.addButton( self.ui.loadDefaultsBtn, QDialogButtonBox.ActionRole )
         self.ui.loadDefaultsBtn.clicked.connect( self.load_defaults )
 
-        self.ui.layer_list.ui.operatorCombo.currentIndexChanged[int].connect( self.on_operator_changed )
+        self.ui.layer_list.ui.polygonOperatorCombo.currentIndexChanged[int].connect( self.on_polygon_operator_changed )
 
         # connect the "apply" button
         for btn in self.ui.buttonBox.buttons():
@@ -67,7 +67,7 @@ class MainDialog( QDialog ):
         else:
             self.setWindowTitle( self.tr("Update the current mask") )
 
-    def on_operator_changed( self, idx ):
+    def on_polygon_operator_changed( self, idx ):
         if idx == 0 and self.ui.simplifyGroup.isChecked():
             self.ui.simplifyGroup.setChecked( False )
 
@@ -97,7 +97,8 @@ class MainDialog( QDialog ):
         self.ui.filePath.setText( parameters.file_path )
         self.ui.simplifyGroup.setChecked( parameters.do_simplify )
         self.ui.simplifyTolerance.setText( str(parameters.simplify_tolerance) )
-        self.ui.layer_list.ui.operatorCombo.setCurrentIndex( parameters.mask_method )
+        self.ui.layer_list.ui.polygonOperatorCombo.setCurrentIndex( parameters.polygon_mask_method )
+        self.ui.layer_list.ui.lineOperatorCombo.setCurrentIndex( parameters.line_mask_method )
 
     def update_parameters_from_ui( self, parameters ):
         self.update_parameters_from_style( parameters )
@@ -109,14 +110,17 @@ class MainDialog( QDialog ):
         parameters.file_path = self.ui.filePath.text()
         parameters.do_simplify = self.ui.simplifyGroup.isChecked()
         parameters.simplify_tolerance = float(self.ui.simplifyTolerance.text() or 0.0)
-        parameters.mask_method = self.ui.layer_list.ui.operatorCombo.currentIndex()
+        parameters.polygon_mask_method = self.ui.layer_list.ui.polygonOperatorCombo.currentIndex()
+        parameters.line_mask_method = self.ui.layer_list.ui.lineOperatorCombo.currentIndex()
 
     def load_defaults( self ):
         settings = QSettings()
 
         parameters = MaskParameters()
-        defaults = settings.value( "mask_plugin/defaults", DEFAULT_PARAMETERS )
-        parameters.unserialize( defaults )
+        defaults = settings.value( "mask_plugin/defaults", None )
+        if False and defaults is None:
+            defaults = DEFAULT_PARAMETERS
+            parameters.unserialize( defaults )
         self.update_ui_from_parameters( parameters )
 
     def on_save_defaults( self ):
@@ -234,9 +238,9 @@ class MainDialog( QDialog ):
             self.parameters.do_simplify = False
         # disable pointOnSurface if not available
         if 'pointOnSurface' not in dir(QgsGeometry):
-            self.ui.layer_list.ui.operatorCombo.removeItem(2)
-            if self.parameters.mask_method == 2:
-                self.parameters.mask_method = 1
+            self.ui.layer_list.ui.polygonOperatorCombo.removeItem(2)
+            if self.parameters.polygon_mask_method == 2:
+                self.parameters.polygon_mask_method = 1
 
         self.update_style_preview( self.parameters.layer )
 
@@ -258,7 +262,7 @@ class MainDialog( QDialog ):
         # update labeling from parameters
         self.ui.layer_list.update_labeling_from_list()
 
-        if self.parameters.mask_method == 0:
+        if self.parameters.polygon_mask_method == 0:
             # test if some limited layers have simplification turned on
             limited = self.ui.layer_list.get_limited_layers()
             slayers = []

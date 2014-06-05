@@ -72,7 +72,7 @@ class LayerListWidget( QWidget ):
 
             if not did_limit and do_limit:
                 # add spatial filtering
-                pal = add_mask_filter( pal )
+                pal = add_mask_filter( pal, layer )
                 self.limited.append( layer.id() )
             if did_limit and not do_limit:
                 pal = remove_mask_filter( pal )
