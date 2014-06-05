@@ -46,6 +46,17 @@ import resources_rc
 _fromUtf8 = lambda s: (s.decode("utf-8").encode("latin-1")) if s else s
 _toUtf8 = lambda s: s.decode("latin-1").encode("utf-8") if s else s
 
+aeag_mask_instance = None
+
+# to be called from another plugin
+# from mask import aeag_mask
+# aeag_mask.do()
+def do(crs=None, poly=None):
+    # crs = QgsCoordinateReferenceSystem
+    # poly = list of geometries
+    global aeag_mask_instance
+    aeag_mask_instance.apply_mask_parameters(crs,poly)
+
 def is_in_qgis_core( sym ):
     import qgis.core
     return sym in dir(qgis.core)
@@ -70,6 +81,10 @@ class aeag_mask(QObject):
 
     def __init__(self, iface):
         QObject.__init__( self )
+
+        global aeag_mask_instance
+        aeag_mask_instance = self
+
         # install translator
         self.plugin_dir = os.path.dirname(__file__)
         locale = QSettings().value("locale/userLocale")[0:2]
@@ -216,8 +231,7 @@ class aeag_mask(QObject):
 
     def compute_mask_geometries( self, poly ):
         geom = None
-        for f,crs in poly:
-            g = f.geometry()
+        for g in poly:
             if geom is None:
                 geom = QgsGeometry(g)
             else:
@@ -270,9 +284,7 @@ class aeag_mask(QObject):
         atlas_layer = item.composition().atlasComposition().coverageLayer()
         geom = QgsExpression.specialColumn("$atlasgeometry")
         crs = atlas_layer.crs()
-        fet = QgsFeature()
-        fet.setGeometry(geom)
-        self.parameters.geometry = self.compute_mask_geometries( [(fet,crs)] )
+        self.parameters.geometry = self.compute_mask_geometries( [geom] )
         self.parameters.save_to_layer( self.atlas_layer )
  
         # update maps
@@ -313,8 +325,25 @@ class aeag_mask(QObject):
             self.canvas.setRenderFlag( True )
             self.canvas.refresh()
 
-    def apply_mask_parameters( self, poly ):
-        # save the mask layer
+    def apply_mask_parameters( self, crs = None, poly = None ):
+        if poly is None:
+            dest_crs, poly = self.get_selected_polygons()
+            if not self.layer:
+                if not poly:
+                    QMessageBox.critical( None, self.tr("Mask plugin error"), self.tr("No polygon selection !") )
+                    return
+                # or create a new layer
+                self.layer = QgsVectorLayer("MultiPolygon?crs=%s" % dest_crs.authid(), "Mask", "memory")
+            else:
+                # else : set poly = geometry from mask layer
+                if not poly:
+                    poly = [ QgsGeometry(self.parameters.geometry) ]
+                    dest_crs = self.layer.crs()
+        else:
+            dest_crs = crs
+
+        self.parameters.layer = self.layer
+        # compute the geometry
         self.parameters.geometry = self.compute_mask_geometries( poly )
 
         # save on disk if needed
@@ -328,7 +357,7 @@ class aeag_mask(QObject):
                 nlayer = None
         elif self.layer.dataProvider().name() != "memory":
             # recreate a memory layer
-            nlayer = QgsVectorLayer("MultiPolygon?crs=%s" % poly[0][1].authid(), "Mask", "memory")
+            nlayer = QgsVectorLayer("MultiPolygon?crs=%s" % dest_crs.authid(), "Mask", "memory")
         if nlayer is not None:
             # copy layer style
             self.copy_layer_style( self.layer, nlayer )
@@ -351,29 +380,20 @@ class aeag_mask(QObject):
     # run method that performs all the real work
     def run( self ):
 
-        poly = self.get_selected_polygons()
+        dest_crs, poly = self.get_selected_polygons()
         if not self.layer:
             if not poly:
                 QMessageBox.critical( None, self.tr("Mask plugin error"), self.tr("No polygon selection !") )
                 return
-            # or create a new layer
-            dest_crs = poly[0][1] # take the first CRS
             self.layer = QgsVectorLayer("MultiPolygon?crs=%s" % dest_crs.authid(), "Mask", "memory")
-        else:
-            # else : set poly = geometry from mask layer
-            if not poly:
-                f = QgsFeature()
-                f.setGeometry(self.parameters.geometry)
-                poly = [(f,self.layer.crs())]
-        
         self.parameters.layer = self.layer
-        dlg = MainDialog( self.parameters )
 
-        dlg.applied.connect( lambda p=poly : self.apply_mask_parameters(p) )
+        dlg = MainDialog( self.parameters )
+        dlg.applied.connect( self.apply_mask_parameters )
 
         r = dlg.exec_()
         if r == 1:
-            self.apply_mask_parameters( poly )
+            self.apply_mask_parameters()
 
         self.update_menus()
 
@@ -426,8 +446,8 @@ class aeag_mask(QObject):
         layer = self.iface.activeLayer()
         for feature in layer.selectedFeatures():
             if feature.geometry() and feature.geometry().type() == QGis.Polygon:
-                geos.append( (feature, layer.crs()) )
-        return geos
+                geos.append( QgsGeometry(feature.geometry()) )
+        return layer.crs(), geos
 
     def update_layer( self, layer, geometry ):
         # insert or replace into ...
