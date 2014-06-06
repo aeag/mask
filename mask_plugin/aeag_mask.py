@@ -434,6 +434,8 @@ class aeag_mask(QObject):
                 pal = remove_mask_filter( pal )
                 pal.writeToLayer( layer )
 
+        # make sure the simplified geometries will be recomputed on next reload
+        self.simplified_geometries = {}
         self.parameters.limited_layers = []
         self.layer = None
         # disable memorysavelayerhack
