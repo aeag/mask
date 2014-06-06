@@ -26,7 +26,7 @@ PLUGINNAME = mask
 SOURCES = aeag_mask.py maindialog.py __init__.py layerlist.py mask_filter.py mask_parameters.py
 TRANSLATIONS = mask_fr.ts
 
-EXTRAS = aeag_mask.png metadata.txt
+EXTRAS = aeag_mask.png metadata.txt default_mask_style.qml
 UI_FILES = ui_plugin_mask.py ui_layer_list.py
 
 RESOURCE_FILES = resources_rc.py
