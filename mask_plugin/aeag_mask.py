@@ -444,6 +444,8 @@ class aeag_mask(QObject):
         "return array of (polygon_feature,crs) from current selection"
         geos = []
         layer = self.iface.activeLayer()
+        if not isinstance(layer, QgsVectorLayer):
+            return None, []
         for feature in layer.selectedFeatures():
             if feature.geometry() and feature.geometry().type() == QGis.Polygon:
                 geos.append( QgsGeometry(feature.geometry()) )
