@@ -57,6 +57,7 @@ class MainDialog( QDialog ):
         # save current style
         self.save_style_parameters = MaskParameters()
         self.update_parameters_from_style( self.save_style_parameters )
+        self.update_parameters_from_style( self.parameters )
 
         if self.parameters.layer is None:
             self.setWindowTitle( self.tr("Create a mask") )
@@ -114,13 +115,16 @@ class MainDialog( QDialog ):
 
         parameters = MaskParameters()
         defaults = settings.value( "mask_plugin/defaults", None )
-        if defaults is None:
+        if defaults is not None:
+            self.parameters.unserialize( defaults )
+        else:
             # load style from the default style file
             import os
             plugin_dir = os.path.dirname(__file__)
             with open( plugin_dir + "/default_mask_style.qml" ) as f:
-                parameters.style = QByteArray( f.read() )
-        self.update_ui_from_parameters( parameters )
+                self.parameters.style = QByteArray( f.read() )
+
+        self.update_ui_from_parameters( self.parameters )
 
     def on_save_defaults( self ):
         settings = QSettings()

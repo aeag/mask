@@ -115,7 +115,7 @@ class MaskParameters:
             # get the first feature
             it = pr.getFeatures()
             fet = QgsFeature()
-            it.nextFeature(fet)
+            ok = it.nextFeature(fet)
 
             ok = pr.changeAttributeValues( { fet.id() : { 0 : serialized } } )
             ok = pr.changeGeometryValues( { fet.id() : self.geometry } )
