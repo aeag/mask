@@ -81,13 +81,17 @@ class MaskParameters:
         fields = pr.fields()
         if fields.size() < 1:
             return False
-        if fields[0].name() != 'params':
+        field = None
+        for i, f in enumerate(fields):
+            if f.name() == "params":
+                field = i
+        if field is None:
             return False
 
         it = pr.getFeatures()
         fet = QgsFeature()
         it.nextFeature(fet)
-        st = fet.attributes()[0]
+        st = fet.attributes()[field]
         self.unserialize( base64.b64decode(st) )
         self.geometry = QgsGeometry( fet.geometry() )
 

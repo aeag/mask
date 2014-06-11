@@ -539,6 +539,8 @@ class aeag_mask(QObject):
                 return None
             if not nlayer.hasGeometryType():
                 return None
+            # force CRS
+            nlayer.setCrs( dest_crs )
 
             # copy layer style
             layer_style = self.get_layer_style( layer )
@@ -558,7 +560,7 @@ class aeag_mask(QObject):
 
         if not self.parameters.geometry:
             geom = QgsGeometry()
-            return geom
+            return geom, QgsRectangle()
 
         geom = QgsGeometry(self.parameters.geometry) # COPY !!
 
