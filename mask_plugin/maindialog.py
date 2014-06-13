@@ -7,6 +7,7 @@ from qgis.gui import *
 from ui_plugin_mask import Ui_MainDialog
 from layerlist import LayerListWidget
 from mask_parameters import MaskParameters
+import style_tools
 
 def is_in_qgis_core( sym ):
     import qgis.core
@@ -69,20 +70,11 @@ class MainDialog( QDialog ):
             self.ui.simplifyGroup.setChecked( False )
 
     def update_style_from_parameters( self, parameters ):
-        if parameters.style is not None:
-            doc = QDomDocument( "qgis" )
-            doc.setContent( parameters.style )
-            errorMsg = ''
-            self.parameters.layer.readSymbology( doc.firstChildElement("qgis"), errorMsg )
-            self.update_style_preview( self.parameters.layer )
+        style_tools.set_layer_symbology( self.parameters.layer, parameters.style )
+        self.update_style_preview( self.parameters.layer )
 
     def update_parameters_from_style( self, parameters ):
-        doc = QDomDocument( QDomImplementation().createDocumentType( "qgis", "http://mrcc.com/qgis.dtd", "SYSTEM" ) )
-        rootNode = doc.createElement( "qgis" );
-        doc.appendChild( rootNode );
-        errorMsg = ''
-        self.parameters.layer.writeSymbology( rootNode, doc, errorMsg )
-        parameters.style = doc.toByteArray()
+        parameters.style = style_tools.get_layer_symbology( self.parameters.layer )
 
     def update_ui_from_parameters( self, parameters ):
         self.update_style_from_parameters( parameters )
@@ -117,12 +109,6 @@ class MainDialog( QDialog ):
         defaults = settings.value( "mask_plugin/defaults", None )
         if defaults is not None:
             self.parameters.unserialize( defaults )
-        else:
-            # load style from the default style file
-            import os
-            plugin_dir = os.path.dirname(__file__)
-            with open( plugin_dir + "/default_mask_style.qml" ) as f:
-                self.parameters.style = QByteArray( f.read() )
 
         self.update_ui_from_parameters( self.parameters )
 

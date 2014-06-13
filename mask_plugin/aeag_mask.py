@@ -39,6 +39,7 @@ from maindialog import MainDialog
 from layerlist import LayerListDialog
 from mask_filter import *
 from mask_parameters import *
+import style_tools
 
 # Initialize Qt resources from file resources.py
 import resources_rc
@@ -335,6 +336,7 @@ class aeag_mask(QObject):
                     return
                 # or create a new layer
                 self.layer = QgsVectorLayer("MultiPolygon?crs=%s" % dest_crs.authid(), "Mask", "memory")
+                style_tools.set_default_layer_symbology( self.layer )
             else:
                 # else : set poly = geometry from mask layer
                 if not poly:
@@ -400,6 +402,7 @@ class aeag_mask(QObject):
                 QMessageBox.critical( None, self.tr("Mask plugin error"), self.tr("No polygon selection !") )
                 return
             self.layer = QgsVectorLayer("MultiPolygon?crs=%s" % dest_crs.authid(), "Mask", "memory")
+            style_tools.set_default_layer_symbology( self.layer )
         self.parameters.layer = self.layer
 
         if self.must_reload_from_layer:
@@ -494,6 +497,17 @@ class aeag_mask(QObject):
         nlayer.setFeatureBlendMode( style[1] )
         nlayer.setBlendMode( style[2] )
         nlayer.setRendererV2( style[3] )
+
+    def set_default_layer_style( self, layer ):
+        settings = QSettings()
+
+        parameters = MaskParameters()
+        defaults = settings.value( "mask_plugin/defaults", None )
+        if defaults is not None:
+            parameters.unserialize( defaults )
+        else:
+            default_style = os.path.join( os.path.dirname(__file__), "default_mask_style.qml" )
+            layer.loadNamedStyle( default_style )
 
     def create_layer( self, is_memory, dest_crs, layer_style = None ):
         save_as = self.parameters.file_path

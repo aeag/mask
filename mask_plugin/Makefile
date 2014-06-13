@@ -23,7 +23,7 @@ QGISDIR=.qgis2
 PLUGINNAME = mask
 
 #
-SOURCES = aeag_mask.py maindialog.py __init__.py layerlist.py mask_filter.py mask_parameters.py
+SOURCES = aeag_mask.py maindialog.py __init__.py layerlist.py mask_filter.py mask_parameters.py style_tools.py
 TRANSLATIONS = mask_fr.ts
 
 EXTRAS = aeag_mask.png metadata.txt default_mask_style.qml
