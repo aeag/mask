@@ -52,11 +52,11 @@ aeag_mask_instance = None
 # to be called from another plugin
 # from mask import aeag_mask
 # aeag_mask.do()
-def do(crs=None, poly=None):
+def do(crs=None, poly=None, name=None):
     # crs = QgsCoordinateReferenceSystem
     # poly = list of geometries
     global aeag_mask_instance
-    aeag_mask_instance.apply_mask_parameters(crs,poly)
+    aeag_mask_instance.apply_mask_parameters(crs,poly,name)
 
 def is_in_qgis_core( sym ):
     import qgis.core
@@ -111,6 +111,8 @@ class aeag_mask(QObject):
         self.has_simplifier = is_in_qgis_core('QgsMapToPixelSimplifier')
         # test qgis version for the presence of pointOnSurface
         self.has_point_on_surface = 'pointOnSurface' in dir(QgsGeometry)
+
+        self.mask_name = "Mask"
 
         self.reset()
 
@@ -281,6 +283,8 @@ class aeag_mask(QObject):
             self.iface.legendInterface().setLayerVisible( self.layer, False )
 
     def on_prepared_for_atlas( self, item ):
+        if not self.layer:
+            return
         self.create_atlas_layer()
 
         atlas_layer = item.composition().atlasComposition().coverageLayer()
@@ -327,23 +331,26 @@ class aeag_mask(QObject):
             self.canvas.setRenderFlag( True )
             self.canvas.refresh()
 
-    def apply_mask_parameters( self, crs = None, poly = None ):
+    def apply_mask_parameters( self, dest_crs = None, poly = None, name = None ):
+        if name is not None:
+            self.mask_name = name
+        else:
+            self.mask_name = "Mask"
+
         if poly is None:
             dest_crs, poly = self.get_selected_polygons()
-            if not self.layer:
-                if not poly:
-                    QMessageBox.critical( None, self.tr("Mask plugin error"), self.tr("No polygon selection !") )
-                    return
-                # or create a new layer
-                self.layer = QgsVectorLayer("MultiPolygon?crs=%s" % dest_crs.authid(), "Mask", "memory")
-                style_tools.set_default_layer_symbology( self.layer )
-            else:
-                # else : set poly = geometry from mask layer
-                if not poly:
-                    poly = [ QgsGeometry(self.parameters.geometry) ]
-                    dest_crs = self.layer.crs()
-        else:
-            dest_crs = crs
+        if self.layer is None and poly is None:
+            QMessageBox.critical( None, self.tr("Mask plugin error"), self.tr("No polygon selection !") )
+            return
+        if self.layer is not None and poly is None:
+            # else : set poly = geometry from mask layer
+            poly = [ QgsGeometry(self.parameters.geometry) ]
+            dest_crs = self.layer.crs()
+            
+        if self.layer is None:
+            # create a new layer
+            self.layer = QgsVectorLayer("MultiPolygon?crs=%s" % dest_crs.authid(), self.mask_name, "memory")
+            style_tools.set_default_layer_symbology( self.layer )
 
         self.parameters.layer = self.layer
         # compute the geometry
@@ -401,7 +408,7 @@ class aeag_mask(QObject):
             if not poly:
                 QMessageBox.critical( None, self.tr("Mask plugin error"), self.tr("No polygon selection !") )
                 return
-            self.layer = QgsVectorLayer("MultiPolygon?crs=%s" % dest_crs.authid(), "Mask", "memory")
+            self.layer = QgsVectorLayer("MultiPolygon?crs=%s" % dest_crs.authid(), self.mask_name, "memory")
             style_tools.set_default_layer_symbology( self.layer )
         self.parameters.layer = self.layer
 
@@ -429,7 +436,7 @@ class aeag_mask(QObject):
     def on_add_layer( self, layer ):
         if self.disable_add_layer_signal:
             return
-        if layer.name() == 'Mask':
+        if layer.name() == self.mask_name:
             # Part of the MemorySaverLayer hack
             # We cannot access the memory layer yet, since the MemorySaveLayer slot may be called
             # AFTER this one
@@ -448,7 +455,7 @@ class aeag_mask(QObject):
         if layer.name() == "Mask_atlas_preview":
             self.atlas_layer = None
             return
-        if not layer.name() == 'Mask':
+        if not layer.name() == self.mask_name:
             return
         for name, layer in self.registry.mapLayers().iteritems():
             if has_mask_filter( layer ):
@@ -516,7 +523,7 @@ class aeag_mask(QObject):
         serialized = base64.b64encode( self.parameters.serialize( with_style = False ) )
 
         # save geometry
-        layer = QgsVectorLayer("MultiPolygon?crs=%s" % dest_crs.authid(), "Mask", "memory")
+        layer = QgsVectorLayer("MultiPolygon?crs=%s" % dest_crs.authid(), self.mask_name, "memory")
         pr = layer.dataProvider()
         layer.startEditing()
         ok = layer.addAttribute( QgsField( "params", QVariant.String) )
@@ -548,7 +555,7 @@ class aeag_mask(QObject):
                                                          dest_crs,
                                                          file_format)
         if error == 0:
-            nlayer = QgsVectorLayer( save_as, "Mask", "ogr" )
+            nlayer = QgsVectorLayer( save_as, self.mask_name, "ogr" )
             if not nlayer.dataProvider().isValid():
                 return None
             if not nlayer.hasGeometryType():
