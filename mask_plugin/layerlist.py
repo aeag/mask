@@ -23,7 +23,7 @@ class LayerListWidget( QWidget ):
     def get_limited_layers( self ):
         return self.limited
 
-    def update_from_layers( self ):
+    def update_from_layers( self, is_new = False ):
         layers = QgsMapLayerRegistry.instance().mapLayers()
         n = 0
         for name, layer in layers.iteritems():
@@ -43,6 +43,7 @@ class LayerListWidget( QWidget ):
             do_limit = False
             did_limit = layer.id() in self.limited
             do_limit = has_mask_filter( layer )
+
             if do_limit and not did_limit:
                 self.limited.append( layer.id() )
             if not do_limit and did_limit:
@@ -54,7 +55,7 @@ class LayerListWidget( QWidget ):
             self.ui.layerTable.setItem( n, 1, name_item )
             w = QCheckBox( self.ui.layerTable )
             w.setEnabled( pal.enabled )
-            w.setChecked( do_limit )
+            w.setChecked( do_limit or is_new )
             self.ui.layerTable.setCellWidget( n, 0, w )
             item = QTableWidgetItem()
             item.setData( Qt.UserRole, layer )

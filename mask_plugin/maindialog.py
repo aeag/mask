@@ -17,7 +17,7 @@ class MainDialog( QDialog ):
 
     applied = pyqtSignal()
 
-    def __init__( self, parameters ):
+    def __init__( self, parameters, is_new ):
         QDialog.__init__( self, None )
 
         self.ui = Ui_MainDialog()
@@ -60,7 +60,8 @@ class MainDialog( QDialog ):
         self.update_parameters_from_style( self.save_style_parameters )
         self.update_parameters_from_style( self.parameters )
 
-        if self.parameters.layer is None:
+        self.is_new = is_new
+        if self.is_new:
             self.setWindowTitle( self.tr("Create a mask") )
         else:
             self.setWindowTitle( self.tr("Update the current mask") )
@@ -214,7 +215,7 @@ class MainDialog( QDialog ):
             self.ui.stylePreview.setPixmap( pix )
 
     def exec_( self ):
-        self.ui.layer_list.update_from_layers()
+        self.ui.layer_list.update_from_layers( self.is_new )
 
         if self.parameters.style is None:
             self.load_defaults()

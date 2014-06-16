@@ -29,7 +29,7 @@ class MaskParameters:
         self.file_format = None
         self.style = None
         # polygon mask method : 0: exact, 1: centroid, 2: pointOnSurface
-        self.polygon_mask_method = 1
+        self.polygon_mask_method = 2
         # line mask method = 0: intersects, 1: contains
         self.line_mask_method = 0
 

@@ -345,12 +345,21 @@ class aeag_mask(QObject):
         if self.layer is not None and poly is None:
             # else : set poly = geometry from mask layer
             poly = [ QgsGeometry(self.parameters.geometry) ]
-            dest_crs = self.layer.crs()
-            
-        if self.layer is None:
+            dest_crs = self.layer.crs()  
+        elif self.layer is None:
             # create a new layer
             self.layer = QgsVectorLayer("MultiPolygon?crs=%s" % dest_crs.authid(), self.mask_name, "memory")
             style_tools.set_default_layer_symbology( self.layer )
+            # add a mask filter to all layer
+            for name, layer in self.registry.mapLayers().iteritems():
+                if not isinstance(layer, QgsVectorLayer):
+                    continue
+                pal = QgsPalLayerSettings()
+                pal.readFromLayer(layer)
+                if not pal.enabled:
+                    continue
+                npal = add_mask_filter( pal, layer )
+                npal.writeToLayer( layer )
 
         self.parameters.layer = self.layer
         # compute the geometry
@@ -404,12 +413,14 @@ class aeag_mask(QObject):
     # run method that performs all the real work
     def run( self ):
         dest_crs, poly = self.get_selected_polygons()
+        is_new = False
         if not self.layer:
             if not poly:
                 QMessageBox.critical( None, self.tr("Mask plugin error"), self.tr("No polygon selection !") )
                 return
             self.layer = QgsVectorLayer("MultiPolygon?crs=%s" % dest_crs.authid(), self.mask_name, "memory")
             style_tools.set_default_layer_symbology( self.layer )
+            is_new = True
         self.parameters.layer = self.layer
 
         if self.must_reload_from_layer:
@@ -417,7 +428,7 @@ class aeag_mask(QObject):
             self.parameters.load_from_layer( self.layer )
             self.must_reload_from_layer = None
 
-        dlg = MainDialog( self.parameters )
+        dlg = MainDialog( self.parameters, is_new )
         dlg.applied.connect( self.apply_mask_parameters )
 
         r = dlg.exec_()
