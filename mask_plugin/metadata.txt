@@ -4,12 +4,14 @@
 name=Mask
 qgisMinimumVersion=2.3
 description=Help to create mask
+description[fr]=Aide à la création de masque
 version=1.0
 
 # end of mandatory metadata
 
 # Optional items:
-
+about=This plugin allows user to quickly transform a polygon selection into a map masking layer or a region of interest, following symbology choice. The plugin allows also to spatially filter labeling of other layer, so that labels will only appear in the Region of Interest.
+about[fr]=Cette extension permet de générer un masque à partir d'une sélection de polygones. Le plugin permet également de filtrer l'étiquetage uniquement pour les objets à l'intérieur de ce masque. 
 # Uncomment the following line and add your changelog entries:
 changelog=1.0 : Can be used with atlas, 2.4 compatible
           0.9 : Can be used with atlas, 2.4 compatible - test version
@@ -17,7 +19,7 @@ changelog=1.0 : Can be used with atlas, 2.4 compatible
           0.4 : Python console callable
 
 # tags are comma separated with spaces allowed
-tags=mask feature
+tags=mask, ROI, filter labels
 
 homepage=https://github.com/aeag/mask_plugin
 tracker=https://github.com/aeag/mask_plugin/issues
