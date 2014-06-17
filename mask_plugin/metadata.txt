@@ -23,7 +23,7 @@ tags=mask, ROI, filter labels
 
 homepage=https://github.com/aeag/mask_plugin
 tracker=https://github.com/aeag/mask_plugin/issues
-repository=
+repository=http://plugins.qgis.org/plugins/mask/
 icon=aeag_mask.png
 # experimental flag
 experimental=False
