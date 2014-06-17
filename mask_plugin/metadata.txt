@@ -19,8 +19,8 @@ changelog=1.0 : Can be used with atlas, 2.4 compatible
 # tags are comma separated with spaces allowed
 tags=mask feature
 
-homepage=http://hub.qgis.org/projects/mask
-tracker=http://hub.qgis.org/projects/mask/issues
+homepage=https://github.com/aeag/mask_plugin
+tracker=https://github.com/aeag/mask_plugin/issues
 repository=
 icon=aeag_mask.png
 # experimental flag
@@ -30,5 +30,5 @@ experimental=False
 deprecated=False
 
 # Author contact information
-author=Xavier Culos (Agence de l'eau Adour Garonne)
+author=Hugo Mercier (Oslandia) - Xavier Culos (Agence de l'eau Adour Garonne)
 email=xavier.culos@eau-adour-garonne.fr
