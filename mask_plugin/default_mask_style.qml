@@ -172,7 +172,7 @@
   </customproperties>
   <blendMode>0</blendMode>
   <featureBlendMode>0</featureBlendMode>
-  <layerTransparency>0</layerTransparency>
+  <layerTransparency>10</layerTransparency>
   <displayfield>params</displayfield>
   <label>0</label>
   <labelattributes>
