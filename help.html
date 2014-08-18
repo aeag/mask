@@ -10,18 +10,20 @@ Help to create mask...
 <p>When one or more objects are selected, activating the plugin generates a polygon memory layer containing a "mask" whose dimension is twice area of the current view.</p>
 <p>The mask is a gray box, with holes in order to highlight the underlying objects</p>
 
-<p>For advanced users, uou can trigger the creation of masks from the python console</p>
+<p>For advanced users, you can trigger the creation of masks from the python console</p>
 <p>
 # import plugin<br/>
-from mask import aeag_mask<br/>
+from mask_plugin import aeag_mask<br/>
 # Classic call : mask the selected features<br/>
 aeag_mask.do()<br/>
-# mask all features of selected layer, extent depends on the current extent.<br/>
-# All news 'mask' features are stored in a unique layer, attributes of the original layer are duplicated<br/>
-aeag_mask.do(False)<br/>
-# mask all features of selected layer, specific extent (attributes of the original layer are duplicated).<br/>
-aeag_mask.do(False, QgsRectangle (356419,6120047, 1051423,6595985))<br/>
-</p>
 
+# advanced call : custom geometry
+sr = QgsCoordinateReferenceSystem()
+sr.createFromSrid(2154)
+geom = QgsGeometry.fromWkt("POLYGON((356419 6120047, 1051423 6120047, 1051423 6595985, 356419 6595985, 356419 6120047))")
+aeag_mask.do(sr, { geom }, "MyMask")
+</p>
+            
+                
 </body>
 </html>

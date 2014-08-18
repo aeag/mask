@@ -103,8 +103,6 @@ class aeag_mask(QObject):
         self.act_aeag_toolbar_help = None
         self.canvas = self.iface.mapCanvas()
 
-        self.composers = {}
-
         # test qgis version for the presence of signals
         self.has_atlas_signals = 'renderBegun' in dir(QgsAtlasComposition)
         # test qgis version for the presence of the simplifier
@@ -194,44 +192,27 @@ class aeag_mask(QObject):
 
     def on_composer_added( self, compo ):
         composition = compo.composition()
-        self.composers[composition] = []
-        items = composition.composerMapItems()
         composition.atlasComposition().renderBegun.connect( self.on_atlas_begin_render )
         composition.atlasComposition().renderEnded.connect( self.on_atlas_end_render )
 
-        composition.composerMapAdded.connect( lambda item: self.on_composer_map_added(composition, item) )
-        composition.itemRemoved.connect( lambda item: self.on_composer_item_removed(composition,item) )
-        for item in items:
-            if item.type() == QgsComposerItem.ComposerMap:
-                self.on_composer_map_added( composition, item )
+        composition.composerMapAdded.connect( self.on_composer_map_added )
+        composition.itemRemoved.connect( self.on_composer_item_removed )
+            
+    def on_composer_map_added( self, composer_map ):
+        composer_map.preparedForAtlas.connect( self.on_prepared_for_atlas )
 
-    def on_composer_map_added( self, compo, item ):
-        # The second argument, which is supposed to be a QgsComposerMap is always a QObject.
-        # ?! So we circumvent this problem in passing the QgsComposition container
-        # and getting track of composer maps
-        for composer_map in compo.composerMapItems():
-            if composer_map not in self.composers[compo]:
-                self.composers[compo].append(composer_map)
-                composer_map.preparedForAtlas.connect( lambda : self.on_prepared_for_atlas(composer_map) )
-                break
-
-    def on_composer_item_removed( self, compo, _ ):
-        for composer_map in self.composers[compo]:
-            if composer_map not in compo.composerMapItems():
-                self.composers[compo].remove(composer_map)
-                composer_map.preparedForAtlas.disconnect()
-                break
+    def on_composer_item_removed( self, composer_map ):
+        try:
+            composer_map.preparedForAtlas.disconnect()
+        except:
+            pass
 
     def on_composer_removed( self, compo ):
         composition = compo.composition()
-        items = composition.composerMapItems()
         composition.atlasComposition().renderBegun.disconnect( self.on_atlas_begin_render )
         composition.atlasComposition().renderEnded.disconnect( self.on_atlas_end_render )
         composition.composerMapAdded.disconnect()
         composition.itemRemoved.disconnect()
-        for item in items:
-            self.on_composer_item_removed( composition, item )
-        del self.composers[composition]
 
     def compute_mask_geometries( self, poly ):
         geom = None
@@ -285,6 +266,7 @@ class aeag_mask(QObject):
     def on_prepared_for_atlas( self, item ):
         if not self.layer:
             return
+            
         self.create_atlas_layer()
 
         atlas_layer = item.composition().atlasComposition().coverageLayer()
@@ -303,6 +285,7 @@ class aeag_mask(QObject):
     def on_atlas_begin_render( self ):
         if not self.layer:
             return
+            
         self.create_atlas_layer()
         self.geometries_backup = self.parameters.geometry
         # disable canvas rendering
@@ -346,7 +329,7 @@ class aeag_mask(QObject):
             # else : set poly = geometry from mask layer
             poly = [ QgsGeometry(self.parameters.geometry) ]
             dest_crs = self.layer.crs()  
-        elif self.layer is None:
+        if self.layer is None:
             # create a new layer
             self.layer = QgsVectorLayer("MultiPolygon?crs=%s" % dest_crs.authid(), self.mask_name, "memory")
             style_tools.set_default_layer_symbology( self.layer )

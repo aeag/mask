@@ -2,7 +2,7 @@
 
 [general]
 name=Mask
-qgisMinimumVersion=2.3
+qgisMinimumVersion=2.4
 description=Help to create mask
 description[fr]=Aide à la création de masque
 version=1.0
@@ -13,7 +13,8 @@ version=1.0
 about=This plugin allows user to quickly transform a polygon selection into a map masking layer or a region of interest, following symbology choice. The plugin allows also to spatially filter labeling of other layer, so that labels will only appear in the Region of Interest.
 about[fr]=Cette extension permet de générer un masque à partir d'une sélection de polygones. Le plugin permet également de filtrer l'étiquetage uniquement pour les objets à l'intérieur de ce masque. 
 # Uncomment the following line and add your changelog entries:
-changelog=1.0 : Can be used with atlas, 2.4 compatible
+changelog=1.1 : Fix 32bit bug. Unknown method composerMapItems (cf. https://hub.qgis.org/issues/10927)
+          1.0 : Can be used with atlas, 2.4 compatible
           0.9 : Can be used with atlas, 2.4 compatible - test version
           0.5 : QGis 2.0 Compatible
           0.4 : Python console callable
