@@ -11,7 +11,7 @@ If the plugin is loaded, and if a mask has been defined, It will automatically b
 
 Current Atlas coverage feature will be used to generate a temporary mask layer. 
 
-This plugin requires QGIS >= 2.4
+This plugin requires QGIS >= 2.3
 
 Contributors: Hugo Mercier (Oslandia), Xavier Culos (https://github.com/xcaeag), Régis Haubourg (https://github.com/haubourg)
 Funded by Agence de l'eau Adour Garonne eau-adour-garonne.fr   https://github.com/aeag
