@@ -3,6 +3,8 @@ mask_plugin
 date: 2014 06 17
 AEAG Mask plugin
 
+Spécifique A.E.A.G. (intégré à la barre d'outils AEAG)
+
 This is a QGIS (qgis.org) python extension, allowing a user to quickly transform a polygon selection into a map masking layer or a region of interest, following symbology choice.
 
 The plugin allows also to spatially filter labeling of other layer, so that labels will only appear in the Region of Interest. 
