@@ -139,11 +139,15 @@ class aeag_mask(QObject):
         self.registry.layerWasAdded.connect( self.on_add_layer )
         self.registry.layerWillBeRemoved.connect( self.on_remove_mask )
 
-        self.toolBar = self.iface.pluginToolBar()
-        
         self.act_aeag_mask = QAction(QIcon(":plugins/mask/aeag_mask.png"), self.tr("Create a mask"), self.iface.mainWindow())
-        self.toolBar.addAction(self.act_aeag_mask)
-        self.iface.addPluginToMenu("&Mask", self.act_aeag_mask)    
+
+        try:
+            from aeag import aeag
+            self.toolBar = aeag.aeagToolbarAdd(self.act_aeag_mask)
+        except:
+            self.toolBar = self.iface.pluginToolBar()
+            self.toolBar.addAction(self.act_aeag_mask)
+            self.iface.addPluginToMenu("&Mask", self.act_aeag_mask)    
 
         if False:
             self.act_test = QAction(QIcon(":plugins/mask/aeag_mask.png"), _fromUtf8("Test"), self.iface.mainWindow())
@@ -172,8 +176,12 @@ class aeag_mask(QObject):
                 self.on_composer_added( compo )
 
     def unload(self):
-        self.toolBar.removeAction(self.act_aeag_mask)
-        self.iface.removePluginMenu("&Mask", self.act_aeag_mask)
+        try:
+            from aeag import aeag
+            self.toolBar = aeag.aeagToolbarRemove(self.toolBar, self.act_aeag_mask)
+        except:
+            self.toolBar.removeAction(self.act_aeag_mask)
+            self.iface.removePluginMenu("&Mask", self.act_aeag_mask)
 
         if False:
             self.toolBar.removeAction(self.act_test)
