@@ -42,7 +42,7 @@ from mask_parameters import *
 import style_tools
 
 # Initialize Qt resources from file resources.py
-import resources
+import resources_rc
 
 _fromUtf8 = lambda s: (s.decode("utf-8").encode("latin-1")) if s else s
 _toUtf8 = lambda s: s.decode("latin-1").encode("utf-8") if s else s
