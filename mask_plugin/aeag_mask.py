@@ -42,7 +42,7 @@ from mask_parameters import *
 import style_tools
 
 # Initialize Qt resources from file resources.py
-import resources_rc
+import resources
 
 _fromUtf8 = lambda s: (s.decode("utf-8").encode("latin-1")) if s else s
 _toUtf8 = lambda s: s.decode("latin-1").encode("utf-8") if s else s
@@ -347,14 +347,19 @@ class aeag_mask(QObject):
 
         if poly is None:
             dest_crs, poly = self.get_selected_polygons()
+            if poly == [] and (not (self.parameters.geometry is None)) and (not self.layer is None):
+                dest_crs = self.layer.crs()
+                poly = [ QgsGeometry(self.parameters.geometry) ]
+            
         if self.layer is None and poly is None:
             QMessageBox.critical( None, self.tr("Mask plugin error"), self.tr("No polygon selection !") )
             return
+        
         if self.layer is not None and poly is None:
-            # else : set poly = geometry from mask layer
             poly = [ QgsGeometry(self.parameters.geometry) ]
-            dest_crs = self.layer.crs()  
-        elif self.layer is None:
+            dest_crs = self.layer.crs()
+              
+        if self.layer is None:
             # create a new layer
             self.layer = QgsVectorLayer("MultiPolygon?crs=%s" % dest_crs.authid(), self.mask_name, "memory")
             style_tools.set_default_layer_symbology( self.layer )
@@ -429,6 +434,7 @@ class aeag_mask(QObject):
             self.layer = QgsVectorLayer("MultiPolygon?crs=%s" % dest_crs.authid(), self.mask_name, "memory")
             style_tools.set_default_layer_symbology( self.layer )
             is_new = True
+            
         self.parameters.layer = self.layer
 
         if self.must_reload_from_layer:
