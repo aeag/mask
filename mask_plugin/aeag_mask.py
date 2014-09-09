@@ -634,6 +634,14 @@ class aeag_mask(QObject):
     def in_mask( self, feature, srid ):
         if self.layer is None:
             return False
+        
+        try:
+            # layer is not None but destroyed ?
+            self.layer
+        except:
+            self.reset()
+            return False;
+        
         mask_geom, bbox = self.mask_geometry()
         geom = QgsGeometry( feature.geometry() )
         if not geom.isGeosValid():
