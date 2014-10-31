@@ -326,7 +326,7 @@ class aeag_mask(QObject):
         # update maps
         for compoview in self.iface.activeComposers():
             compoview.composition().refreshItems()
-		# enable canvas rendering if disabled -> disabled RH 31 10 2014  
+        # enable canvas rendering if disabled -> disabled RH 31 10 2014  
         # if self.old_render_flag: 
             # self.canvas.setRenderFlag( True )
             # self.canvas.refresh()
@@ -632,12 +632,17 @@ class aeag_mask(QObject):
         except:
             self.reset()
             return False;
+			
+        # mask layer empty due to unloaded memlayersaver plugin > no filtering  
+        if  self.layer.featureCount()==0 : 
+            return True;
         
         mask_geom, bbox = self.mask_geometry()
         geom = QgsGeometry( feature.geometry() )
         if not geom.isGeosValid():
             geom = geom.buffer( 0.0, 1 )
         if geom is None:
+            print 'geometry absente'  #debug 
             return False
 
         if self.layer.crs().postgisSrid() != srid:
