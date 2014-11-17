@@ -140,15 +140,14 @@ class aeag_mask(QObject):
         self.registry.layerWillBeRemoved.connect( self.on_remove_mask )
 
         self.act_aeag_mask = QAction(QIcon(":plugins/mask/aeag_mask.png"), self.tr("Create a mask"), self.iface.mainWindow())
-
         try:
             from aeag import aeag
             self.toolBar = aeag.aeagToolbarAdd(self.act_aeag_mask)
         except:
             self.toolBar = self.iface.pluginToolBar()
             self.toolBar.addAction(self.act_aeag_mask)
-            self.iface.addPluginToMenu("&Mask", self.act_aeag_mask)    
-
+            self.iface.addPluginToMenu("&Mask", self.act_aeag_mask) 
+            
         if False:
             self.act_test = QAction(QIcon(":plugins/mask/aeag_mask.png"), _fromUtf8("Test"), self.iface.mainWindow())
             self.toolBar.addAction( self.act_test )
@@ -313,9 +312,9 @@ class aeag_mask(QObject):
             return
         self.create_atlas_layer()
         self.geometries_backup = self.parameters.geometry
-        # disable canvas rendering
-        self.old_render_flag = self.canvas.renderFlag()
-        self.canvas.setRenderFlag( False )
+        # disable canvas rendering   -> disabled RH 31 10 2014 
+        # self.old_render_flag = self.canvas.renderFlag()
+        # self.canvas.setRenderFlag( False )
 
     def on_atlas_end_render( self ):
         if not self.atlas_layer:
@@ -334,10 +333,10 @@ class aeag_mask(QObject):
         # update maps
         for compoview in self.iface.activeComposers():
             compoview.composition().refreshItems()
-
-        if self.old_render_flag:
-            self.canvas.setRenderFlag( True )
-            self.canvas.refresh()
+        # enable canvas rendering if disabled -> disabled RH 31 10 2014  
+        # if self.old_render_flag: 
+            # self.canvas.setRenderFlag( True )
+            # self.canvas.refresh()
 
     def apply_mask_parameters( self, dest_crs = None, poly = None, name = None ):
         if name is not None:
@@ -434,7 +433,6 @@ class aeag_mask(QObject):
             self.layer = QgsVectorLayer("MultiPolygon?crs=%s" % dest_crs.authid(), self.mask_name, "memory")
             style_tools.set_default_layer_symbology( self.layer )
             is_new = True
-            
         self.parameters.layer = self.layer
 
         if self.must_reload_from_layer:
@@ -634,19 +632,24 @@ class aeag_mask(QObject):
     def in_mask( self, feature, srid ):
         if self.layer is None:
             return False
-        
+
         try:
             # layer is not None but destroyed ?
             self.layer
         except:
             self.reset()
             return False;
+			
+        # mask layer empty due to unloaded memlayersaver plugin > no filtering  
+        if  self.layer.featureCount()==0 : 
+            return True;
         
         mask_geom, bbox = self.mask_geometry()
         geom = QgsGeometry( feature.geometry() )
         if not geom.isGeosValid():
             geom = geom.buffer( 0.0, 1 )
         if geom is None:
+            print 'geometry absente'  #debug 
             return False
 
         if self.layer.crs().postgisSrid() != srid:
