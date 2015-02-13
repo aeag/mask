@@ -92,7 +92,7 @@ class MaskParameters:
         fet = QgsFeature()
         it.nextFeature(fet)
         st = fet.attributes()[field]
-        self.unserialize( base64.b64decode(st + '=' * (-len(st) % 4)) )
+        self.unserialize( base64.b64decode(st) )
         self.geometry = QgsGeometry( fet.geometry() )
 
         return True
