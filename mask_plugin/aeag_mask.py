@@ -657,7 +657,7 @@ class aeag_mask(QObject):
 
             if self.parameters.polygon_mask_method == 0:
                 # this method can only work when no geometry simplification is involved
-                return mask_geom.contains(geom)
+                return mask_geom.intersects(geom)
             elif self.parameters.polygon_mask_method == 1:
                 # the fastest method, but with possible inaccuracies
                 pt = geom.vertexAt(0)
