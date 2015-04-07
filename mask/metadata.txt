@@ -1,0 +1,42 @@
+# Mandatory items:
+
+[general]
+name=Mask
+qgisMinimumVersion=2.3
+description=Help to create mask
+description[fr]=Aide à la création de masque
+version=1.3
+# end of mandatory metadata
+
+# Optional items:
+about=This plugin allows user to quickly transform a polygon selection into a map masking layer or a region of interest, following symbology choice. The plugin allows also to spatially filter labeling of other layer, so that labels will only appear in the Region of Interest.
+about[fr]=Cette extension permet de générer un masque à partir d'une sélection de polygones. Le plugin permet également de filtrer l'étiquetage uniquement pour les objets à l'intérieur de ce masque. 
+# Uncomment the following line and add your changelog entries:
+changelog=
+		  1.3 : enhance spatial operator for exact labeling filter. Was "contains", now is "contains" or "overlaps"
+		  1.2 : bugfixe release : 
+			- Crash after removal of the mask layer
+			- Unfreeze mapcanvas when atlas previewx is ON
+			- Disable label filtering if mask layer has no object 
+		  1.1 : bugfixe release 
+		  1.0 : Can be used with atlas, 2.4 compatible
+          0.9 : Can be used with atlas, 2.4 compatible - test version
+          0.5 : QGis 2.0 Compatible
+          0.4 : Python console callable
+
+# tags are comma separated with spaces allowed
+tags=mask, ROI, filter labels
+
+homepage=https://github.com/aeag/mask_plugin
+tracker=https://github.com/aeag/mask_plugin/issues
+repository=http://plugins.qgis.org/plugins/mask/
+icon=aeag_mask.png
+# experimental flag
+experimental=False
+
+# deprecated flag (applies to the whole plugin, not just a single version
+deprecated=False
+
+# Author contact information
+author=Hugo Mercier (Oslandia) - Xavier Culos (Agence de l'eau Adour Garonne)
+email=xavier.culos@eau-adour-garonne.fr

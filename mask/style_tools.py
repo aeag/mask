@@ -25,7 +25,7 @@ def set_default_layer_symbology( layer ):
     settings = QSettings()
     
     parameters = MaskParameters()
-    defaults = settings.value( "mask_plugin/defaults", None )
+    defaults = settings.value( "mask/defaults", None )
     if defaults is not None:
         parameters.unserialize( defaults )
         set_layer_symbology( layer, parameters.style )

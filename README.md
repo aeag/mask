@@ -1,4 +1,4 @@
-mask_plugin
+mask
 ===========
 date: 2014 06 17
 AEAG Mask plugin
