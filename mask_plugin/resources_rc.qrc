@@ -1,0 +1,5 @@
+<RCC> 
+  <qresource prefix="/plugins/mask_plugin" > 
+    <file>aeag_mask.png</file> 
+  </qresource> 
+</RCC> 

@@ -5,8 +5,7 @@ name=Mask
 qgisMinimumVersion=2.3
 description=Help to create mask
 description[fr]=Aide à la création de masque
-version=1.2
-
+version=1.3
 # end of mandatory metadata
 
 # Optional items:
