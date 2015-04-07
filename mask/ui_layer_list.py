@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'ui_layer_list.ui'
 #
-# Created: Thu Jun  5 10:10:26 2014
-#      by: PyQt4 UI code generator 4.9.3
+# Created: Tue Apr 07 16:01:09 2015
+#      by: PyQt4 UI code generator 4.10.2
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -12,7 +12,16 @@ from PyQt4 import QtCore, QtGui
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
 except AttributeError:
-    _fromUtf8 = lambda s: s
+    def _fromUtf8(s):
+        return s
+
+try:
+    _encoding = QtGui.QApplication.UnicodeUTF8
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig, _encoding)
+except AttributeError:
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig)
 
 class Ui_LayerListWidget(object):
     def setupUi(self, LayerListWidget):
@@ -58,16 +67,16 @@ class Ui_LayerListWidget(object):
         QtCore.QMetaObject.connectSlotsByName(LayerListWidget)
 
     def retranslateUi(self, LayerListWidget):
-        LayerListWidget.setWindowTitle(QtGui.QApplication.translate("LayerListWidget", "Form", None, QtGui.QApplication.UnicodeUTF8))
-        self.label.setText(QtGui.QApplication.translate("LayerListWidget", "Function used for labeling filtering on polygons", None, QtGui.QApplication.UnicodeUTF8))
-        self.polygonOperatorCombo.setItemText(0, QtGui.QApplication.translate("LayerListWidget", "Exact (slow and will disable simplification)", None, QtGui.QApplication.UnicodeUTF8))
-        self.polygonOperatorCombo.setItemText(1, QtGui.QApplication.translate("LayerListWidget", "The mask geometry contains the centroid", None, QtGui.QApplication.UnicodeUTF8))
-        self.polygonOperatorCombo.setItemText(2, QtGui.QApplication.translate("LayerListWidget", "The mask geometry contains a point on the polygon surface", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_2.setText(QtGui.QApplication.translate("LayerListWidget", "Function used for labeling filtering on lines", None, QtGui.QApplication.UnicodeUTF8))
-        self.lineOperatorCombo.setItemText(0, QtGui.QApplication.translate("LayerListWidget", "The mask geometry intersects the line", None, QtGui.QApplication.UnicodeUTF8))
-        self.lineOperatorCombo.setItemText(1, QtGui.QApplication.translate("LayerListWidget", "The mask geometry contains the line", None, QtGui.QApplication.UnicodeUTF8))
+        LayerListWidget.setWindowTitle(_translate("LayerListWidget", "Form", None))
+        self.label.setText(_translate("LayerListWidget", "Function used for labeling filtering on polygons", None))
+        self.polygonOperatorCombo.setItemText(0, _translate("LayerListWidget", "Exact (slow and will disable simplification)", None))
+        self.polygonOperatorCombo.setItemText(1, _translate("LayerListWidget", "The mask geometry contains the centroid", None))
+        self.polygonOperatorCombo.setItemText(2, _translate("LayerListWidget", "The mask geometry contains a point on the polygon surface", None))
+        self.label_2.setText(_translate("LayerListWidget", "Function used for labeling filtering on lines", None))
+        self.lineOperatorCombo.setItemText(0, _translate("LayerListWidget", "The mask geometry intersects the line", None))
+        self.lineOperatorCombo.setItemText(1, _translate("LayerListWidget", "The mask geometry contains the line", None))
         item = self.layerTable.horizontalHeaderItem(0)
-        item.setText(QtGui.QApplication.translate("LayerListWidget", "Limit", None, QtGui.QApplication.UnicodeUTF8))
+        item.setText(_translate("LayerListWidget", "Limit", None))
         item = self.layerTable.horizontalHeaderItem(1)
-        item.setText(QtGui.QApplication.translate("LayerListWidget", "Layer", None, QtGui.QApplication.UnicodeUTF8))
+        item.setText(_translate("LayerListWidget", "Layer", None))
 
