@@ -139,7 +139,7 @@ class aeag_mask(QObject):
         self.registry.layerWasAdded.connect( self.on_add_layer )
         self.registry.layerWillBeRemoved.connect( self.on_remove_mask )
 
-        self.act_aeag_mask = QAction(QIcon(":plugins/mask/aeag_mask.png"), self.tr("Create a mask"), self.iface.mainWindow())
+        self.act_aeag_mask = QAction(QIcon(":plugins/mask_plugin/aeag_mask.png"), self.tr("Create a mask"), self.iface.mainWindow())
 
         try:
             from aeag import aeag
@@ -150,7 +150,7 @@ class aeag_mask(QObject):
             self.iface.addPluginToMenu("&Mask", self.act_aeag_mask)    
 
         if False:
-            self.act_test = QAction(QIcon(":plugins/mask/aeag_mask.png"), _fromUtf8("Test"), self.iface.mainWindow())
+            self.act_test = QAction(QIcon(":plugins/mask_plugin/aeag_mask.png"), _fromUtf8("Test"), self.iface.mainWindow())
             self.toolBar.addAction( self.act_test )
             self.iface.addPluginToMenu("&Mask", self.act_test)
         
