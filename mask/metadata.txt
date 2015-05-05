@@ -27,8 +27,8 @@ changelog=
 # tags are comma separated with spaces allowed
 tags=mask, ROI, filter labels
 
-homepage=https://github.com/aeag/mask_plugin
-tracker=https://github.com/aeag/mask_plugin/issues
+homepage=https://github.com/aeag/mask
+tracker=https://github.com/aeag/mask/issues
 repository=http://plugins.qgis.org/plugins/mask/
 icon=aeag_mask.png
 # experimental flag

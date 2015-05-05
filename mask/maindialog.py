@@ -107,7 +107,7 @@ class MainDialog( QDialog ):
         settings = QSettings()
 
         parameters = MaskParameters()
-        defaults = settings.value( "mask_plugin/defaults", None )
+        defaults = settings.value( "mask/defaults", None )
         if defaults is not None:
             self.parameters.unserialize( defaults )
 
@@ -119,7 +119,7 @@ class MainDialog( QDialog ):
         parameters = MaskParameters()
         self.update_parameters_from_ui( parameters )
         defaults = parameters.serialize()
-        settings.setValue( "mask_plugin/defaults", defaults )
+        settings.setValue( "mask/defaults", defaults )
 
     def on_file_browse( self ):
         settings = QSettings()
@@ -127,7 +127,7 @@ class MainDialog( QDialog ):
         # look for directory
         path = QgsProject.instance().homePath()
         if path == '':
-            path = settings.value("mask_plugin/file_dir", '')
+            path = settings.value("mask/file_dir", '')
             if path == '':
                 path = QDir.homePath()
 
