@@ -414,12 +414,28 @@ class aeag_mask(QObject):
         if nlayer is None:
             QMessageBox.critical( None, self.tr("Mask plugin error"), self.tr("Problem saving the mask layer") )
             return
-
+            
         # add the new layer
         self.layer = nlayer
         self.add_layer( self.layer )
         self.parameters.layer = self.layer
-
+        
+        #RH 04 05 2015 > clean up selection of all layers 
+        for l in self.canvas.layers():
+            if l.type() != QgsMapLayer.VectorLayer:
+                # Ignore this layer as it's not a vector
+                continue
+            if l.featureCount() == 0:
+                # There are no features - skip
+                continue
+            l.removeSelection()
+            
+        #RH 04 05 2015 > zooms to mask layer and clear selection http://qgis.org/api/classQgsMapCanvas.html#a4540bf00bfb127cd47c863dfd4d99c48
+        canvas = self.iface.mapCanvas()
+        extent = self.layer.extent()
+        extent.scale(1.1) #scales extent by 10% unzoomed
+        canvas.setExtent(extent)
+        
         # refresh
         self.canvas.clearCache()
         self.canvas.refresh()
@@ -451,6 +467,7 @@ class aeag_mask(QObject):
             self.apply_mask_parameters()
 
         self.update_menus()
+                      
 
     def update_menus( self ):
         # update menus based on whether the layer mask exists or not
@@ -462,7 +479,9 @@ class aeag_mask(QObject):
     def on_add_layer( self, layer ):
         if self.disable_add_layer_signal:
             return
-        if layer.name() == self.mask_name:
+        if layer.name() == self.mask_name: #warning we have backtraces here: aeag_mask.py:482: UnicodeWarning: Unicode equal comparison failed to convert both arguments to Unicode - interpreting them as being unequal 
+
+        
             # Part of the MemorySaverLayer hack
             # We cannot access the memory layer yet, since the MemorySaveLayer slot may be called
             # AFTER this one
