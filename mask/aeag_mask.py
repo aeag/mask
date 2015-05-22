@@ -149,22 +149,19 @@ class aeag_mask(QObject):
             self.toolBar.addAction(self.act_aeag_mask)
             self.iface.addPluginToMenu("&Mask", self.act_aeag_mask)    
 
+        # turn it to true to enable test
         if False:
             self.act_test = QAction(QIcon(":plugins/mask/aeag_mask.png"), _fromUtf8("Test"), self.iface.mainWindow())
             self.toolBar.addAction( self.act_test )
             self.iface.addPluginToMenu("&Mask", self.act_test)
+            self.act_test.triggered.connect(self.do_test)
         
         # Add actions to the toolbar
         self.act_aeag_mask.triggered.connect(self.run)
-        if False:
-            self.act_test.triggered.connect(self.do_test)
         
-        # look for existing mask layer
+        # look for an existing mask layer
         for name, layer in self.registry.mapLayers().iteritems():
             self.on_add_layer( layer )
-
-        if not self.has_atlas_signals:
-            print "no atlas signal"
 
         if self.has_atlas_signals:
             # register composer signals
@@ -174,6 +171,28 @@ class aeag_mask(QObject):
             # register already existing composers
             for compo in self.iface.activeComposers():
                 self.on_composer_added( compo )
+
+        # register to the change of active layer for enabling/disabling of the action
+        self.old_active_layer = None
+        self.iface.mapCanvas().currentLayerChanged.connect( self.on_current_layer_changed )
+        self.on_current_layer_changed( None )
+
+
+    def on_current_layer_changed( self, layer ):
+        _, poly = self.get_selected_polygons()
+        self.act_aeag_mask.setEnabled( poly != [] )
+
+        if self.old_active_layer is not None:
+            self.old_active_layer.selectionChanged.disconnect( self.on_current_layer_selection_changed )
+        if layer is not None:
+            layer.selectionChanged.connect( self.on_current_layer_selection_changed )
+
+        if layer != self.old_active_layer:
+            self.old_active_layer = layer
+
+    def on_current_layer_selection_changed( self ):
+        _, poly = self.get_selected_polygons()
+        self.act_aeag_mask.setEnabled( poly != [] )
 
     def unload(self):
         try:
@@ -199,6 +218,8 @@ class aeag_mask(QObject):
             # remove composer signals
             for compo in self.iface.activeComposers():
                 self.on_composer_removed( compo )
+
+        self.iface.mapCanvas().currentLayerChanged.disconnect( self.on_current_layer_changed )
 
     def on_composer_added( self, compo ):
         composition = compo.composition()
