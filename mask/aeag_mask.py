@@ -149,22 +149,19 @@ class aeag_mask(QObject):
             self.toolBar.addAction(self.act_aeag_mask)
             self.iface.addPluginToMenu("&Mask", self.act_aeag_mask)    
 
+        # turn it to true to enable test
         if False:
             self.act_test = QAction(QIcon(":plugins/mask/aeag_mask.png"), _fromUtf8("Test"), self.iface.mainWindow())
             self.toolBar.addAction( self.act_test )
             self.iface.addPluginToMenu("&Mask", self.act_test)
+            self.act_test.triggered.connect(self.do_test)
         
         # Add actions to the toolbar
         self.act_aeag_mask.triggered.connect(self.run)
-        if False:
-            self.act_test.triggered.connect(self.do_test)
         
-        # look for existing mask layer
+        # look for an existing mask layer
         for name, layer in self.registry.mapLayers().iteritems():
             self.on_add_layer( layer )
-
-        if not self.has_atlas_signals:
-            print "no atlas signal"
 
         if self.has_atlas_signals:
             # register composer signals
