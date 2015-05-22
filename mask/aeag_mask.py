@@ -172,6 +172,28 @@ class aeag_mask(QObject):
             for compo in self.iface.activeComposers():
                 self.on_composer_added( compo )
 
+        # register to the change of active layer for enabling/disabling of the action
+        self.old_active_layer = None
+        self.iface.mapCanvas().currentLayerChanged.connect( self.on_current_layer_changed )
+        self.on_current_layer_changed( None )
+
+
+    def on_current_layer_changed( self, layer ):
+        _, poly = self.get_selected_polygons()
+        self.act_aeag_mask.setEnabled( poly != [] )
+
+        if self.old_active_layer is not None:
+            self.old_active_layer.selectionChanged.disconnect( self.on_current_layer_selection_changed )
+        if layer is not None:
+            layer.selectionChanged.connect( self.on_current_layer_selection_changed )
+
+        if layer != self.old_active_layer:
+            self.old_active_layer = layer
+
+    def on_current_layer_selection_changed( self ):
+        _, poly = self.get_selected_polygons()
+        self.act_aeag_mask.setEnabled( poly != [] )
+
     def unload(self):
         try:
             from aeag import aeag
@@ -196,6 +218,8 @@ class aeag_mask(QObject):
             # remove composer signals
             for compo in self.iface.activeComposers():
                 self.on_composer_removed( compo )
+
+        self.iface.mapCanvas().currentLayerChanged.disconnect( self.on_current_layer_changed )
 
     def on_composer_added( self, compo ):
         composition = compo.composition()
