@@ -60,6 +60,15 @@ class Ui_LayerListWidget(object):
         self.layerTable.setHorizontalHeaderItem(1, item)
         self.layerTable.horizontalHeader().setStretchLastSection(True)
         self.verticalLayout.addWidget(self.layerTable)
+        self.horizontalLayout = QtGui.QHBoxLayout()
+        self.horizontalLayout.setObjectName(_fromUtf8("horizontalLayout"))
+        self.selectAllBtn = QtGui.QPushButton(LayerListWidget)
+        self.selectAllBtn.setObjectName(_fromUtf8("selectAllBtn"))
+        self.horizontalLayout.addWidget(self.selectAllBtn)
+        self.unselectAllBtn = QtGui.QPushButton(LayerListWidget)
+        self.unselectAllBtn.setObjectName(_fromUtf8("unselectAllBtn"))
+        self.horizontalLayout.addWidget(self.unselectAllBtn)
+        self.verticalLayout.addLayout(self.horizontalLayout)
 
         self.retranslateUi(LayerListWidget)
         self.polygonOperatorCombo.setCurrentIndex(0)
@@ -79,4 +88,6 @@ class Ui_LayerListWidget(object):
         item.setText(_translate("LayerListWidget", "Limit", None))
         item = self.layerTable.horizontalHeaderItem(1)
         item.setText(_translate("LayerListWidget", "Layer", None))
+        self.selectAllBtn.setText(_translate("LayerListWidget", "Select all", None))
+        self.unselectAllBtn.setText(_translate("LayerListWidget", "Unselect all", None))
 

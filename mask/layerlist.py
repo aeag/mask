@@ -14,6 +14,9 @@ class LayerListWidget( QWidget ):
         self.ui = Ui_LayerListWidget()
         self.ui.setupUi( self )
 
+        self.ui.selectAllBtn.clicked.connect( self.on_selectall )
+        self.ui.unselectAllBtn.clicked.connect( self.on_unselectall )
+
         # list of limited layers (list of layer id)
         self.limited = []
 
@@ -22,6 +25,18 @@ class LayerListWidget( QWidget ):
 
     def get_limited_layers( self ):
         return self.limited
+
+    def on_selectall( self ):
+        "Select all layers for label filtering"
+        ll = self.ui.layerTable
+        for i in range(ll.rowCount()):
+            ll.cellWidget( i, 0 ).setChecked( True )
+
+    def on_unselectall( self ):
+        "Unselect all layers for label filtering"
+        ll = self.ui.layerTable
+        for i in range(ll.rowCount()):
+            ll.cellWidget( i, 0 ).setChecked( False )
 
     def update_from_layers( self, is_new = False ):
         layers = QgsMapLayerRegistry.instance().mapLayers()
@@ -61,6 +76,9 @@ class LayerListWidget( QWidget ):
             item.setData( Qt.UserRole, layer )
             self.ui.layerTable.setItem( n, 0, item )
             n+=1
+
+        self.ui.selectAllBtn.setEnabled( n != 0 )
+        self.ui.unselectAllBtn.setEnabled( n != 0 )
 
     def update_labeling_from_list( self ):
         ll = self.ui.layerTable
