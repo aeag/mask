@@ -44,7 +44,7 @@ compile: $(UI_FILES) $(RESOURCE_FILES)
 	pyuic4 -o $@ $<
 
 %.qm : %.ts
-	lrelease $<
+	lrelease-qt4 $<
 
 # The deploy  target only works on unix like operating system where
 # the Python plugin directory is located at:
