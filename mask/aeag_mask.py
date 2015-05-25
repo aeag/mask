@@ -155,6 +155,14 @@ class aeag_mask(QObject):
             self.toolBar.addAction( self.act_test )
             self.iface.addPluginToMenu("&Mask", self.act_test)
             self.act_test.triggered.connect(self.do_test)
+
+        # Add documentation links to the menu
+        self.act_aeag_about = QAction( self.tr("About"), self.iface.mainWindow() )
+        self.act_aeag_about.triggered.connect( self.on_about )
+        self.act_aeag_doc = QAction( self.tr("Documentation"), self.iface.mainWindow() )
+        self.act_aeag_doc.triggered.connect( self.on_doc )
+        self.iface.addPluginToMenu("&Mask", self.act_aeag_about)
+        self.iface.addPluginToMenu("&Mask", self.act_aeag_doc)
         
         # Add actions to the toolbar
         self.act_aeag_mask.triggered.connect(self.run)
@@ -210,6 +218,10 @@ class aeag_mask(QObject):
             self.toolBar.removeAction(self.act_test)
             self.iface.removePluginMenu("&Mask", self.act_test)
 
+        # remove doc links
+        self.iface.removePluginMenu("&Mask", self.act_aeag_about)
+        self.iface.removePluginMenu("&Mask", self.act_aeag_doc)
+
         QgsExpression.unregisterFunction( "$mask_geometry" )
         QgsExpression.unregisterFunction( "in_mask" )
 
@@ -224,6 +236,32 @@ class aeag_mask(QObject):
                 self.on_composer_removed( compo )
 
         self.iface.mapCanvas().currentLayerChanged.disconnect( self.on_current_layer_changed )
+
+    def on_about( self ):
+        about = self.tr( """That tool is designed to help users to quickly generate cartographic masking layer to enlight an area of interest.<br/><br/>
+        Current features are:<ul>
+        <li>creates or modifies a mask relying on current polygon selection (on active layer)</li>
+        <li>creates or modifies a mask via a call of do_mask function so that mask can be called programmatically from other plugins</li>
+        <li>opens a dialog to choose mask layer properties:<ul>
+          <li>style options (default is inverted polygon renderer + border shading)</li>
+          <li>buffer around mask</li>
+          <li>filter labels of features falling outside area of interest (achieved by a <b>$in_mask</b> boolean filter on labeling placement options)</li>
+          <li>choose mask layer format (Memory or any OGR datasource)</li>
+       </ul></li>
+       </ul>
+
+      <p>Mask plugin was developped by Xavier Culos (AEAG) and contributed by Hugo Mercier (Oslandia) on funding by Agence de l'eau Adour Garonne.<br/>
+        Please notify any issue or enhancement request <a href="https://github.com/aeag/mask_plugin/issues/">here</a></p>""" )
+        msg = QMessageBox( None )
+        msg.addButton( QMessageBox.Ok )
+        msg.setIcon( QMessageBox.Information )
+        msg.setTextFormat( Qt.RichText )
+        msg.setText( about )
+        msg.setWindowTitle( self.tr("About") )
+        msg.exec_()
+
+    def on_doc( self ):
+        QDesktopServices.openUrl(QUrl("https://github.com/aeag/mask/wiki"))
 
     def on_composer_added( self, compo ):
         composition = compo.composition()
