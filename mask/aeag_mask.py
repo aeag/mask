@@ -131,9 +131,6 @@ class aeag_mask(QObject):
                 pal = remove_mask_filter( pal )
                 pal.writeToLayer( layer )
 
-        # Part of the hack to circumvent layers opened from MemoryLayerSaver
-        self.must_reload_from_layer = False
-
         self.simplified_geometries = {}
 
     def initGui(self):  
@@ -146,7 +143,6 @@ class aeag_mask(QObject):
         self.disable_remove_mask_signal = False
         self.disable_add_layer_signal = False
         self.registry = QgsMapLayerRegistry.instance()
-        #self.registry.layerWasAdded.connect( self.on_add_layer )
         self.registry.layerWillBeRemoved.connect( self.on_remove_mask )
 
         self.act_aeag_mask = QAction(QIcon(":plugins/mask/aeag_mask.png"), self.tr("Create a mask"), self.iface.mainWindow())
@@ -255,7 +251,6 @@ class aeag_mask(QObject):
         QgsExpression.unregisterFunction( "$mask_geometry" )
         QgsExpression.unregisterFunction( "in_mask" )
 
-        #self.registry.layerWasAdded.disconnect( self.on_add_layer )
         self.registry.layerWillBeRemoved.disconnect( self.on_remove_mask )
 
         if self.has_atlas_signals:
@@ -351,38 +346,6 @@ class aeag_mask(QObject):
         self.simplified_geometries = {}
 
         return geom
-
-    def create_atlas_layer( self ):
-        if not self.atlas_layer:
-            # add a memory layer for atlas
-            dest_crs = self.layer.crs()
-            self.atlas_layer = QgsVectorLayer("MultiPolygon?crs=%s" % dest_crs.authid(), "Mask_atlas_preview", "memory")
-            self.set_layer_style( self.atlas_layer, self.get_layer_style( self.layer ) )
-
-            self.registry.addMapLayer( self.atlas_layer )
-
-            # insert it in place of the current 'mask' layer
-            root = QgsProject.instance().layerTreeRoot()
-            old = root.findLayer( self.atlas_layer.id() )
-            node = root.findLayer( self.layer.id() )
-            # find its idx
-            parent = node.parent()
-            if parent is None:
-                parent = root
-            idx = None
-            for i, n in enumerate(parent.findLayers()):
-                if n.layer().id() == self.layer.id():
-                    idx = i
-                    break
-            if idx is not None:
-                parent.insertChildNode( idx, QgsLayerTreeLayer( self.atlas_layer ) )
-            # remove the first
-            self.disable_remove_mask_signal = True
-            parent.removeChildNode( old )
-            self.disable_remove_mask_signal = False
-
-            # make the 'mask' layer not visible
-            self.iface.legendInterface().setLayerVisible( self.layer, False )
 
     def on_prepared_for_atlas( self, item ):
         # called for each atlas feature
@@ -684,13 +647,6 @@ class aeag_mask(QObject):
         return None
 
     def mask_geometry( self ):
-        if self.must_reload_from_layer:
-            # will force loading of parameters the first time the mask geometry is accessed
-            # this will happen AFTER MemorySaveLayer has loaded memory layers
-            self.layer = self.must_reload_from_layer
-            self.parameters.load_from_layer( self.layer )
-            self.must_reload_from_layer = None
-
         if not self.parameters.geometry:
             geom = QgsGeometry()
             return geom, QgsRectangle()

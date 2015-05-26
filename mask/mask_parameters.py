@@ -90,58 +90,6 @@ class MaskParameters:
                 gl.append( geo )
             self.orig_geometry = gl
 
-    def load_from_layer( self, layer ):
-        # try to load parameters from a mask layer
-
-        # return False on failure
-        pr = layer.dataProvider()
-        fields = pr.fields()
-        if fields.size() < 1:
-            return False
-        field = None
-        for i, f in enumerate(fields):
-            if f.name() == "params":
-                field = i
-        if field is None:
-            return False
-
-        it = pr.getFeatures()
-        fet = QgsFeature()
-        it.nextFeature(fet)
-        st = fet.attributes()[field]
-        self.unserialize( base64.b64decode(st) )
-        self.geometry = QgsGeometry( fet.geometry() )
-
-        return True
-
-    def save_to_layer( self, layer ):
-        # do not serialize style (for shapefiles)
-        serialized = base64.b64encode( self.serialize( with_style = False ) )
-        # insert or replace into ...
-        pr = layer.dataProvider()
-        if pr.featureCount() == 0:
-            if pr.fields().size() == 0:
-                layer.startEditing()
-                ok = layer.addAttribute( QgsField( "params", QVariant.String) )
-                if not ok:
-                    print "problem adding attribute (save_to_layer)"
-                layer.commitChanges()
-
-            # id1 : geometry + parameters
-            fet1 = QgsFeature()
-            fet1.setAttributes( [serialized] )
-            fet1.setGeometry(self.geometry)
-            pr.addFeatures([ fet1 ])
-        else:
-            # get the first feature
-            it = pr.getFeatures()
-            fet = QgsFeature()
-            ok = it.nextFeature(fet)
-
-            ok = pr.changeAttributeValues( { fet.id() : { 0 : serialized } } )
-            ok = pr.changeGeometryValues( { fet.id() : self.geometry } )
-        layer.updateExtents()
-
     def save_to_project( self ):
         serialized = base64.b64encode( self.serialize() )
         QgsProject.instance().writeEntry( "Mask", "parameters", serialized )
