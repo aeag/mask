@@ -56,7 +56,8 @@ def do(crs=None, poly=None, name=None):
     # crs = QgsCoordinateReferenceSystem
     # poly = list of geometries
     global aeag_mask_instance
-    aeag_mask_instance.apply_mask_parameters(crs,poly,name)
+    this = aeag_mask_instance
+    this.layer = this.apply_mask_parameters(this.layer, this.parameters, crs, poly, name)
 
 def is_in_qgis_core( sym ):
     import qgis.core
@@ -209,7 +210,8 @@ class aeag_mask(QObject):
 
     def on_project_open( self, dom ):
         self.layer, self.parameters = self.load_from_project()
-        self.layer = self.apply_mask_parameters( self.layer, self.parameters, dest_crs = None, poly = None, name = self.layer.name() )        
+        if self.layer is not None:
+            self.layer = self.apply_mask_parameters( self.layer, self.parameters, dest_crs = None, poly = None, name = self.layer.name() )        
 
     def on_current_layer_changed( self, layer ):
         if self.layer is None:
