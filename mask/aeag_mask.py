@@ -179,8 +179,11 @@ class aeag_mask(QObject):
 
 
     def on_current_layer_changed( self, layer ):
-        _, poly = self.get_selected_polygons()
-        self.act_aeag_mask.setEnabled( poly != [] )
+        if self.layer is None:
+            _, poly = self.get_selected_polygons()
+            self.act_aeag_mask.setEnabled( poly != [] )
+        else:
+            self.act_aeag_mask.setEnabled( True )
 
         if self.old_active_layer is not None:
             self.old_active_layer.selectionChanged.disconnect( self.on_current_layer_selection_changed )
@@ -191,8 +194,9 @@ class aeag_mask(QObject):
             self.old_active_layer = layer
 
     def on_current_layer_selection_changed( self ):
-        _, poly = self.get_selected_polygons()
-        self.act_aeag_mask.setEnabled( poly != [] )
+        if self.layer is None:
+            _, poly = self.get_selected_polygons()
+            self.act_aeag_mask.setEnabled( poly != [] )
 
     def unload(self):
         try:
@@ -496,6 +500,8 @@ class aeag_mask(QObject):
             self.act_aeag_mask.setText(self.tr("Update the current mask"))
         else:
             self.act_aeag_mask.setText(self.tr("Create a mask"))
+        # update icon state
+        self.on_current_layer_changed( self.iface.activeLayer() )
 
     def on_add_layer( self, layer ):
         if self.disable_add_layer_signal:
