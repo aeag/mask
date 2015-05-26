@@ -36,6 +36,7 @@ class MaskParameters:
         # layers (list of id) where labeling has to be limited
         self.limited_layers = []
 
+        self.orig_geometry = None
         self.geometry = None
 
     def serialize( self, with_style = True ):
@@ -54,7 +55,9 @@ class MaskParameters:
                              self.limited_layers,
                              style,
                              self.polygon_mask_method,
-                             self.line_mask_method])
+                             self.line_mask_method,
+                             [ g.asWkb() for g in self.orig_geometry ] if self.orig_geometry is not None else None,
+                             self.geometry.asWkb() if self.geometry is not None else None])
 
     def unserialize( self, st ):
         (self.do_buffer,
@@ -68,59 +71,35 @@ class MaskParameters:
          self.limited_layers,
          style,
          self.polygon_mask_method,
-         self.line_mask_method
+         self.line_mask_method,
+         orig_geom,
+         geom
          ) = pickle.loads( st )
+        self.style = None
+        self.geometry = None
         if style is not None:
             self.style = style
+        if geom is not None:
+            self.geometry = QgsGeometry()
+            self.geometry.fromWkb( geom )
+        if orig_geom is not None:
+            gl = []
+            for g in orig_geom:
+                geo = QgsGeometry()
+                geo.fromWkb( g )
+                gl.append( geo )
+            self.orig_geometry = gl
 
-    def load_from_layer( self, layer ):
-        # try to load parameters from a mask layer
-
-        # return False on failure
-        pr = layer.dataProvider()
-        fields = pr.fields()
-        if fields.size() < 1:
-            return False
-        field = None
-        for i, f in enumerate(fields):
-            if f.name() == "params":
-                field = i
-        if field is None:
-            return False
-
-        it = pr.getFeatures()
-        fet = QgsFeature()
-        it.nextFeature(fet)
-        st = fet.attributes()[field]
-        self.unserialize( base64.b64decode(st) )
-        self.geometry = QgsGeometry( fet.geometry() )
-
+    def save_to_project( self ):
+        serialized = base64.b64encode( self.serialize() )
+        QgsProject.instance().writeEntry( "Mask", "parameters", serialized )
         return True
 
-    def save_to_layer( self, layer ):
-        # do not serialize style (for shapefiles)
-        serialized = base64.b64encode( self.serialize( with_style = False ) )
-        # insert or replace into ...
-        pr = layer.dataProvider()
-        if pr.featureCount() == 0:
-            if pr.fields().size() == 0:
-                layer.startEditing()
-                ok = layer.addAttribute( QgsField( "params", QVariant.String) )
-                if not ok:
-                    print "problem adding attribute (save_to_layer)"
-                layer.commitChanges()
+    def load_from_project( self ):
+        st, ok = QgsProject.instance().readEntry( "Mask", "parameters" )
+        if st == '':
+            return False
 
-            # id1 : geometry + parameters
-            fet1 = QgsFeature()
-            fet1.setAttributes( [serialized] )
-            fet1.setGeometry(self.geometry)
-            pr.addFeatures([ fet1 ])
-        else:
-            # get the first feature
-            it = pr.getFeatures()
-            fet = QgsFeature()
-            ok = it.nextFeature(fet)
+        self.unserialize( base64.b64decode(st) )
+        return True
 
-            ok = pr.changeAttributeValues( { fet.id() : { 0 : serialized } } )
-            ok = pr.changeGeometryValues( { fet.id() : self.geometry } )
-        layer.updateExtents()
