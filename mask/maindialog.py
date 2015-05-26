@@ -46,6 +46,8 @@ class MainDialog( QDialog ):
         self.ui.loadDefaultsBtn = QPushButton( self.tr("Load defaults"), self.ui.buttonBox )
         self.ui.buttonBox.addButton( self.ui.loadDefaultsBtn, QDialogButtonBox.ActionRole )
         self.ui.loadDefaultsBtn.clicked.connect( self.load_defaults )
+        # connect the "help" button
+        self.ui.buttonBox.helpRequested.connect( self.on_help )
 
         self.ui.layer_list.ui.polygonOperatorCombo.currentIndexChanged[int].connect( self.on_polygon_operator_changed )
 
@@ -65,6 +67,9 @@ class MainDialog( QDialog ):
             self.setWindowTitle( self.tr("Create a mask") )
         else:
             self.setWindowTitle( self.tr("Update the current mask") )
+
+    def on_help( self ):
+        QDesktopServices.openUrl(QUrl("https://github.com/aeag/mask/wiki"))
 
     def on_polygon_operator_changed( self, idx ):
         if idx == 0 and self.ui.simplifyGroup.isChecked():
