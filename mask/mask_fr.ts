@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE TS>
-<TS version="2.0" language="fr_FR">
+<!DOCTYPE TS><TS version="2.0" language="fr_FR" sourcelanguage="">
 <context>
     <name>LayerListWidget</name>
     <message>
@@ -52,6 +51,16 @@
         <location filename="ui_layer_list.ui" line="70"/>
         <source>The mask geometry contains the line</source>
         <translation>Le masque contient la ligne</translation>
+    </message>
+    <message>
+        <location filename="ui_layer_list.ui" line="99"/>
+        <source>Select all</source>
+        <translation>Sélectionner tout</translation>
+    </message>
+    <message>
+        <location filename="ui_layer_list.ui" line="106"/>
+        <source>Unselect all</source>
+        <translation>Désélectionner tout</translation>
     </message>
 </context>
 <context>
@@ -112,32 +121,32 @@
         <translation>...</translation>
     </message>
     <message>
-        <location filename="maindialog.py" line="45"/>
+        <location filename="maindialog.py" line="42"/>
         <source>Save as defaults</source>
         <translation>Sauver comme valeurs par défaut</translation>
     </message>
     <message>
-        <location filename="maindialog.py" line="49"/>
+        <location filename="maindialog.py" line="46"/>
         <source>Load defaults</source>
         <translation>Charger les valeurs par défaut</translation>
     </message>
     <message>
-        <location filename="maindialog.py" line="276"/>
+        <location filename="maindialog.py" line="266"/>
         <source>Warning</source>
         <translation>Attention</translation>
     </message>
     <message>
-        <location filename="maindialog.py" line="276"/>
+        <location filename="maindialog.py" line="266"/>
         <source>Some layer have rendering simplification turned on, which is not compatible with the labeling filtering you choose. Force simplification disabling ?</source>
         <translation>La simplification à la volée est activée sur certaines couches, ce qui n&apos;est pas compatible avec la méthode de filtrage des étiquettes choisie. Désactiver la simplification à la volée sur ces couches ?</translation>
     </message>
     <message>
-        <location filename="maindialog.py" line="66"/>
+        <location filename="maindialog.py" line="65"/>
         <source>Create a mask</source>
         <translation>Créer un masque</translation>
     </message>
     <message>
-        <location filename="maindialog.py" line="68"/>
+        <location filename="maindialog.py" line="67"/>
         <source>Update the current mask</source>
         <translation>Mettre à jour le masque existant</translation>
     </message>
@@ -182,42 +191,77 @@
         <translation>Est-ce que la couche de masque doit être sauvegardée. Par défaut une couche mémoire est créée.</translation>
     </message>
     <message>
-        <location filename="maindialog.py" line="166"/>
+        <location filename="maindialog.py" line="156"/>
         <source>Select a filename to save the mask layer to</source>
         <translation>Sélectionnez un nom de fichier pour sauvegarder la couche de masque</translation>
-    </message>
-    <message>
-        <location filename="ui_plugin_mask.ui" line="253"/>
-        <source>&apos;&apos;</source>
-        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>aeag_mask</name>
     <message>
-        <location filename="aeag_mask.py" line="357"/>
+        <location filename="aeag_mask.py" line="449"/>
         <source>Mask plugin error</source>
         <translation>Erreur du plugin Mask</translation>
     </message>
     <message>
-        <location filename="aeag_mask.py" line="357"/>
+        <location filename="aeag_mask.py" line="449"/>
         <source>No polygon selection !</source>
         <translation>Aucune sélection !</translation>
     </message>
     <message>
-        <location filename="aeag_mask.py" line="385"/>
+        <location filename="aeag_mask.py" line="477"/>
         <source>Create a mask</source>
         <translation>Créer un masque</translation>
     </message>
     <message>
-        <location filename="aeag_mask.py" line="383"/>
+        <location filename="aeag_mask.py" line="475"/>
         <source>Update the current mask</source>
         <translation>Mettre à jour le masque existant</translation>
     </message>
     <message>
-        <location filename="aeag_mask.py" line="325"/>
+        <location filename="aeag_mask.py" line="415"/>
         <source>Problem saving the mask layer</source>
         <translation>Problème lors de la sauvegarde de la couche masque</translation>
+    </message>
+    <message>
+        <location filename="aeag_mask.py" line="397"/>
+        <source>Driver not found !</source>
+        <translation>Pilote introuvable !</translation>
+    </message>
+    <message>
+        <location filename="aeag_mask.py" line="399"/>
+        <source>Cannot create data source !</source>
+        <translation>Impossible de créer la source de données !</translation>
+    </message>
+    <message>
+        <location filename="aeag_mask.py" line="401"/>
+        <source>Cannot create layer !</source>
+        <translation>Impossible de créer la couche !</translation>
+    </message>
+    <message>
+        <location filename="aeag_mask.py" line="403"/>
+        <source>Attribute type unsupported !</source>
+        <translation>Type d'attribut non supporté !</translation>
+    </message>
+    <message>
+        <location filename="aeag_mask.py" line="405"/>
+        <source>Attribute creation failed !</source>
+        <translation>Echec de création d'attribut !</translation>
+    </message>
+    <message>
+        <location filename="aeag_mask.py" line="407"/>
+        <source>Projection error !</source>
+        <translation>Erreur de projection !</translation>
+    </message>
+    <message>
+        <location filename="aeag_mask.py" line="409"/>
+        <source>Feature write failed !</source>
+        <translation>Echec d'écriture !</translation>
+    </message>
+    <message>
+        <location filename="aeag_mask.py" line="411"/>
+        <source>Invalid layer !</source>
+        <translation>Couche invalide !</translation>
     </message>
 </context>
 </TS>
