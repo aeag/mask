@@ -220,6 +220,9 @@ class aeag_mask(QObject):
         else:
             self.act_aeag_mask.setEnabled( True )
 
+        if layer and layer.type() != QgsMapLayer.VectorLayer:
+            return
+
         if self.old_active_layer is not None:
             self.old_active_layer.selectionChanged.disconnect( self.on_current_layer_selection_changed )
         if layer is not None:
@@ -513,8 +516,9 @@ class aeag_mask(QObject):
         dlg = MainDialog( parameters, is_new )
 
         # for "Apply" and "Ok"
+        self.layer = layer
         def on_applied_():
-            new_layer = self.apply_mask_parameters( layer, parameters )
+            new_layer = self.apply_mask_parameters( self.layer, parameters )
             self.save_to_project( new_layer, parameters )
             self.layer = new_layer
             self.parameters = parameters
