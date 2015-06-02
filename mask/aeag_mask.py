@@ -516,8 +516,9 @@ class aeag_mask(QObject):
         dlg = MainDialog( parameters, is_new )
 
         # for "Apply" and "Ok"
+        self.layer = layer
         def on_applied_():
-            new_layer = self.apply_mask_parameters( layer, parameters )
+            new_layer = self.apply_mask_parameters( self.layer, parameters )
             self.save_to_project( new_layer, parameters )
             self.layer = new_layer
             self.parameters = parameters
