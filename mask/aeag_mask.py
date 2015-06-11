@@ -221,6 +221,7 @@ class aeag_mask(QObject):
             self.act_aeag_mask.setEnabled( True )
 
         if layer and layer.type() != QgsMapLayer.VectorLayer:
+            self.old_active_layer = None
             return
 
         if self.old_active_layer is not None:
