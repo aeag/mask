@@ -360,7 +360,12 @@ class aeag_mask(QObject):
 
         geom = QgsExpression.specialColumn("$atlasgeometry")
         masked_atlas_geometry = [geom]
-        self.layer = self.apply_mask_parameters( self.layer, self.parameters, dest_crs = self.layer.crs(), poly = masked_atlas_geometry, name = self.layer.name() )
+        self.layer = self.apply_mask_parameters( self.layer,
+                                                 self.parameters, dest_crs = self.layer.crs(),
+                                                 poly = masked_atlas_geometry,
+                                                 name = self.layer.name(),
+                                                 cleanup_and_zoom = False # no need to zoom, it has already been scaled by atlas
+                                                 )
  
         # update maps
         for compoview in self.iface.activeComposers():
@@ -382,7 +387,13 @@ class aeag_mask(QObject):
 
         # restore the mask geometry
         self.parameters.orig_geometry = self.geometries_backup
-        self.layer = self.apply_mask_parameters( self.layer, self.parameters, dest_crs = None, poly = None, name = self.layer.name() )
+        self.layer = self.apply_mask_parameters( self.layer,
+                                                 self.parameters,
+                                                 dest_crs = None,
+                                                 poly = None,
+                                                 name = self.layer.name(),
+                                                 cleanup_and_zoom = False # no need to zoom, it has already been scaled by atlas
+                                                 )
         self.simplified_geometries = {}
 
         # process events to go out of the current rendering, if any
@@ -391,7 +402,7 @@ class aeag_mask(QObject):
         for compoview in self.iface.activeComposers():
             compoview.composition().refreshItems()
 
-    def apply_mask_parameters( self, layer, parameters, dest_crs = None, poly = None, name = None ):
+    def apply_mask_parameters( self, layer, parameters, dest_crs = None, poly = None, name = None, cleanup_and_zoom = True ):
         # Apply given mask parameters to the given layer. Returns the new layer
         # The given layer is removed and then recreated in the layer tree
         # if poly is not None, it is used as the mask geometry
@@ -430,6 +441,9 @@ class aeag_mask(QObject):
         # compute the geometry
         parameters.orig_geometry = [ QgsGeometry(g) for g in poly ]
         parameters.geometry = self.compute_mask_geometries( parameters, poly )
+
+        # disable rendering
+        self.canvas.setRenderFlag( False )
 
         # save layer's style
         layer_style = self.get_layer_style( layer )
@@ -473,23 +487,26 @@ class aeag_mask(QObject):
         self.add_layer( layer )
         parameters.layer = layer
         
-        #RH 04 05 2015 > clean up selection of all layers 
-        for l in self.canvas.layers():
-            if l.type() != QgsMapLayer.VectorLayer:
-                # Ignore this layer as it's not a vector
-                continue
-            if l.featureCount() == 0:
-                # There are no features - skip
-                continue
-            l.removeSelection()
-            
-        #RH 04 05 2015 > zooms to mask layer and clear selection http://qgis.org/api/classQgsMapCanvas.html#a4540bf00bfb127cd47c863dfd4d99c48
-        canvas = self.iface.mapCanvas()
-        extent = layer.extent()
-        extent.scale(1.1) #scales extent by 10% unzoomed
-        canvas.setExtent(extent)
+        if cleanup_and_zoom:
+            #RH 04 05 2015 > clean up selection of all layers 
+            for l in self.canvas.layers():
+                if l.type() != QgsMapLayer.VectorLayer:
+                    # Ignore this layer as it's not a vector
+                    continue
+                if l.featureCount() == 0:
+                    # There are no features - skip
+                    continue
+                l.removeSelection()
+
+            #RH 04 05 2015 > zooms to mask layer
+            canvas = self.iface.mapCanvas()
+            extent = layer.extent()
+            extent.scale(1.1) #scales extent by 10% unzoomed
+            canvas.setExtent(extent)
         
         # refresh
+        # restore rendering
+        self.canvas.setRenderFlag( True )
         self.canvas.clearCache()
         self.canvas.refresh()
 
