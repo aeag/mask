@@ -699,9 +699,10 @@ class aeag_mask(QObject):
         return geom, bbox
 
     def in_mask( self, feature, srid ):
+        if feature is None: # expression overview
+            return False
         if self.layer is None:
             return False
-
 
         try:
             # layer is not None but destroyed ?
