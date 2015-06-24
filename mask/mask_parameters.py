@@ -90,6 +90,16 @@ class MaskParameters:
                 gl.append( geo )
             self.orig_geometry = gl
 
+    def have_same_layer_options( self, other ):
+        "Returns true if the other parameters have the same layer options (file path, file format) than self"
+        if not self.do_save_as:
+            return not other.do_save_as
+        else:
+            if not other.do_save_as:
+                return False
+            else:
+                return self.file_path == other.file_path and self.file_format == other.file_format
+
     def save_to_project( self ):
         serialized = base64.b64encode( self.serialize() )
         QgsProject.instance().writeEntry( "Mask", "parameters", serialized )
