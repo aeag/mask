@@ -57,7 +57,7 @@ def do(crs=None, poly=None, name=None):
     # poly = list of geometries
     global aeag_mask_instance
     this = aeag_mask_instance
-    this.layer = this.apply_mask_parameters(this.layer, this.parameters, crs, poly, name)
+    this.layer = this.apply_mask_parameters(this.layer, this.parameters, crs, poly, name, keep_layer = False )
 
 def is_in_qgis_core( sym ):
     import qgis.core
@@ -211,7 +211,7 @@ class aeag_mask(QObject):
     def on_project_open( self, dom ):
         self.layer, self.parameters = self.load_from_project()
         if self.layer is not None:
-            self.layer = self.apply_mask_parameters( self.layer, self.parameters, dest_crs = None, poly = None, name = self.layer.name() )        
+            self.layer = self.apply_mask_parameters( self.layer, self.parameters, dest_crs = None, poly = None, name = self.layer.name(), keep_layer = False )
 
     def on_current_layer_changed( self, layer ):
         if self.layer is None:
@@ -402,7 +402,7 @@ class aeag_mask(QObject):
         for compoview in self.iface.activeComposers():
             compoview.composition().refreshItems()
 
-    def apply_mask_parameters( self, layer, parameters, dest_crs = None, poly = None, name = None, cleanup_and_zoom = True ):
+    def apply_mask_parameters( self, layer, parameters, dest_crs = None, poly = None, name = None, cleanup_and_zoom = True, keep_layer = True ):
         # Apply given mask parameters to the given layer. Returns the new layer
         # The given layer is removed and then recreated in the layer tree
         # if poly is not None, it is used as the mask geometry
@@ -445,47 +445,55 @@ class aeag_mask(QObject):
         # disable rendering
         self.canvas.setRenderFlag( False )
 
-        # save layer's style
-        layer_style = self.get_layer_style( layer )
-        # remove the old layer
-        self.disable_remove_mask_signal = True
-        self.registry.removeMapLayer( layer.id() )
-        self.disable_remove_mask_signal = False
+        if not keep_layer:
+            # save layer's style
+            layer_style = self.get_layer_style( layer )
+            # remove the old layer
+            self.disable_remove_mask_signal = True
+            self.registry.removeMapLayer( layer.id() )
+            self.disable_remove_mask_signal = False
 
-        # (re)create the layer
-        is_mem = not parameters.do_save_as
-        nlayer = None
-        try:
-            nlayer = self.create_layer( parameters, mask_name, is_mem, dest_crs, layer_style )
-        except RuntimeError as ex:
-            e = ex.message
-            if e == 1:
-                QMessageBox.critical( None, self.tr("Mask plugin error"), self.tr("Driver not found !") )
-            elif e == 2:
-                QMessageBox.critical( None, self.tr("Mask plugin error"), self.tr("Cannot create data source !") )
-            elif e == 3:
-                QMessageBox.critical( None, self.tr("Mask plugin error"), self.tr("Cannot create layer !") )
-            elif e == 4:
-                QMessageBox.critical( None, self.tr("Mask plugin error"), self.tr("Attribute type unsupported !") )
-            elif e == 5:
-                QMessageBox.critical( None, self.tr("Mask plugin error"), self.tr("Attribute creation failed !") )
-            elif e == 6:
-                QMessageBox.critical( None, self.tr("Mask plugin error"), self.tr("Projection error !") )
-            elif e == 7:
-                QMessageBox.critical( None, self.tr("Mask plugin error"), self.tr("Feature write failed !") )
-            elif e == 8:
-                QMessageBox.critical( None, self.tr("Mask plugin error"), self.tr("Invalid layer !") )
-            return
-        
-        if nlayer is None:
-            QMessageBox.critical( None, self.tr("Mask plugin error"), self.tr("Problem saving the mask layer") )
-            return
-            
-        # add the new layer
-        layer = nlayer
-        QgsProject.instance().writeEntry( "Mask", "layer_id", nlayer.id() )
-        self.add_layer( layer )
-        parameters.layer = layer
+            # (re)create the layer
+            is_mem = not parameters.do_save_as
+            nlayer = None
+            try:
+                nlayer = self.create_layer( parameters, mask_name, is_mem, dest_crs, layer_style )
+            except RuntimeError as ex:
+                e = ex.message
+                if e == 1:
+                    QMessageBox.critical( None, self.tr("Mask plugin error"), self.tr("Driver not found !") )
+                elif e == 2:
+                    QMessageBox.critical( None, self.tr("Mask plugin error"), self.tr("Cannot create data source !") )
+                elif e == 3:
+                    QMessageBox.critical( None, self.tr("Mask plugin error"), self.tr("Cannot create layer !") )
+                elif e == 4:
+                    QMessageBox.critical( None, self.tr("Mask plugin error"), self.tr("Attribute type unsupported !") )
+                elif e == 5:
+                    QMessageBox.critical( None, self.tr("Mask plugin error"), self.tr("Attribute creation failed !") )
+                elif e == 6:
+                    QMessageBox.critical( None, self.tr("Mask plugin error"), self.tr("Projection error !") )
+                elif e == 7:
+                    QMessageBox.critical( None, self.tr("Mask plugin error"), self.tr("Feature write failed !") )
+                elif e == 8:
+                    QMessageBox.critical( None, self.tr("Mask plugin error"), self.tr("Invalid layer !") )
+                return
+
+            if nlayer is None:
+                QMessageBox.critical( None, self.tr("Mask plugin error"), self.tr("Problem saving the mask layer") )
+                return
+
+            # add the new layer
+            layer = nlayer
+            QgsProject.instance().writeEntry( "Mask", "layer_id", nlayer.id() )
+            self.add_layer( layer )
+            parameters.layer = layer
+        else:
+            # replace the mask geometry
+            pr = layer.dataProvider()
+            fid = 0
+            for f in pr.getFeatures():
+                fid = f.id()
+            pr.changeGeometryValues( {fid: parameters.geometry} )
         
         if cleanup_and_zoom:
             #RH 04 05 2015 > clean up selection of all layers 
@@ -505,10 +513,8 @@ class aeag_mask(QObject):
             canvas.setExtent(extent)
         
         # refresh
-        # restore rendering
-        self.canvas.setRenderFlag( True )
         self.canvas.clearCache()
-        self.canvas.refresh()
+        self.canvas.setRenderFlag( True ) # will call refresh
 
         return layer
 
@@ -536,10 +542,11 @@ class aeag_mask(QObject):
         # for "Apply" and "Ok"
         self.layer = layer
         def on_applied_():
-            new_layer = self.apply_mask_parameters( self.layer, parameters )
+            keep_layer = not is_new and self.parameters.have_same_layer_options( parameters )
+            new_layer = self.apply_mask_parameters( self.layer, parameters, keep_layer = keep_layer )
             self.save_to_project( new_layer, parameters )
             self.layer = new_layer
-            self.parameters = parameters
+            self.parameters = parameters        
 
         # connect apply
         dlg.applied.connect( on_applied_ )
@@ -626,7 +633,7 @@ class aeag_mask(QObject):
         pr = layer.dataProvider()
         layer.startEditing()
         ok = layer.addAttribute( QgsField( "params", QVariant.String) )
-        fet1 = QgsFeature()
+        fet1 = QgsFeature(0)
         fet1.setAttributes( [serialized] )
         fet1.setGeometry(parameters.geometry)
         ok = pr.addFeatures([ fet1 ])
