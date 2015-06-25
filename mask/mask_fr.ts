@@ -121,32 +121,32 @@
         <translation>...</translation>
     </message>
     <message>
-        <location filename="maindialog.py" line="42"/>
+        <location filename="maindialog.py" line="50"/>
         <source>Save as defaults</source>
         <translation>Sauver comme valeurs par défaut</translation>
     </message>
     <message>
-        <location filename="maindialog.py" line="46"/>
+        <location filename="maindialog.py" line="54"/>
         <source>Load defaults</source>
         <translation>Charger les valeurs par défaut</translation>
     </message>
     <message>
-        <location filename="maindialog.py" line="271"/>
+        <location filename="maindialog.py" line="283"/>
         <source>Warning</source>
         <translation>Attention</translation>
     </message>
     <message>
-        <location filename="maindialog.py" line="271"/>
+        <location filename="maindialog.py" line="283"/>
         <source>Some layer have rendering simplification turned on, which is not compatible with the labeling filtering you choose. Force simplification disabling ?</source>
         <translation>La simplification à la volée est activée sur certaines couches, ce qui n&apos;est pas compatible avec la méthode de filtrage des étiquettes choisie. Désactiver la simplification à la volée sur ces couches ?</translation>
     </message>
     <message>
-        <location filename="maindialog.py" line="67"/>
+        <location filename="maindialog.py" line="75"/>
         <source>Create a mask</source>
         <translation>Créer un masque</translation>
     </message>
     <message>
-        <location filename="maindialog.py" line="69"/>
+        <location filename="maindialog.py" line="77"/>
         <source>Update the current mask</source>
         <translation>Mettre à jour le masque existant</translation>
     </message>
@@ -191,123 +191,92 @@
         <translation>Est-ce que la couche de masque doit être sauvegardée. Par défaut une couche mémoire est créée.</translation>
     </message>
     <message>
-        <location filename="maindialog.py" line="161"/>
+        <location filename="maindialog.py" line="173"/>
         <source>Select a filename to save the mask layer to</source>
         <translation>Sélectionnez un nom de fichier pour sauvegarder la couche de masque</translation>
     </message>
     <message>
-        <location filename="ui_plugin_mask.ui" line="253"/>
-        <source>&apos;&apos;</source>
-        <translation type="unfinished"></translation>
+        <location filename="maindialog.py" line="46"/>
+        <source>Tips</source>
+        <translation>Astuces</translation>
     </message>
 </context>
 <context>
     <name>aeag_mask</name>
     <message>
-        <location filename="aeag_mask.py" line="507"/>
+        <location filename="aeag_mask.py" line="513"/>
         <source>Mask plugin error</source>
         <translation>Erreur du plugin Mask</translation>
     </message>
     <message>
-        <location filename="aeag_mask.py" line="507"/>
+        <location filename="aeag_mask.py" line="513"/>
         <source>No polygon selection !</source>
         <translation>Aucune sélection !</translation>
     </message>
     <message>
-        <location filename="aeag_mask.py" line="539"/>
+        <location filename="aeag_mask.py" line="546"/>
         <source>Create a mask</source>
         <translation>Créer un masque</translation>
     </message>
     <message>
-        <location filename="aeag_mask.py" line="537"/>
+        <location filename="aeag_mask.py" line="544"/>
         <source>Update the current mask</source>
         <translation>Mettre à jour le masque existant</translation>
     </message>
     <message>
-        <location filename="aeag_mask.py" line="466"/>
+        <location filename="aeag_mask.py" line="464"/>
         <source>Problem saving the mask layer</source>
         <translation>Problème lors de la sauvegarde de la couche masque</translation>
     </message>
     <message>
-        <location filename="aeag_mask.py" line="448"/>
+        <location filename="aeag_mask.py" line="446"/>
         <source>Driver not found !</source>
         <translation>Pilote introuvable !</translation>
     </message>
     <message>
-        <location filename="aeag_mask.py" line="450"/>
+        <location filename="aeag_mask.py" line="448"/>
         <source>Cannot create data source !</source>
         <translation>Impossible de créer la source de données !</translation>
     </message>
     <message>
-        <location filename="aeag_mask.py" line="452"/>
+        <location filename="aeag_mask.py" line="450"/>
         <source>Cannot create layer !</source>
         <translation>Impossible de créer la couche !</translation>
     </message>
     <message>
-        <location filename="aeag_mask.py" line="454"/>
+        <location filename="aeag_mask.py" line="452"/>
         <source>Attribute type unsupported !</source>
         <translation>Type d&apos;attribut non supporté !</translation>
     </message>
     <message>
-        <location filename="aeag_mask.py" line="456"/>
+        <location filename="aeag_mask.py" line="454"/>
         <source>Attribute creation failed !</source>
         <translation>Echec de création d&apos;attribut !</translation>
     </message>
     <message>
-        <location filename="aeag_mask.py" line="458"/>
+        <location filename="aeag_mask.py" line="456"/>
         <source>Projection error !</source>
         <translation>Erreur de projection !</translation>
     </message>
     <message>
-        <location filename="aeag_mask.py" line="460"/>
+        <location filename="aeag_mask.py" line="458"/>
         <source>Feature write failed !</source>
         <translation>Echec d&apos;écriture !</translation>
     </message>
     <message>
-        <location filename="aeag_mask.py" line="462"/>
+        <location filename="aeag_mask.py" line="460"/>
         <source>Invalid layer !</source>
         <translation>Couche invalide !</translation>
     </message>
     <message>
-        <location filename="aeag_mask.py" line="291"/>
+        <location filename="aeag_mask.py" line="169"/>
         <source>About</source>
         <translation>A propos</translation>
     </message>
     <message>
-        <location filename="aeag_mask.py" line="170"/>
+        <location filename="aeag_mask.py" line="171"/>
         <source>Documentation</source>
         <translation>Documentation</translation>
-    </message>
-    <message>
-        <location filename="aeag_mask.py" line="272"/>
-        <source>That tool is designed to help users to quickly generate cartographic masking layer to enlight an area of interest.&lt;br/&gt;&lt;br/&gt;
-        Current features are:&lt;ul&gt;
-        &lt;li&gt;creates or modifies a mask relying on current polygon selection (on active layer)&lt;/li&gt;
-        &lt;li&gt;creates or modifies a mask via a call of do_mask function so that mask can be called programmatically from other plugins&lt;/li&gt;
-        &lt;li&gt;opens a dialog to choose mask layer properties:&lt;ul&gt;
-          &lt;li&gt;style options (default is inverted polygon renderer + border shading)&lt;/li&gt;
-          &lt;li&gt;buffer around mask&lt;/li&gt;
-          &lt;li&gt;filter labels of features falling outside area of interest (achieved by a &lt;b&gt;$in_mask&lt;/b&gt; boolean filter on labeling placement options)&lt;/li&gt;
-          &lt;li&gt;choose mask layer format (Memory or any OGR datasource)&lt;/li&gt;
-       &lt;/ul&gt;&lt;/li&gt;
-       &lt;/ul&gt;
-
-      &lt;p&gt;Mask plugin was developped by Xavier Culos (AEAG) and contributed by Hugo Mercier (Oslandia) on funding by Agence de l&apos;eau Adour Garonne.&lt;br/&gt;
-        Please notify any issue or enhancement request &lt;a href=&quot;https://github.com/aeag/mask_plugin/issues/&quot;&gt;here&lt;/a&gt;&lt;/p&gt;</source>
-        <translation>Cet outil a été développé pour aider les utilisateurs à générer rapidement des couches de masque pour mettre en évidence une zone d'intérêt.&lt;br/&gt;&lt;br/&gt;
-        Les fonctionnalités actuelles sont :&lt;ul&gt;
-        &lt;li&gt;création et modificiation d'un masque à partir d'une sélection polygonale (sur la couche active)&lt;/li&gt;
-        &lt;li&gt;création et modification d'un masque via un appel à la fonction do_mask, de sorte que la génération de masque peut être pilotée par d'autres plugins&lt;/li&gt;
-        &lt;li&gt;ouverture d'une boîte de dialogue pour choisir les propriétés du masque :&lt;ul&gt;
-          &lt;li&gt;options de style (par défaut: polygone inversé avec bords flous)&lt;/li&gt;
-          &lt;li&gt;tampon autour du masque&lt;/li&gt;
-          &lt;li&gt;filtre des étiquettes pour les entités qui sont à l'intérieur de la zone d'intérêt (obtenu via le filtre booléen &lt;b&gt;$in_mask&lt;/b&gt; sur les options de positionnement des étiquettes)&lt;/li&gt;
-          &lt;li&gt;choix du format de la couche de masque (couche mémoire ou OGR)&lt;/li&gt;
-       &lt;/ul&gt;&lt;/li&gt;
-       &lt;/ul&gt;
-
-      &lt;p&gt;Le plugin Mask a été développé par Xavier Culos (AEAG) avec des contributions de Hugo Mercier (Oslandia) sur financements de l'Agence de l&apos;eau Adour Garonne.&lt;br/&gt;
-        Merci de notifier tout problème ou demande d'évolution &lt;a href=&quot;https://github.com/aeag/mask_plugin/issues/&quot;&gt;ici&lt;/a&gt;&lt;/p&gt;</translation>
     </message>
 </context>
 </TS>
