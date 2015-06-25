@@ -39,6 +39,7 @@ from maindialog import MainDialog
 from layerlist import LayerListDialog
 from mask_filter import *
 from mask_parameters import *
+from htmldialog import HtmlDialog
 import style_tools
 
 # Initialize Qt resources from file resources.py
@@ -270,27 +271,8 @@ class aeag_mask(QObject):
         QgsProject.instance().readProject.disconnect( self.on_project_open )
 
     def on_about( self ):
-        about = self.tr( """That tool is designed to help users to quickly generate cartographic masking layer to enlight an area of interest.<br/><br/>
-        Current features are:<ul>
-        <li>creates or modifies a mask relying on current polygon selection (on active layer)</li>
-        <li>creates or modifies a mask via a call of do_mask function so that mask can be called programmatically from other plugins</li>
-        <li>opens a dialog to choose mask layer properties:<ul>
-          <li>style options (default is inverted polygon renderer + border shading)</li>
-          <li>buffer around mask</li>
-          <li>filter labels of features falling outside area of interest (achieved by a <b>$in_mask</b> boolean filter on labeling placement options)</li>
-          <li>choose mask layer format (Memory or any OGR datasource)</li>
-       </ul></li>
-       </ul>
-
-      <p>Mask plugin was developped by Xavier Culos (AEAG) and contributed by Hugo Mercier (Oslandia) on funding by Agence de l'eau Adour Garonne.<br/>
-        Please notify any issue or enhancement request <a href="https://github.com/aeag/mask_plugin/issues/">here</a></p>""" )
-        msg = QMessageBox( None )
-        msg.addButton( QMessageBox.Ok )
-        msg.setIcon( QMessageBox.Information )
-        msg.setTextFormat( Qt.RichText )
-        msg.setText( about )
-        msg.setWindowTitle( self.tr("About") )
-        msg.exec_()
+        dlg = HtmlDialog( None, "about.html" )
+        dlg.exec_()
 
     def on_doc( self ):
         QDesktopServices.openUrl(QUrl("https://github.com/aeag/mask/wiki"))

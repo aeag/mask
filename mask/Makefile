@@ -23,15 +23,13 @@ QGISDIR=.qgis2
 PLUGINNAME = mask
 
 #
-SOURCES = aeag_mask.py maindialog.py __init__.py layerlist.py mask_filter.py mask_parameters.py style_tools.py
+SOURCES = aeag_mask.py maindialog.py __init__.py layerlist.py mask_filter.py mask_parameters.py style_tools.py htmldialog.py
 TRANSLATIONS = mask_fr.ts
 
 EXTRAS = aeag_mask.png metadata.txt default_mask_style.qml
 UI_FILES = ui_plugin_mask.py ui_layer_list.py
 
 RESOURCE_FILES = resources_rc.py
-
-HELP = help/build/html
 
 default: compile
 
@@ -57,7 +55,7 @@ deploy: compile transcompile
 	cp -vf $(RESOURCE_FILES) $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
 	cp -vf $(EXTRAS) $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
 	cp -vf *.ts *.qm $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
-#	cp -vfr $(HELP) $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)/help
+	cp -vfr doc/ $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
 
 # The dclean target removes compiled python files from plugin directory
 # also delets any .svn entry

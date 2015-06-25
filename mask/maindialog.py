@@ -7,6 +7,8 @@ from qgis.gui import *
 from ui_plugin_mask import Ui_MainDialog
 from layerlist import LayerListWidget
 from mask_parameters import MaskParameters
+from htmldialog import HtmlDialog
+
 import style_tools
 
 def is_in_qgis_core( sym ):
@@ -38,6 +40,10 @@ class MainDialog( QDialog ):
         self.ui.editStyleBtn.clicked.connect( self.on_style_edit )
         # connect file browser
         self.ui.browseBtn.clicked.connect( self.on_file_browse )
+        # add a "tips" button
+        self.ui.tipsBtn = QPushButton( self.tr("Tips"), self.ui.buttonBox )
+        self.ui.buttonBox.addButton( self.ui.tipsBtn, QDialogButtonBox.ActionRole )
+        self.ui.tipsBtn.clicked.connect( self.show_tips )
         # add a "save as defaults" button
         self.ui.saveDefaultsBtn = QPushButton( self.tr("Save as defaults"), self.ui.buttonBox )
         self.ui.buttonBox.addButton( self.ui.saveDefaultsBtn, QDialogButtonBox.ActionRole )
@@ -70,6 +76,10 @@ class MainDialog( QDialog ):
 
     def on_help( self ):
         QDesktopServices.openUrl(QUrl("https://github.com/aeag/mask/wiki"))
+
+    def show_tips( self ):
+        dlg = HtmlDialog( self, "tips.html" )
+        dlg.exec_()
 
     def on_polygon_operator_changed( self, idx ):
         if idx == 0 and self.ui.simplifyGroup.isChecked():
