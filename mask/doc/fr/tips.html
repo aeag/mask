@@ -11,7 +11,7 @@ les éléments de légende qui ne sont pas affichés à l'intérieur du polygon 
   a été ajoutée aux outils de filtre de légende, permettant de spécifier une expression. Un symbole fera partie de
   la légende seulement si au moints une de ses entités fait que l'expression booléenne est évaluée à vrai.</p>
 <p>Ceci peut en particulier être utilisé pour éliminer de la légende les entités qui ne sont pas dans le masque en utilisant
-  la fonction <tt>in_mask()</tt>. Le premier argument doit être le code EPSG du système de coordonnées de la carte affichée.
+  la fonction <tt>in_mask()</tt>. Le premier argument doit être le code EPSG du système de coordonnées de l'entité sur laquelle l'expression est évaluée.
   Par exemple <tt>in_mask(2154)</tt> pour du Lambert 93.</p>
 <br/>
 <center><img src="legend_inmask.png"/></center>
