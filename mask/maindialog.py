@@ -222,7 +222,13 @@ class MainDialog( QDialog ):
             self.update_style_preview( self.parameters.layer )
 
     def update_style_preview( self, layer ):
-        syms = layer.rendererV2().symbols()
+        import qgis.utils
+        if qgis.utils.QGis.QGIS_VERSION_INT > 21000:
+            # qgis 2.12 changed the number of arguments
+            syms = layer.rendererV2().symbols(QgsRenderContext())
+        else:
+            syms = layer.rendererV2().symbols()
+
         # only display the first symbol
         if len(syms) > 0:
             pix = QPixmap()
