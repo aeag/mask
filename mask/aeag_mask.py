@@ -297,7 +297,7 @@ class aeag_mask(QObject):
         for composer_map in compo.composerMapItems():
             if composer_map not in self.composers[compo]:
                 self.composers[compo].append(composer_map)
-                composer_map.preparedForAtlas.connect( lambda c=compo: self.on_prepared_for_atlas(c, composer_map) )
+                composer_map.preparedForAtlas.connect( lambda this=self,c=compo: this.on_prepared_for_atlas(c, composer_map) )
                 break
 
     def on_composer_item_removed( self, compo, _ ):
@@ -340,8 +340,12 @@ class aeag_mask(QObject):
         if not self.layer:
             return
 
-        if hasattr(compo.atlasComposition(), "currentGeometry"): #qgis 2.12
+        if hasattr(compo.atlasComposition(), "currentGeometry"): #qgis 2.14
             geom = compo.atlasComposition().currentGeometry()
+        elif hasattr(compo, "createExpressionContext"): #qgis 2.12
+            ctxt = compo.createExpressionContext()
+            e = QgsExpression("@atlas_geometry")
+            geom = e.evaluate(ctxt)
         else:
             geom = QgsExpression.specialColumn("$atlasgeometry")
 
