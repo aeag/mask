@@ -250,67 +250,67 @@ La géométrie courante du masque</translation>
 <context>
     <name>aeag_mask</name>
     <message>
-        <location filename="aeag_mask.py" line="543"/>
+        <location filename="aeag_mask.py" line="554"/>
         <source>Mask plugin error</source>
         <translation>Erreur du plugin Mask</translation>
     </message>
     <message>
-        <location filename="aeag_mask.py" line="543"/>
+        <location filename="aeag_mask.py" line="554"/>
         <source>No polygon selection !</source>
         <translation>Aucune sélection !</translation>
     </message>
     <message>
-        <location filename="aeag_mask.py" line="576"/>
+        <location filename="aeag_mask.py" line="587"/>
         <source>Create a mask</source>
         <translation>Créer un masque</translation>
     </message>
     <message>
-        <location filename="aeag_mask.py" line="574"/>
+        <location filename="aeag_mask.py" line="585"/>
         <source>Update the current mask</source>
         <translation>Mettre à jour le masque existant</translation>
     </message>
     <message>
-        <location filename="aeag_mask.py" line="494"/>
+        <location filename="aeag_mask.py" line="505"/>
         <source>Problem saving the mask layer</source>
         <translation>Problème lors de la sauvegarde de la couche masque</translation>
     </message>
     <message>
-        <location filename="aeag_mask.py" line="476"/>
+        <location filename="aeag_mask.py" line="487"/>
         <source>Driver not found !</source>
         <translation>Pilote introuvable !</translation>
     </message>
     <message>
-        <location filename="aeag_mask.py" line="478"/>
+        <location filename="aeag_mask.py" line="489"/>
         <source>Cannot create data source !</source>
         <translation>Impossible de créer la source de données !</translation>
     </message>
     <message>
-        <location filename="aeag_mask.py" line="480"/>
+        <location filename="aeag_mask.py" line="491"/>
         <source>Cannot create layer !</source>
         <translation>Impossible de créer la couche !</translation>
     </message>
     <message>
-        <location filename="aeag_mask.py" line="482"/>
+        <location filename="aeag_mask.py" line="493"/>
         <source>Attribute type unsupported !</source>
         <translation>Type d&apos;attribut non supporté !</translation>
     </message>
     <message>
-        <location filename="aeag_mask.py" line="484"/>
+        <location filename="aeag_mask.py" line="495"/>
         <source>Attribute creation failed !</source>
         <translation>Echec de création d&apos;attribut !</translation>
     </message>
     <message>
-        <location filename="aeag_mask.py" line="486"/>
+        <location filename="aeag_mask.py" line="497"/>
         <source>Projection error !</source>
         <translation>Erreur de projection !</translation>
     </message>
     <message>
-        <location filename="aeag_mask.py" line="488"/>
+        <location filename="aeag_mask.py" line="499"/>
         <source>Feature write failed !</source>
         <translation>Echec d&apos;écriture !</translation>
     </message>
     <message>
-        <location filename="aeag_mask.py" line="490"/>
+        <location filename="aeag_mask.py" line="501"/>
         <source>Invalid layer !</source>
         <translation>Couche invalide !</translation>
     </message>
@@ -323,6 +323,11 @@ La géométrie courante du masque</translation>
         <location filename="aeag_mask.py" line="190"/>
         <source>Documentation</source>
         <translation>Documentation</translation>
+    </message>
+    <message>
+        <location filename="aeag_mask.py" line="196"/>
+        <source>Restore mask from selected layer</source>
+        <translation>Récupérer les paramètres depuis la couche sélectionnée</translation>
     </message>
 </context>
 </TS>

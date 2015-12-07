@@ -191,6 +191,12 @@ class aeag_mask(QObject):
         self.act_aeag_doc.triggered.connect( self.on_doc )
         self.iface.addPluginToMenu("&Mask", self.act_aeag_about)
         self.iface.addPluginToMenu("&Mask", self.act_aeag_doc)
+
+        # Add an option to load paramters from a layer (for backward compatibility with older versions)
+        self.act_load_from_layer = QAction( self.tr("Restore mask from selected layer"), self.iface.mainWindow() )
+        self.act_load_from_layer.triggered.connect( self.on_load_from_layer )
+        self.act_load_from_layer.setEnabled(False) # disabled by default
+        self.iface.addPluginToMenu("&Mask", self.act_load_from_layer)
         
         # Add actions to the toolbar
         self.act_aeag_mask.triggered.connect(self.run)
@@ -239,6 +245,8 @@ class aeag_mask(QObject):
             self.act_aeag_mask.setEnabled( poly != [] )
         else:
             self.act_aeag_mask.setEnabled( True )
+
+        self.act_load_from_layer.setEnabled( layer is not None and layer.type() == QgsMapLayer.VectorLayer and layer.name() == "Mask" )
 
         if layer and layer.type() != QgsMapLayer.VectorLayer:
             self.old_active_layer = None
@@ -295,6 +303,16 @@ class aeag_mask(QObject):
 
     def on_doc( self ):
         QDesktopServices.openUrl(QUrl("https://github.com/aeag/mask/wiki"))
+
+    # force loading of parameters from a layer
+    # for backward compatibility with older versions
+    def on_load_from_layer( self ):
+        # return layer, parameters
+        self.layer = self.iface.activeLayer();
+        self.parameters = MaskParameters()
+        self.parameters.load_from_layer(self.layer)
+        QgsProject.instance().writeEntry( "Mask", "layer_id", self.layer.id() )
+        self.layer = self.apply_mask_parameters( self.layer, self.parameters, dest_crs = None, poly = None, name = self.layer.name(), keep_layer = False )
 
     def on_composer_added( self, compo ):
         composition = compo.composition()
@@ -635,7 +653,7 @@ class aeag_mask(QObject):
         save_as = parameters.file_path
         file_format = parameters.file_format
         # save paramaters
-        serialized = base64.b64encode( parameters.serialize( with_style = False ) )
+        serialized = base64.b64encode( parameters.serialize(with_style = False, with_geometry = False) )
 
         # save geometry
         layer = QgsVectorLayer("MultiPolygon?crs=%s" % dest_crs.authid(), name, "memory")
