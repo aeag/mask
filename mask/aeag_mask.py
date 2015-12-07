@@ -66,18 +66,37 @@ def is_in_qgis_core( sym ):
 
 class MaskGeometryFunction( QgsExpression.Function ):
     def __init__( self, mask ):
-        QgsExpression.Function.__init__( self, "$mask_geometry", 0, "Python", "Geometry of the current mask." )
+        QgsExpression.Function.__init__(self, "$mask_geometry", 0, "Python", self.tr("""<h1>$mask_geometry</h1>
+Variable filled by mask plugin.<br/>
+When mask has been triggered on some polygon, mask_geometry is filled with the mask geometry and can be reused for expression/python calculation. in_mask variable uses that geometry to compute a boolean.
+<h2>Return value</h2>
+The geometry of the current mask
+        """))
         self.mask = mask
 
-    def func( self, values, feature, parent ):
+    def tr(self, message):
+        return QCoreApplication.translate('MaskGeometryFunction', message)
+
+    def func(self, values, feature, parent):
         return self.mask.mask_geometry()[0]
 
 class InMaskFunction( QgsExpression.Function ):
     def __init__( self, mask ):
-        QgsExpression.Function.__init__( self, "in_mask", 1, "Python", "Test whether the current geometry is inside the current mask geometry." )
+        QgsExpression.Function.__init__(self, "in_mask", 1, "Python", self.tr("""<h1>in_mask function</h1>
+Expression function added by mask plugin. Returns true if current feature crosses mask geometry.<br/>
+The spatial expression to use is set from the mask UI button (exact, fast using centroids, intermediate using point on surface).<br/>
+in_mask takes a CRS EPSG code as first parameter, which is the CRS code of the evaluated features.<br/>
+It can be used to filter labels only in that area, or since QGIS 2.13, legend items only visible in mask area.<br/> 
+<h2>Return value</h2>
+true/false (0/1)<br/>
+<h2>Usage</h2>
+in_mask(2154)"""))
         self.mask = mask
 
-    def func( self, values, feature, parent ):
+    def tr(self, message):
+        return QCoreApplication.translate('InMaskFunction', message)
+
+    def func(self, values, feature, parent):
         return self.mask.in_mask( feature, values[0] )
 
 class aeag_mask(QObject):
