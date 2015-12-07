@@ -66,18 +66,37 @@ def is_in_qgis_core( sym ):
 
 class MaskGeometryFunction( QgsExpression.Function ):
     def __init__( self, mask ):
-        QgsExpression.Function.__init__( self, "$mask_geometry", 0, "Python", "Geometry of the current mask." )
+        QgsExpression.Function.__init__(self, "$mask_geometry", 0, "Python", self.tr("""<h1>$mask_geometry</h1>
+Variable filled by mask plugin.<br/>
+When mask has been triggered on some polygon, mask_geometry is filled with the mask geometry and can be reused for expression/python calculation. in_mask variable uses that geometry to compute a boolean.
+<h2>Return value</h2>
+The geometry of the current mask
+        """))
         self.mask = mask
 
-    def func( self, values, feature, parent ):
+    def tr(self, message):
+        return QCoreApplication.translate('MaskGeometryFunction', message)
+
+    def func(self, values, feature, parent):
         return self.mask.mask_geometry()[0]
 
 class InMaskFunction( QgsExpression.Function ):
     def __init__( self, mask ):
-        QgsExpression.Function.__init__( self, "in_mask", 1, "Python", "Test whether the current geometry is inside the current mask geometry." )
+        QgsExpression.Function.__init__(self, "in_mask", 1, "Python", self.tr("""<h1>in_mask function</h1>
+Expression function added by mask plugin. Returns true if current feature crosses mask geometry.<br/>
+The spatial expression to use is set from the mask UI button (exact, fast using centroids, intermediate using point on surface).<br/>
+in_mask takes a CRS EPSG code as first parameter, which is the CRS code of the evaluated features.<br/>
+It can be used to filter labels only in that area, or since QGIS 2.13, legend items only visible in mask area.<br/> 
+<h2>Return value</h2>
+true/false (0/1)<br/>
+<h2>Usage</h2>
+in_mask(2154)"""))
         self.mask = mask
 
-    def func( self, values, feature, parent ):
+    def tr(self, message):
+        return QCoreApplication.translate('InMaskFunction', message)
+
+    def func(self, values, feature, parent):
         return self.mask.in_mask( feature, values[0] )
 
 class aeag_mask(QObject):
@@ -172,6 +191,12 @@ class aeag_mask(QObject):
         self.act_aeag_doc.triggered.connect( self.on_doc )
         self.iface.addPluginToMenu("&Mask", self.act_aeag_about)
         self.iface.addPluginToMenu("&Mask", self.act_aeag_doc)
+
+        # Add an option to load paramters from a layer (for backward compatibility with older versions)
+        self.act_load_from_layer = QAction( self.tr("Restore mask from selected layer"), self.iface.mainWindow() )
+        self.act_load_from_layer.triggered.connect( self.on_load_from_layer )
+        self.act_load_from_layer.setEnabled(False) # disabled by default
+        self.iface.addPluginToMenu("&Mask", self.act_load_from_layer)
         
         # Add actions to the toolbar
         self.act_aeag_mask.triggered.connect(self.run)
@@ -220,6 +245,8 @@ class aeag_mask(QObject):
             self.act_aeag_mask.setEnabled( poly != [] )
         else:
             self.act_aeag_mask.setEnabled( True )
+
+        self.act_load_from_layer.setEnabled( layer is not None and layer.type() == QgsMapLayer.VectorLayer and layer.name() == "Mask" )
 
         if layer and layer.type() != QgsMapLayer.VectorLayer:
             self.old_active_layer = None
@@ -277,6 +304,16 @@ class aeag_mask(QObject):
     def on_doc( self ):
         QDesktopServices.openUrl(QUrl("https://github.com/aeag/mask/wiki"))
 
+    # force loading of parameters from a layer
+    # for backward compatibility with older versions
+    def on_load_from_layer( self ):
+        # return layer, parameters
+        self.layer = self.iface.activeLayer();
+        self.parameters = MaskParameters()
+        self.parameters.load_from_layer(self.layer)
+        QgsProject.instance().writeEntry( "Mask", "layer_id", self.layer.id() )
+        self.layer = self.apply_mask_parameters( self.layer, self.parameters, dest_crs = None, poly = None, name = self.layer.name(), keep_layer = False )
+
     def on_composer_added( self, compo ):
         composition = compo.composition()
         self.composers[composition] = []
@@ -297,7 +334,7 @@ class aeag_mask(QObject):
         for composer_map in compo.composerMapItems():
             if composer_map not in self.composers[compo]:
                 self.composers[compo].append(composer_map)
-                composer_map.preparedForAtlas.connect( lambda c=compo: self.on_prepared_for_atlas(c, composer_map) )
+                composer_map.preparedForAtlas.connect( lambda this=self,c=compo: this.on_prepared_for_atlas(c, composer_map) )
                 break
 
     def on_composer_item_removed( self, compo, _ ):
@@ -340,8 +377,12 @@ class aeag_mask(QObject):
         if not self.layer:
             return
 
-        if hasattr(compo.atlasComposition(), "currentGeometry"): #qgis 2.12
+        if hasattr(compo.atlasComposition(), "currentGeometry"): #qgis 2.14
             geom = compo.atlasComposition().currentGeometry()
+        elif hasattr(compo, "createExpressionContext"): #qgis 2.12
+            ctxt = compo.createExpressionContext()
+            e = QgsExpression("@atlas_geometry")
+            geom = e.evaluate(ctxt)
         else:
             geom = QgsExpression.specialColumn("$atlasgeometry")
 
@@ -612,7 +653,7 @@ class aeag_mask(QObject):
         save_as = parameters.file_path
         file_format = parameters.file_format
         # save paramaters
-        serialized = base64.b64encode( parameters.serialize( with_style = False ) )
+        serialized = base64.b64encode( parameters.serialize(with_style = False, with_geometry = False) )
 
         # save geometry
         layer = QgsVectorLayer("MultiPolygon?crs=%s" % dest_crs.authid(), name, "memory")

@@ -39,12 +39,13 @@ class MaskParameters:
         self.orig_geometry = None
         self.geometry = None
 
-    def serialize( self, with_style = True ):
+    def serialize( self, with_style = True, with_geometry = True ):
         if with_style:
             style = self.style
         else:
             style = None
-        return pickle.dumps([self.do_buffer,
+        if with_geometry:
+            t = pickle.dumps([self.do_buffer,
                              self.buffer_units,
                              self.buffer_segments,
                              self.do_simplify,
@@ -58,23 +59,55 @@ class MaskParameters:
                              self.line_mask_method,
                              [ g.asWkb() for g in self.orig_geometry ] if self.orig_geometry is not None else None,
                              self.geometry.asWkb() if self.geometry is not None else None])
+        else:
+            t = pickle.dumps([self.do_buffer,
+                             self.buffer_units,
+                             self.buffer_segments,
+                             self.do_simplify,
+                             self.simplify_tolerance,
+                             self.do_save_as,
+                             self.file_path,
+                             self.file_format,
+                             self.limited_layers,
+                             style,
+                             self.polygon_mask_method,
+                             self.line_mask_method])
+        return t
 
     def unserialize( self, st ):
-        (self.do_buffer,
-         self.buffer_units,
-         self.buffer_segments,
-         self.do_simplify,
-         self.simplify_tolerance,
-         self.do_save_as,
-         self.file_path,
-         self.file_format,
-         self.limited_layers,
-         style,
-         self.polygon_mask_method,
-         self.line_mask_method,
-         orig_geom,
-         geom
-         ) = pickle.loads( st )
+        style = None
+        orig_geom = None
+        geom = None
+        t = pickle.loads( st )
+        if len(t) == 12: # older version
+            (self.do_buffer,
+             self.buffer_units,
+             self.buffer_segments,
+             self.do_simplify,
+             self.simplify_tolerance,
+             self.do_save_as,
+             self.file_path,
+             self.file_format,
+             self.limited_layers,
+             style,
+             self.polygon_mask_method,
+             self.line_mask_method) = t
+        else:
+            (self.do_buffer,
+             self.buffer_units,
+             self.buffer_segments,
+             self.do_simplify,
+             self.simplify_tolerance,
+             self.do_save_as,
+             self.file_path,
+             self.file_format,
+             self.limited_layers,
+             style,
+             self.polygon_mask_method,
+             self.line_mask_method,
+             orig_geom,
+             geom
+            ) = t
         self.style = None
         self.geometry = None
         if style is not None:
@@ -112,4 +145,35 @@ class MaskParameters:
 
         self.unserialize( base64.b64decode(st) )
         return True
+
+    # try to load parameters from a mask layer
+    # for compatibility with older versions where parameters were saved in attributes of the mask layer
+    def load_from_layer( self, layer ):
+
+        # return False on failure
+        pr = layer.dataProvider()
+        fields = pr.fields()
+        if fields.size() < 1:
+            return False
+        field = None
+        for i, f in enumerate(fields):
+            if f.name() == "params":
+                field = i
+        if field is None:
+            return False
+
+        it = pr.getFeatures()
+        fet = QgsFeature()
+        it.nextFeature(fet)
+        st = fet.attributes()[field]
+
+        print st
+        self.unserialize(base64.b64decode(st))
+
+        if self.geometry is None:
+            self.geometry = QgsGeometry( fet.geometry() )
+            self.orig_geometry = [QgsGeometry( fet.geometry() )]
+
+        return True
+
 
