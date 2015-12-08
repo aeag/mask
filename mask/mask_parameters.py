@@ -167,7 +167,6 @@ class MaskParameters:
         it.nextFeature(fet)
         st = fet.attributes()[field]
 
-        print st
         self.unserialize(base64.b64decode(st))
 
         if self.geometry is None:
