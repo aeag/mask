@@ -191,12 +191,6 @@ class aeag_mask(QObject):
         self.act_aeag_doc.triggered.connect( self.on_doc )
         self.iface.addPluginToMenu("&Mask", self.act_aeag_about)
         self.iface.addPluginToMenu("&Mask", self.act_aeag_doc)
-
-        # Add an option to load paramters from a layer (for backward compatibility with older versions)
-        self.act_load_from_layer = QAction( self.tr("Restore mask from selected layer"), self.iface.mainWindow() )
-        self.act_load_from_layer.triggered.connect( self.on_load_from_layer )
-        self.act_load_from_layer.setEnabled(False) # disabled by default
-        self.iface.addPluginToMenu("&Mask", self.act_load_from_layer)
         
         # Add actions to the toolbar
         self.act_aeag_mask.triggered.connect(self.run)
@@ -225,7 +219,14 @@ class aeag_mask(QObject):
     def load_from_project( self ):
         # return layer, parameters
         parameters = MaskParameters()
-        parameters.load_from_project()
+        ok = parameters.load_from_project()
+        if not ok:
+            # no parameters in the project
+            # look for a vector layer called 'Mask'
+            for id, l in QgsMapLayerRegistry.instance().mapLayers().items():
+                if l.type() == QgsMapLayer.VectorLayer and l.name() == 'Mask':
+                    return self.load_from_layer(l)
+
         layer_id, ok = QgsProject.instance().readEntry( "Mask", "layer_id" )
         layer = QgsMapLayerRegistry.instance().mapLayer( layer_id )
         return layer, parameters
@@ -236,8 +237,10 @@ class aeag_mask(QObject):
 
     def on_project_open( self, dom ):
         self.layer, self.parameters = self.load_from_project()
+
         if self.layer is not None:
             self.layer = self.apply_mask_parameters( self.layer, self.parameters, dest_crs = None, poly = None, name = self.layer.name(), keep_layer = False )
+            self.act_aeag_mask.setEnabled( True )
 
     def on_current_layer_changed( self, layer ):
         if self.layer is None:
@@ -245,8 +248,6 @@ class aeag_mask(QObject):
             self.act_aeag_mask.setEnabled( poly != [] )
         else:
             self.act_aeag_mask.setEnabled( True )
-
-        self.act_load_from_layer.setEnabled( layer is not None and layer.type() == QgsMapLayer.VectorLayer and layer.name() == "Mask" )
 
         if layer and layer.type() != QgsMapLayer.VectorLayer:
             self.old_active_layer = None
@@ -306,13 +307,13 @@ class aeag_mask(QObject):
 
     # force loading of parameters from a layer
     # for backward compatibility with older versions
-    def on_load_from_layer( self ):
+    def load_from_layer( self, layer ):
         # return layer, parameters
-        self.layer = self.iface.activeLayer();
-        self.parameters = MaskParameters()
-        self.parameters.load_from_layer(self.layer)
-        QgsProject.instance().writeEntry( "Mask", "layer_id", self.layer.id() )
-        self.layer = self.apply_mask_parameters( self.layer, self.parameters, dest_crs = None, poly = None, name = self.layer.name(), keep_layer = False )
+        parameters = MaskParameters()
+        parameters.load_from_layer(layer)
+        QgsProject.instance().writeEntry( "Mask", "layer_id", layer.id() )
+        layer = self.apply_mask_parameters(layer, parameters, dest_crs = None, poly = None, name = layer.name(), keep_layer = False)
+        return layer, parameters
 
     def on_composer_added( self, compo ):
         composition = compo.composition()
