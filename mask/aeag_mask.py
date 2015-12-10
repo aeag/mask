@@ -59,6 +59,7 @@ def do(crs=None, poly=None, name=None):
     global aeag_mask_instance
     this = aeag_mask_instance
     this.layer = this.apply_mask_parameters(this.layer, this.parameters, crs, poly, name, keep_layer = False )
+    this.save_to_project( this.layer, this.parameters )
 
 def is_in_qgis_core( sym ):
     import qgis.core
