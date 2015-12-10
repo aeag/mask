@@ -214,7 +214,8 @@ class aeag_mask(QObject):
         self.on_current_layer_changed( None )
 
         # register to project reading
-        QgsProject.instance().readProject.connect( self.on_project_open )
+        # connect to QgisApp::projectRead to make sure MemoryLayerSaver has been called before (it connects to QgsProject::readProject)
+        self.iface.mainWindow().projectRead.connect( self.on_project_open )
 
     def load_from_project( self ):
         # return layer, parameters
@@ -235,7 +236,7 @@ class aeag_mask(QObject):
         QgsProject.instance().writeEntry( "Mask", "layer_id", layer.id() if layer else "" )
         parameters.save_to_project()
 
-    def on_project_open( self, dom ):
+    def on_project_open( self ):
         self.layer, self.parameters = self.load_from_project()
 
         if self.layer is not None:
@@ -296,7 +297,7 @@ class aeag_mask(QObject):
                 self.on_composer_removed( compo )
 
         self.iface.mapCanvas().currentLayerChanged.disconnect( self.on_current_layer_changed )
-        QgsProject.instance().readProject.disconnect( self.on_project_open )
+        self.iface.mainWindow().projectRead.disconnect( self.on_project_open )
 
     def on_about( self ):
         dlg = HtmlDialog( None, "about.html" )
@@ -310,7 +311,9 @@ class aeag_mask(QObject):
     def load_from_layer( self, layer ):
         # return layer, parameters
         parameters = MaskParameters()
-        parameters.load_from_layer(layer)
+        ok = parameters.load_from_layer(layer)
+        if not ok:
+            return layer, parameters
         QgsProject.instance().writeEntry( "Mask", "layer_id", layer.id() )
         layer = self.apply_mask_parameters(layer, parameters, dest_crs = None, poly = None, name = layer.name(), keep_layer = False)
         return layer, parameters
