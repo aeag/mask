@@ -13,6 +13,7 @@ about=This plugin allows user to quickly transform a polygon selection into a ma
 about[fr]=Cette extension permet de générer un masque à partir d'une sélection de polygones. Le plugin permet également de filtrer l'étiquetage uniquement pour les objets à l'intérieur de ce masque. 
 # Uncomment the following line and add your changelog entries:
 changelog=1.6 : master developpement version (not released)
+	      1.5.1 :  enables plugin only for qgis <=2.8 . See https://github.com/aeag/mask/issues/51 
 		  1.5 : fixes number of issues with Atlas, UI improvements. 
 		  1.4 : zooms to mask and clears selection on the fly.  Some fixes due to mask_plugin renamed to mask
 		  1.3 : enhance spatial operator for exact labeling filter. Was "contains", now is "contains" or "overlaps"
