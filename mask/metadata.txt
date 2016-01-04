@@ -2,7 +2,7 @@
 
 [general]
 name=Mask
-qgisMinimumVersion=2.3
+qgisMinimumVersion=2.8
 description=Help to create mask, filter labels in it and automate Atlas generation with mask
 description[fr]=Aide à la création de masque, filtrage d'étiquette et automatisation de masque pour Atlas
 version=1.6
