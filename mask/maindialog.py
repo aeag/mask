@@ -9,7 +9,7 @@ from PyQt5.QtWidgets import (QDialog,
 from PyQt5.QtGui import (QDoubleValidator, QIntValidator, QDesktopServices, 
                          QPixmap)
 
-from qgis.core import (QgsMapLayerRegistry, QgsVectorLayer,  
+from qgis.core import (QgsVectorLayer,  
                        QgsStyle, QgsProject, QgsVectorFileWriter, 
                        QgsRendererPropertiesDialog, QgsRenderContext, 
                        QgsGeometry, QgsVectorSimplifyMethod
@@ -288,7 +288,7 @@ class MainDialog( QDialog ):
             # test if some limited layers have simplification turned on
             limited = self.ui.layer_list.get_limited_layers()
             slayers = []
-            for name, layer in QgsMapLayerRegistry.instance().mapLayers().items():
+            for name, layer in QgsProject.instance().mapLayers().items():
                 if not isinstance( layer, QgsVectorLayer ):
                     continue
                 if layer.id() in limited and int(layer.simplifyMethod().simplifyHints()) > 0:

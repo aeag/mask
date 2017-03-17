@@ -36,7 +36,7 @@ from PyQt5.QtCore import (QCoreApplication, QObject, QSettings, QTranslator,
 from PyQt5.QtGui import QIcon, QDesktopServices
 from PyQt5.QtWidgets import QAction, QMessageBox
 
-from qgis.core import (QgsExpression, QgsMapLayerRegistry, QgsAtlasComposition, 
+from qgis.core import (QgsExpression, QgsAtlasComposition, 
                        QgsGeometry, QgsPalLayerSettings, QgsProject, 
                        QgsMapLayer, QgsComposerItem, QgsComposition, 
                        QgsVectorLayer, QgsWkbTypes, QgsLayerTreeLayer, 
@@ -160,7 +160,7 @@ class aeag_mask(QObject):
 
         self.save_to_project( self.layer, self.parameters )
 
-        for name, layer in QgsMapLayerRegistry.instance().mapLayers().items():
+        for name, layer in QgsProject.instance().mapLayers().items():
             if mask_filter.has_mask_filter( layer ):
                 # remove mask filter from layer, if any
                 pal = QgsPalLayerSettings()
@@ -179,8 +179,8 @@ class aeag_mask(QObject):
         #
         self.disable_remove_mask_signal = False
         self.disable_add_layer_signal = False
-        self.registry = QgsMapLayerRegistry.instance()
-        self.registry.layerWillBeRemoved.connect( self.on_remove_mask )
+        self.project = QgsProject.instance()
+        self.project.layerWillBeRemoved.connect( self.on_remove_mask )
 
         self.act_aeag_mask = QAction(QIcon(":plugins/mask/aeag_mask.png"), self.tr("Create a mask"), self.iface.mainWindow())
 
@@ -213,7 +213,7 @@ class aeag_mask(QObject):
         
         # look for an existing mask layer
         mask_id, ok = QgsProject.instance().readEntry( "Mask", "layer_id" )
-        self.layer = self.registry.mapLayer( mask_id )
+        self.layer = self.project.mapLayer( mask_id )
 
         if self.has_atlas_signals:
             # register composer signals
@@ -240,12 +240,12 @@ class aeag_mask(QObject):
         if not ok:
             # no parameters in the project
             # look for a vector layer called 'Mask'
-            for id, l in list(QgsMapLayerRegistry.instance().mapLayers().items()):
+            for id, l in list(QgsProject.instance().mapLayers().items()):
                 if l.type() == QgsMapLayer.VectorLayer and l.name() == 'Mask':
                     return self.load_from_layer(l)
 
         layer_id, ok = QgsProject.instance().readEntry( "Mask", "layer_id" )
-        layer = QgsMapLayerRegistry.instance().mapLayer( layer_id )
+        layer = QgsProject.instance().mapLayer( layer_id )
         return layer, parameters
 
     def save_to_project( self, layer, parameters ):
@@ -303,7 +303,7 @@ class aeag_mask(QObject):
         QgsExpression.unregisterFunction( "$mask_geometry" )
         QgsExpression.unregisterFunction( "in_mask" )
 
-        self.registry.layerWillBeRemoved.disconnect( self.on_remove_mask )
+        self.project.layerWillBeRemoved.disconnect( self.on_remove_mask )
 
         if self.has_atlas_signals:
             self.iface.composerAdded.disconnect( self.on_composer_added )
@@ -474,7 +474,7 @@ class aeag_mask(QObject):
             layer = QgsVectorLayer("MultiPolygon?crs=%s" % dest_crs.authid(), mask_name, "memory")
             style_tools.set_default_layer_symbology( layer )
             # add a mask filter to all layer
-            for name, l in self.registry.mapLayers().items():
+            for name, l in self.project.mapLayers().items():
                 if not isinstance(l, QgsVectorLayer):
                     continue
                 pal = QgsPalLayerSettings()
@@ -497,7 +497,7 @@ class aeag_mask(QObject):
             layer_style = self.get_layer_style( layer )
             # remove the old layer
             self.disable_remove_mask_signal = True
-            self.registry.removeMapLayer( layer.id() )
+            self.project.removeMapLayer( layer.id() )
             self.disable_remove_mask_signal = False
 
             # (re)create the layer
@@ -634,12 +634,12 @@ class aeag_mask(QObject):
 
     def add_layer( self, layer ):
         # add a layer to the registry, if not already there
-        layers = self.registry.mapLayers()
+        layers = self.project.mapLayers()
         for name, alayer in layers.items():
             if alayer == layer:
                 return
 
-        self.registry.addMapLayer(layer, False)
+        self.project.addMapLayer(layer, False)
         # make sure the mask layer is on top of other layers
         lt = QgsProject.instance().layerTreeRoot()
         # insert a new on top

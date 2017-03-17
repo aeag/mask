@@ -1,7 +1,7 @@
 from PyQt5.QtCore import (Qt)
 from PyQt5.QtWidgets import (QWidget, QTableWidgetItem, QDialog, QCheckBox, 
                              QDialogButtonBox, QVBoxLayout)
-from qgis.core import (QgsMapLayerRegistry, QgsVectorLayer, QgsPalLayerSettings)
+from qgis.core import (QgsProject, QgsVectorLayer, QgsPalLayerSettings)
 
 from .ui_layer_list import Ui_LayerListWidget
 
@@ -39,7 +39,7 @@ class LayerListWidget( QWidget ):
             ll.cellWidget( i, 0 ).setChecked( False )
 
     def update_from_layers( self, is_new = False ):
-        layers = QgsMapLayerRegistry.instance().mapLayers()
+        layers = QgsProject.instance().mapLayers()
         n = 0
         for name, layer in layers.items():
 
