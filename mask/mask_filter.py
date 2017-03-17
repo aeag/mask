@@ -19,7 +19,7 @@ def remove_mask_filter( pal ):
     npal = QgsPalLayerSettings( pal )
     if npal.enabled and npal.dataDefinedProperties.get( QgsPalLayerSettings.Show ) is not None and \
             npal.dataDefinedProperties[ QgsPalLayerSettings.Show ].expressionString().startswith(SPATIAL_FILTER):
-        npal.dataDefinedProperties = dict([(k,v) for k,v in npal.dataDefinedProperties.iteritems() if k != QgsPalLayerSettings.Show] )
+        npal.dataDefinedProperties = dict([(k,v) for k,v in npal.dataDefinedProperties.items() if k != QgsPalLayerSettings.Show] )
     return npal
 
 def add_mask_filter( pal, layer ):

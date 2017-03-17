@@ -4,12 +4,12 @@ from PyQt4.QtXml import *
 from qgis.core import *
 from qgis.gui import *
 
-from ui_plugin_mask import Ui_MainDialog
-from layerlist import LayerListWidget
-from mask_parameters import MaskParameters
-from htmldialog import HtmlDialog
+from .ui_plugin_mask import Ui_MainDialog
+from .layerlist import LayerListWidget
+from .mask_parameters import MaskParameters
+from .htmldialog import HtmlDialog
 
-import style_tools
+from . import style_tools
 
 def is_in_qgis_core( sym ):
     import qgis.core
@@ -149,7 +149,7 @@ class MainDialog( QDialog ):
         drivers = QgsVectorFileWriter.ogrDriverList()
         filterList = []
         filterMap = {}
-        for ln, n in drivers.iteritems():
+        for ln, n in drivers.items():
             # grrr, driverMetadata is not really consistent
             if n == "ESRI Shapefile":
                 ext = "shp"
@@ -171,7 +171,7 @@ class MainDialog( QDialog ):
         fd = QFileDialog( None, self.tr("Select a filename to save the mask layer to"), path, fileFilters )
         save_format_name = self.parameters.file_format
         self.save_format = None
-        for k,v in filterMap.iteritems():
+        for k,v in filterMap.items():
             if v[0] == save_format_name:
                 self.save_format = v
                 fd.selectNameFilter( k )
@@ -277,7 +277,7 @@ class MainDialog( QDialog ):
             # test if some limited layers have simplification turned on
             limited = self.ui.layer_list.get_limited_layers()
             slayers = []
-            for name, layer in QgsMapLayerRegistry.instance().mapLayers().iteritems():
+            for name, layer in QgsMapLayerRegistry.instance().mapLayers().items():
                 if not isinstance( layer, QgsVectorLayer ):
                     continue
                 if layer.id() in limited and int(layer.simplifyMethod().simplifyHints()) > 0:

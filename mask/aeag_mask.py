@@ -35,15 +35,15 @@ from qgis.core import *
 # for user-defined functions
 from qgis.utils import qgsfunction
 
-from maindialog import MainDialog
-from layerlist import LayerListDialog
-from mask_filter import *
-from mask_parameters import *
-from htmldialog import HtmlDialog
-import style_tools
+from .maindialog import MainDialog
+from .layerlist import LayerListDialog
+from .mask_filter import *
+from .mask_parameters import *
+from .htmldialog import HtmlDialog
+from . import style_tools
 
 # Initialize Qt resources from file resources.py
-import resources_rc
+from . import resources_rc
 
 _fromUtf8 = lambda s: (s.decode("utf-8").encode("latin-1")) if s else s
 _toUtf8 = lambda s: s.decode("latin-1").encode("utf-8") if s else s
@@ -145,7 +145,7 @@ class aeag_mask(QObject):
 
         self.save_to_project( self.layer, self.parameters )
 
-        for name, layer in QgsMapLayerRegistry.instance().mapLayers().iteritems():
+        for name, layer in QgsMapLayerRegistry.instance().mapLayers().items():
             if has_mask_filter( layer ):
                 # remove mask filter from layer, if any
                 pal = QgsPalLayerSettings()
@@ -225,7 +225,7 @@ class aeag_mask(QObject):
         if not ok:
             # no parameters in the project
             # look for a vector layer called 'Mask'
-            for id, l in QgsMapLayerRegistry.instance().mapLayers().items():
+            for id, l in list(QgsMapLayerRegistry.instance().mapLayers().items()):
                 if l.type() == QgsMapLayer.VectorLayer and l.name() == 'Mask':
                     return self.load_from_layer(l)
 
@@ -459,7 +459,7 @@ class aeag_mask(QObject):
             layer = QgsVectorLayer("MultiPolygon?crs=%s" % dest_crs.authid(), mask_name, "memory")
             style_tools.set_default_layer_symbology( layer )
             # add a mask filter to all layer
-            for name, l in self.registry.mapLayers().iteritems():
+            for name, l in self.registry.mapLayers().items():
                 if not isinstance(l, QgsVectorLayer):
                     continue
                 pal = QgsPalLayerSettings()
@@ -620,7 +620,7 @@ class aeag_mask(QObject):
     def add_layer( self, layer ):
         # add a layer to the registry, if not already there
         layers = self.registry.mapLayers()
-        for name, alayer in layers.iteritems():
+        for name, alayer in layers.items():
             if alayer == layer:
                 return
 
@@ -722,7 +722,7 @@ class aeag_mask(QObject):
             else:
                 tol = self.parameters.simplify_tolerance * self.canvas.mapRenderer().mapUnitsPerPixel()
 
-            if tol in self.simplified_geometries.keys():
+            if tol in list(self.simplified_geometries.keys()):
                 geom, bbox = self.simplified_geometries[tol]
             else:
                 if self.has_simplifier:
@@ -760,7 +760,7 @@ class aeag_mask(QObject):
         if not geom.isGeosValid():
             geom = geom.buffer( 0.0, 1 )
         if geom is None:
-            print 'geometry absente'  #debug 
+            print('geometry absente')  #debug 
 
             return False
 
@@ -869,7 +869,7 @@ class aeag_mask(QObject):
                     self.parent.canvas.refresh()
                 else:
                     end = time.clock()
-                    print self.params[self.param_it], "%.4f" % ((end-self.start) / self.nRefresh)
+                    print(self.params[self.param_it], "%.4f" % ((end-self.start) / self.nRefresh))
                     self.param_it += 1
                     if self.param_it < len(self.params):
                         self.setup( self.param_it )
@@ -877,7 +877,7 @@ class aeag_mask(QObject):
                         self.start = end
                         self.parent.canvas.refresh()
                     else:
-                        print "end"
+                        print("end")
                         self.parent.canvas.renderComplete.disconnect( self.update_render )
 
         self.cb = RenderCallback( self, parameters, layer )

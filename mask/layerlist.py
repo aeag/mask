@@ -3,9 +3,9 @@ from PyQt4.QtGui import *
 from qgis.core import *
 from qgis.gui import *
 
-from ui_layer_list import Ui_LayerListWidget
+from .ui_layer_list import Ui_LayerListWidget
 
-from mask_filter import *
+from .mask_filter import *
 
 class LayerListWidget( QWidget ):
     def __init__( self, parent ):
@@ -41,7 +41,7 @@ class LayerListWidget( QWidget ):
     def update_from_layers( self, is_new = False ):
         layers = QgsMapLayerRegistry.instance().mapLayers()
         n = 0
-        for name, layer in layers.iteritems():
+        for name, layer in layers.items():
 
             if layer.name() == 'Mask':
                 continue

@@ -3,7 +3,7 @@ from PyQt4.QtGui import *
 from PyQt4.QtXml import *
 from qgis.core import *
 from qgis.gui import *
-from mask_parameters import *
+from .mask_parameters import *
 import os
 
 def set_layer_symbology( layer, symbology ):
