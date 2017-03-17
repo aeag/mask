@@ -11,9 +11,10 @@ from PyQt5.QtGui import (QDoubleValidator, QIntValidator, QDesktopServices,
 
 from qgis.core import (QgsVectorLayer,  
                        QgsStyle, QgsProject, QgsVectorFileWriter, 
-                       QgsRendererPropertiesDialog, QgsRenderContext, 
+                       QgsRenderContext, 
                        QgsGeometry, QgsVectorSimplifyMethod
                        )
+from qgis.gui import (QgsRendererPropertiesDialog)  
 
 from .ui_plugin_mask import Ui_MainDialog
 from .layerlist import LayerListWidget

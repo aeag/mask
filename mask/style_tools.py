@@ -1,7 +1,7 @@
 import os
 
-from PyQt4.QtCore import QSettings
-from PyQt4.QtXml import QDomDocument, QDomImplementation
+from PyQt5.QtCore import QSettings
+from PyQt5.QtXml import QDomDocument, QDomImplementation
 
 from .mask_parameters import MaskParameters
 
