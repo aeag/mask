@@ -1,8 +1,19 @@
-from PyQt4.QtCore import * 
-from PyQt4.QtGui import *
-from PyQt4.QtXml import *
-from qgis.core import *
-from qgis.gui import *
+from PyQt5.QtCore import (Qt, QUrl, QSettings, QDir)
+from PyQt5 import QtCore 
+
+from PyQt5.QtWidgets import (QDialog,  
+                             QDialogButtonBox, QVBoxLayout, QPushButton, 
+                             QFileDialog, QMessageBox
+                             )
+
+from PyQt5.QtGui import (QDoubleValidator, QIntValidator, QDesktopServices, 
+                         QPixmap)
+
+from qgis.core import (QgsMapLayerRegistry, QgsVectorLayer,  
+                       QgsStyle, QgsProject, QgsVectorFileWriter, 
+                       QgsRendererPropertiesDialog, QgsRenderContext, 
+                       QgsGeometry, QgsVectorSimplifyMethod
+                       )
 
 from .ui_plugin_mask import Ui_MainDialog
 from .layerlist import LayerListWidget
@@ -17,7 +28,7 @@ def is_in_qgis_core( sym ):
 
 class MainDialog( QDialog ):
 
-    applied = pyqtSignal()
+    applied = QtCore.pyqtSignal()
 
     def __init__( self, parameters, is_new ):
         QDialog.__init__( self, None )
@@ -34,7 +45,7 @@ class MainDialog( QDialog ):
         self.parameters = parameters
         if self.parameters.file_format is None:
             self.parameters.file_format = "ESRI Shapefile"
-        self.style = QgsStyleV2()
+        self.style = QgsStyle()
 
         # connect edit style
         self.ui.editStyleBtn.clicked.connect( self.on_style_edit )
@@ -121,7 +132,7 @@ class MainDialog( QDialog ):
     def load_defaults( self ):
         settings = QSettings()
 
-        parameters = MaskParameters()
+        self.parameters = MaskParameters()
         defaults = settings.value( "mask/defaults", None )
         if defaults is not None:
             self.parameters.unserialize( defaults )
@@ -199,7 +210,7 @@ class MainDialog( QDialog ):
         dlg = QDialog(self)
 
         dlg.layout = QVBoxLayout( dlg )
-        dlg.widget = QgsRendererV2PropertiesDialog(self.parameters.layer, self.style, True)
+        dlg.widget = QgsRendererPropertiesDialog(self.parameters.layer, self.style, True)
         dlg.widget.setLayout( dlg.layout )
         dlg.buttons = QDialogButtonBox( dlg )
 
@@ -225,9 +236,9 @@ class MainDialog( QDialog ):
         import qgis.utils
         if qgis.utils.QGis.QGIS_VERSION_INT >= 21200:
             # qgis 2.12 changed the number of arguments
-            syms = layer.rendererV2().symbols2(QgsRenderContext())
+            syms = layer.renderer().symbols2(QgsRenderContext())
         else:
-            syms = layer.rendererV2().symbols()
+            syms = layer.renderer().symbols()
 
         # only display the first symbol
         if len(syms) > 0:
