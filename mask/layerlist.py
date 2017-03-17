@@ -1,11 +1,11 @@
-from PyQt4.QtCore import * 
-from PyQt4.QtGui import *
-from qgis.core import *
-from qgis.gui import *
+from PyQt5.QtCore import (Qt)
+from PyQt5.QtWidgets import (QWidget, QTableWidgetItem, QDialog, QCheckBox, 
+                             QDialogButtonBox, QVBoxLayout)
+from qgis.core import (QgsMapLayerRegistry, QgsVectorLayer, QgsPalLayerSettings)
 
 from .ui_layer_list import Ui_LayerListWidget
 
-from .mask_filter import *
+from . import mask_filter
 
 class LayerListWidget( QWidget ):
     def __init__( self, parent ):
@@ -57,7 +57,7 @@ class LayerListWidget( QWidget ):
 
             do_limit = False
             did_limit = layer.id() in self.limited
-            do_limit = has_mask_filter( layer )
+            do_limit = mask_filter.has_mask_filter( layer )
 
             if do_limit and not did_limit:
                 self.limited.append( layer.id() )
@@ -91,10 +91,10 @@ class LayerListWidget( QWidget ):
 
             if not did_limit and do_limit:
                 # add spatial filtering
-                pal = add_mask_filter( pal, layer )
+                pal = mask_filter.add_mask_filter( pal, layer )
                 self.limited.append( layer.id() )
             if did_limit and not do_limit:
-                pal = remove_mask_filter( pal )
+                pal = mask_filter.remove_mask_filter( pal )
                 self.limited.remove( layer.id() )
 
             pal.writeToLayer( layer )
