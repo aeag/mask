@@ -29,24 +29,31 @@ todo:
 
 # Import the PyQt and QGIS libraries
 import os
-from PyQt4.QtCore import * 
-from PyQt4.QtGui import *
-from qgis.core import *
-# for user-defined functions
-from qgis.utils import qgsfunction
+import base64
+from PyQt5.QtCore import (QCoreApplication, QObject, QSettings, QTranslator, 
+                          QUrl, QVariant                          
+                          )
+from PyQt5.QtGui import QIcon, QDesktopServices
+from PyQt5.QtWidgets import QAction, QMessageBox
+
+from qgis.core import (QgsExpression, QgsMapLayerRegistry, QgsAtlasComposition, 
+                       QgsGeometry, QgsPalLayerSettings, QgsProject, 
+                       QgsMapLayer, QgsComposerItem, QgsComposition, 
+                       QgsVectorLayer, QgsWkbTypes, QgsLayerTreeLayer, 
+                       QgsField, QgsFeature, QgsVectorFileWriter, 
+                       QgsRectangle, QgsMapToPixelSimplifier, 
+                       QgsCoordinateReferenceSystem, QgsCoordinateTransform,
+                       QgsVectorSimplifyMethod
+                       )
 
 from .maindialog import MainDialog
-from .layerlist import LayerListDialog
-from .mask_filter import *
-from .mask_parameters import *
+from . import mask_filter
+from .mask_parameters import MaskParameters
 from .htmldialog import HtmlDialog
 from . import style_tools
 
 # Initialize Qt resources from file resources.py
 from . import resources_rc
-
-_fromUtf8 = lambda s: (s.decode("utf-8").encode("latin-1")) if s else s
-_toUtf8 = lambda s: s.decode("latin-1").encode("utf-8") if s else s
 
 aeag_mask_instance = None
 
@@ -58,7 +65,8 @@ def do(crs=None, poly=None, name=None):
     # poly = list of geometries
     global aeag_mask_instance
     this = aeag_mask_instance
-    this.layer = this.apply_mask_parameters(this.layer, this.parameters, crs, poly, name, keep_layer = False )
+    this.layer = this.apply_mask_parameters(this.layer, this.parameters, crs, 
+                                            poly, name, keep_layer = False )
     this.save_to_project( this.layer, this.parameters )
 
 def is_in_qgis_core( sym ):
@@ -67,9 +75,12 @@ def is_in_qgis_core( sym ):
 
 class MaskGeometryFunction( QgsExpression.Function ):
     def __init__( self, mask ):
-        QgsExpression.Function.__init__(self, "$mask_geometry", 0, "Python", self.tr("""<h1>$mask_geometry</h1>
+        QgsExpression.Function.__init__(self, "$mask_geometry", 0, "Python", 
+                                        self.tr("""<h1>$mask_geometry</h1>
 Variable filled by mask plugin.<br/>
-When mask has been triggered on some polygon, mask_geometry is filled with the mask geometry and can be reused for expression/python calculation. in_mask variable uses that geometry to compute a boolean.
+When mask has been triggered on some polygon, mask_geometry is filled with the 
+mask geometry and can be reused for expression/python calculation. in_mask 
+variable uses that geometry to compute a boolean.
 <h2>Return value</h2>
 The geometry of the current mask
         """))
@@ -83,11 +94,16 @@ The geometry of the current mask
 
 class InMaskFunction( QgsExpression.Function ):
     def __init__( self, mask ):
-        QgsExpression.Function.__init__(self, "in_mask", 1, "Python", self.tr("""<h1>in_mask function</h1>
-Expression function added by mask plugin. Returns true if current feature crosses mask geometry.<br/>
-The spatial expression to use is set from the mask UI button (exact, fast using centroids, intermediate using point on surface).<br/>
-in_mask takes a CRS EPSG code as first parameter, which is the CRS code of the evaluated features.<br/>
-It can be used to filter labels only in that area, or since QGIS 2.13, legend items only visible in mask area.<br/> 
+        QgsExpression.Function.__init__(self, "in_mask", 1, "Python", 
+                                        self.tr("""<h1>in_mask function</h1>
+Expression function added by mask plugin. Returns true if current feature 
+crosses mask geometry.<br/>
+The spatial expression to use is set from the mask UI button (exact, fast 
+using centroids, intermediate using point on surface).<br/>
+in_mask takes a CRS EPSG code as first parameter, which is the CRS code of the 
+evaluated features.<br/>
+It can be used to filter labels only in that area, or since QGIS 2.13, legend 
+items only visible in mask area.<br/> 
 <h2>Return value</h2>
 true/false (0/1)<br/>
 <h2>Usage</h2>
@@ -115,8 +131,7 @@ class aeag_mask(QObject):
         if os.path.exists(localePath):
             self.translator = QTranslator()
             self.translator.load(localePath)
-            if qVersion() > '4.3.3':
-                QCoreApplication.installTranslator(self.translator)
+            QCoreApplication.installTranslator(self.translator)
 
         # Save reference to the QGIS interface
         self.iface = iface
@@ -146,11 +161,11 @@ class aeag_mask(QObject):
         self.save_to_project( self.layer, self.parameters )
 
         for name, layer in QgsMapLayerRegistry.instance().mapLayers().items():
-            if has_mask_filter( layer ):
+            if mask_filter.has_mask_filter( layer ):
                 # remove mask filter from layer, if any
                 pal = QgsPalLayerSettings()
                 pal.readFromLayer( layer )
-                pal = remove_mask_filter( pal )
+                pal = mask_filter.remove_mask_filter( pal )
                 pal.writeToLayer( layer )
 
         self.simplified_geometries = {}
@@ -180,7 +195,7 @@ class aeag_mask(QObject):
 
         # turn it to true to enable test
         if False:
-            self.act_test = QAction(QIcon(":plugins/mask/aeag_mask.png"), _fromUtf8("Test"), self.iface.mainWindow())
+            self.act_test = QAction(QIcon(":plugins/mask/aeag_mask.png"), "Test", self.iface.mainWindow())
             self.toolBar.addAction( self.act_test )
             self.iface.addPluginToMenu("&Mask", self.act_test)
             self.act_test.triggered.connect(self.do_test)
@@ -466,7 +481,7 @@ class aeag_mask(QObject):
                 pal.readFromLayer(l)
                 if not pal.enabled:
                     continue
-                npal = add_mask_filter( pal, l )
+                npal = mask_filter.add_mask_filter( pal, l )
                 npal.writeToLayer( l )
 
         parameters.layer = layer
@@ -613,7 +628,7 @@ class aeag_mask(QObject):
         if not isinstance(layer, QgsVectorLayer):
             return None, []
         for feature in layer.selectedFeatures():
-            if feature.geometry() and feature.geometry().type() == QGis.Polygon:
+            if feature.geometry() and feature.geometry().type() == QgsWkbTypes.PolygonGeometry:
                 geos.append( QgsGeometry(feature.geometry()) )
         return layer.crs(), geos
 
@@ -664,11 +679,11 @@ class aeag_mask(QObject):
         layer = QgsVectorLayer("MultiPolygon?crs=%s" % dest_crs.authid(), name, "memory")
         pr = layer.dataProvider()
         layer.startEditing()
-        ok = layer.addAttribute( QgsField( "params", QVariant.String) )
+        layer.addAttribute( QgsField( "params", QVariant.String) )
         fet1 = QgsFeature(0)
         fet1.setAttributes( [serialized] )
         fet1.setGeometry(parameters.geometry)
-        ok = pr.addFeatures([ fet1 ])
+        pr.addFeatures([ fet1 ])
         layer.commitChanges()
 
         # copy layer style
@@ -771,7 +786,7 @@ class aeag_mask(QObject):
             xform = QgsCoordinateTransform( src_crs, dest_crs )
             geom.transform( xform )
         
-        if geom.type() == QGis.Polygon:
+        if geom.type() == QgsWkbTypes.PolygonGeometry:
             if self.parameters.polygon_mask_method == 2 and not self.has_point_on_surface:
                 self.parameters.polygon_mask_method = 1
 
@@ -788,14 +803,14 @@ class aeag_mask(QObject):
                 return bbox.contains( pt ) and mask_geom.contains(geom.pointOnSurface())
             else:
                 return False
-        elif geom.type() == QGis.Line:
+        elif geom.type() == QgsWkbTypes.LineGeometry:
             if self.parameters.line_mask_method == 0:
                 return mask_geom.intersects(geom)
             elif self.parameters.line_mask_method == 1:
                 return mask_geom.contains(geom)
             else:
                 return False
-        elif geom.type() == QGis.Point:
+        elif geom.type() == QgsWkbTypes.PointGeometry:
             return mask_geom.intersects(geom)
         else:
             return False
@@ -830,9 +845,6 @@ class aeag_mask(QObject):
         # (False, True, 2) 0.2315
         # (True, True, 1) 0.1550 <--
         # (True, True, 2) 0.1850 <--
-
-        # the number of time each test must be run
-        N = 5
 
         # layer with labels to filter
         layer = self.iface.activeLayer()
