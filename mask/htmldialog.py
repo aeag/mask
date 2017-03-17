@@ -1,6 +1,5 @@
-from PyQt4.QtCore import * 
-from PyQt4.QtGui import *
-from PyQt4.QtXml import *
+from PyQt5.QtCore import (QSettings, QUrl, Qt) 
+from PyQt5.QtWidgets import (QDialog, QVBoxLayout, QTextBrowser, QDialogButtonBox)
 
 import os
 
