@@ -10,9 +10,8 @@ Class to store mask parameters
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtCore import * 
-from PyQt4.QtGui import *
-from qgis.core import *
+
+from qgis.core import (QgsGeometry, QgsProject, QgsFeature)
 import pickle
 import base64
 
@@ -32,10 +31,8 @@ class MaskParameters:
         self.polygon_mask_method = 2
         # line mask method = 0: intersects, 1: contains
         self.line_mask_method = 0
-
         # layers (list of id) where labeling has to be limited
         self.limited_layers = []
-
         self.orig_geometry = None
         self.geometry = None
 
