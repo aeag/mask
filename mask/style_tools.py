@@ -1,10 +1,9 @@
-from PyQt4.QtCore import * 
-from PyQt4.QtGui import *
-from PyQt4.QtXml import *
-from qgis.core import *
-from qgis.gui import *
-from .mask_parameters import *
 import os
+
+from PyQt4.QtCore import QSettings
+from PyQt4.QtXml import QDomDocument, QDomImplementation
+
+from .mask_parameters import MaskParameters
 
 def set_layer_symbology( layer, symbology ):
     if symbology is not None:
