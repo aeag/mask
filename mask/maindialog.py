@@ -98,11 +98,17 @@ class MainDialog( QDialog ):
             self.ui.simplifyGroup.setChecked( False )
 
     def update_style_from_parameters( self, parameters ):
-        style_tools.set_layer_symbology( self.parameters.layer, parameters.style )
-        self.update_style_preview( self.parameters.layer )
+        try:
+            style_tools.set_layer_symbology( self.parameters.layer, parameters.style )
+            self.update_style_preview( self.parameters.layer )
+        except:
+            pass
 
     def update_parameters_from_style( self, parameters ):
-        parameters.style = style_tools.get_layer_symbology( self.parameters.layer )
+        try:
+            parameters.style = style_tools.get_layer_symbology( self.parameters.layer )
+        except:
+            pass
 
     def update_ui_from_parameters( self, parameters ):
         self.update_style_from_parameters( parameters )

@@ -113,8 +113,8 @@ in_mask(2154)"""))
     def tr(self, message):
         return QCoreApplication.translate('InMaskFunction', message)
 
-    def func(self, values, feature, parent):
-        return self.mask.in_mask( feature, values[0] )
+    def func(self, values, context, parent):
+        return self.mask.in_mask( context, values[0] )
 
 class aeag_mask(QObject):
 
@@ -522,7 +522,7 @@ class aeag_mask(QObject):
                     nlayer = self.create_layer( parameters, mask_name, is_mem, dest_crs, layer_style )
                 except AttributeError as ex:
                     # Error unknown (dest_crs is None...)
-                    pass
+                    return
                     
                 except RuntimeError as ex:
                     e = ex.message
@@ -763,7 +763,8 @@ class aeag_mask(QObject):
                 geom, bbox = self.simplified_geometries[tol]
             else:
                 if self.has_simplifier:
-                    QgsMapToPixelSimplifier.simplifyGeometry( geom, 1, tol )
+                    simplifier = QgsMapToPixelSimplifier(QgsMapToPixelSimplifier.SimplifyGeometry, tol)
+                    geom = simplifier.simplify( geom )
                     if not geom.isGeosValid():
                         # make valid
                         geom = geom.buffer( 0.0, 1 )
@@ -774,8 +775,8 @@ class aeag_mask(QObject):
 
         return geom, bbox
 
-    def in_mask( self, feature, srid ):
-        if feature is None: # expression overview
+    def in_mask( self, context, srid ):
+        if context.feature() is None: # expression overview
             return False
         if self.layer is None:
             return False
@@ -793,7 +794,7 @@ class aeag_mask(QObject):
         
 
         mask_geom, bbox = self.mask_geometry()
-        geom = QgsGeometry( feature.geometry() )
+        geom = QgsGeometry( context.feature().geometry() )
         if not geom.isGeosValid():
             geom = geom.buffer( 0.0, 1 )
         if geom is None:
