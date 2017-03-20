@@ -55,8 +55,8 @@ class MaskParameters:
                              self.polygon_mask_method,
                              self.line_mask_method,
                              [ g.exportToWkb() for g in self.orig_geometry ] if self.orig_geometry is not None else None,
-                             self.geometry.exportToWkb() if self.geometry is not None else None],
-                protocol=0, fix_imports=True
+                             self.geometry.exportToWkb() if self.geometry is not None else None]
+                # , protocol=0, fix_imports=True
             )
         else:
             t = pickle.dumps([self.do_buffer,
@@ -70,8 +70,8 @@ class MaskParameters:
                              self.limited_layers,
                              style,
                              self.polygon_mask_method,
-                             self.line_mask_method],
-                protocol=0, fix_imports=True
+                             self.line_mask_method]
+                # , protocol=0, fix_imports=True
             )
         return t
 
@@ -79,7 +79,7 @@ class MaskParameters:
         style = None
         orig_geom = None
         geom = None
-        t = pickle.loads( st, fix_imports=True )
+        t = pickle.loads( st )
         if len(t) == 12: # older version
             (self.do_buffer,
              self.buffer_units,
@@ -136,7 +136,10 @@ class MaskParameters:
 
     def save_to_project( self ):
         serialized = base64.b64encode( self.serialize() )
-        QgsProject.instance().writeEntry( "Mask", "parameters", str(serialized)[2:-1] )
+        try:
+            QgsProject.instance().writeEntry( "Mask", "parameters", serialized )
+        except:
+            QgsProject.instance().writeEntry( "Mask", "parameters", str(serialized)[2:-1] )
 
         return True
 

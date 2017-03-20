@@ -239,9 +239,9 @@ class aeag_mask(QObject):
         self.iface.mainWindow().projectRead.connect( self.on_project_open )
 
     def load_from_project( self ):
+        parameters = MaskParameters()
         try:
             # return layer, parameters
-            parameters = MaskParameters()
             ok = parameters.load_from_project()
             if not ok:
                 # no parameters in the project
@@ -257,6 +257,8 @@ class aeag_mask(QObject):
         except Exception as e:
             for m in e.args:
                 QgsMessageLog.logMessage("Mask error when loading - {}".format(m), 'Extensions')
+
+            return None, parameters
 
     def save_to_project( self, layer, parameters ):
         try:
