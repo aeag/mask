@@ -18,10 +18,10 @@ class HtmlDialog( QDialog ):
         if not url.startswith('http'):
             pwd = os.path.dirname(__file__)
             locale = QSettings().value("locale/userLocale")[0:2]
-            file = "%s/doc/%s/%s" % (pwd, locale, url)
+            file = "{}/doc/{}/{}".format(pwd, locale, url)
             if not os.path.isfile(file):
-                file = "%s/doc/en/%s" % (pwd, url)
-            self.te.setSource(QUrl("file://%s" % file))
+                file = "{}/doc/en/{}".format(pwd, url)
+            self.te.setSource(QUrl.fromLocalFile(file))
         else:
             self.te.setSource(QUrl(url))
 
