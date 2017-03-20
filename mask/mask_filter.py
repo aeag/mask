@@ -1,4 +1,4 @@
-from qgis.core import (QgsVectorLayer, QgsPalLayerSettings)
+from qgis.core import (QgsVectorLayer, QgsPalLayerSettings, QgsMessageLog)
 
 SPATIAL_FILTER = "in_mask"
 
@@ -12,23 +12,23 @@ def has_mask_filter( layer ):
     if not pal.enabled:
         return False
         
-    show_expr = pal.dataDefinedProperties.get( QgsPalLayerSettings.Show )
+    show_expr = pal.dataDefinedProperties().property( QgsPalLayerSettings.Show )
     if show_expr is None:
         return False
         
-    return show_expr.expressionString().startswith(SPATIAL_FILTER)
+    return show_expr.expressionString().startswith(SPATIAL_FILTER)        
 
 def remove_mask_filter( pal ):
     npal = QgsPalLayerSettings( pal )
-    if npal.enabled and npal.dataDefinedProperties.get( QgsPalLayerSettings.Show ) is not None and \
-            npal.dataDefinedProperties[ QgsPalLayerSettings.Show ].expressionString().startswith(SPATIAL_FILTER):
-        npal.dataDefinedProperties = dict([(k,v) for k,v in npal.dataDefinedProperties.items() if k != QgsPalLayerSettings.Show] )
+    if npal.enabled and npal.dataDefinedProperties().property( QgsPalLayerSettings.Show ) is not None and \
+            npal.dataDefinedProperties().property(QgsPalLayerSettings.Show).expressionString().startswith(SPATIAL_FILTER):
+        npal.dataDefinedProperties().setProperty( QgsPalLayerSettings.Show, None)
         
     return npal
 
 def add_mask_filter( pal, layer ):
     npal = QgsPalLayerSettings( pal )
     expr = "%s(%d)" % (SPATIAL_FILTER, layer.crs().postgisSrid())
-    npal.setDataDefinedProperty( QgsPalLayerSettings.Show, True, True, expr, '' )
+    npal.dataDefinedProperties().setProperty( QgsPalLayerSettings.Show, expr)
     
     return npal
