@@ -32,7 +32,7 @@ class MaskParameters:
         # line mask method = 0: intersects, 1: contains
         self.line_mask_method = 0
         # layers (list of id) where labeling has to be limited
-        self.limited_layers = []
+        self.limited_layers_obsolete = []
         self.orig_geometry = None
         self.geometry = None
 
@@ -50,13 +50,13 @@ class MaskParameters:
                              self.do_save_as,
                              self.file_path,
                              self.file_format,
-                             self.limited_layers,
+                             self.limited_layers_obsolete,
                              style,
                              self.polygon_mask_method,
                              self.line_mask_method,
                              [ g.exportToWkb() for g in self.orig_geometry ] if self.orig_geometry is not None else None,
                              self.geometry.exportToWkb() if self.geometry is not None else None]
-                # , protocol=0, fix_imports=True
+                , protocol=0, fix_imports=True
             )
         else:
             t = pickle.dumps([self.do_buffer,
@@ -67,11 +67,11 @@ class MaskParameters:
                              self.do_save_as,
                              self.file_path,
                              self.file_format,
-                             self.limited_layers,
+                             self.limited_layers_obsolete,
                              style,
                              self.polygon_mask_method,
                              self.line_mask_method]
-                # , protocol=0, fix_imports=True
+                , protocol=0, fix_imports=True
             )
         return t
 
@@ -89,7 +89,7 @@ class MaskParameters:
              self.do_save_as,
              self.file_path,
              self.file_format,
-             self.limited_layers,
+             self.limited_layers_obsolete,
              style,
              self.polygon_mask_method,
              self.line_mask_method) = t
@@ -102,7 +102,7 @@ class MaskParameters:
              self.do_save_as,
              self.file_path,
              self.file_format,
-             self.limited_layers,
+             self.limited_layers_obsolete,
              style,
              self.polygon_mask_method,
              self.line_mask_method,
@@ -139,6 +139,7 @@ class MaskParameters:
         try:
             QgsProject.instance().writeEntry( "Mask", "parameters", serialized )
         except:
+            # strange behaviour, pickle change his format ?
             QgsProject.instance().writeEntry( "Mask", "parameters", str(serialized)[2:-1] )
 
         return True

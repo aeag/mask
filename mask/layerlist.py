@@ -20,9 +20,6 @@ class LayerListWidget( QWidget ):
         # list of limited layers (list of layer id)
         self.limited = []
 
-    def set_limited_layers( self, limited ):
-        self.limited = limited
-
     def get_limited_layers( self ):
         return self.limited
 
