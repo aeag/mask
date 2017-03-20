@@ -290,6 +290,7 @@ class MainDialog( QDialog ):
                 if layer.id() in limited and int(layer.simplifyMethod().simplifyHints()) > 0:
                     # simplification is enabled
                     slayers.append(layer)
+                    
             if len(slayers) > 0:
                 r = QMessageBox.question( None, self.tr("Warning"),
                                          self.tr("Some layer have rendering simplification turned on, which is not compatible with the labeling filtering you choose. Force simplification disabling ?"),

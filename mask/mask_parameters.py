@@ -11,7 +11,7 @@ Class to store mask parameters
  ***************************************************************************/
 """
 
-from qgis.core import (QgsGeometry, QgsProject, QgsFeature)
+from qgis.core import (QgsGeometry, QgsProject, QgsFeature, QgsMessageLog)
 import pickle
 import base64
 
@@ -54,8 +54,10 @@ class MaskParameters:
                              style,
                              self.polygon_mask_method,
                              self.line_mask_method,
-                             [ g.asWkb() for g in self.orig_geometry ] if self.orig_geometry is not None else None,
-                             self.geometry.asWkb() if self.geometry is not None else None])
+                             [ g.exportToWkb() for g in self.orig_geometry ] if self.orig_geometry is not None else None,
+                             self.geometry.exportToWkb() if self.geometry is not None else None],
+                protocol=0, fix_imports=True
+            )
         else:
             t = pickle.dumps([self.do_buffer,
                              self.buffer_units,
@@ -68,14 +70,16 @@ class MaskParameters:
                              self.limited_layers,
                              style,
                              self.polygon_mask_method,
-                             self.line_mask_method])
+                             self.line_mask_method],
+                protocol=0, fix_imports=True
+            )
         return t
 
     def unserialize( self, st ):
         style = None
         orig_geom = None
         geom = None
-        t = pickle.loads( st )
+        t = pickle.loads( st, fix_imports=True )
         if len(t) == 12: # older version
             (self.do_buffer,
              self.buffer_units,
@@ -132,7 +136,8 @@ class MaskParameters:
 
     def save_to_project( self ):
         serialized = base64.b64encode( self.serialize() )
-        QgsProject.instance().writeEntry( "Mask", "parameters", serialized )
+        QgsProject.instance().writeEntry( "Mask", "parameters", str(serialized)[2:-1] )
+
         return True
 
     def load_from_project( self ):
