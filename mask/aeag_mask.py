@@ -43,7 +43,8 @@ from qgis.core import (QgsExpression, QgsAtlasComposition,
                        QgsField, QgsFeature, QgsVectorFileWriter, 
                        QgsRectangle, QgsMapToPixelSimplifier, 
                        QgsCoordinateReferenceSystem, QgsCoordinateTransform,
-                       QgsVectorSimplifyMethod, QgsMessageLog
+                       QgsVectorSimplifyMethod, QgsMessageLog, 
+                       QgsExpressionContextUtils
                        )
 
 from .maindialog import MainDialog
@@ -364,7 +365,8 @@ class aeag_mask(QObject):
                 self.on_composer_map_added( composition, item )
 
     def on_composer_map_added( self, compo, item ):
-        # The second argument, which is supposed to be a QgsComposerMap is always a QObject.
+        # QgsMessageLog.logMessage("on_composer_map_added "+str(type(compo)), 'Extensions')       
+        # The second argument, which is supposed to be a QgsComposerMap is always a QObject (also in 2.99).
         # ?! So we circumvent this problem in passing the QgsComposition container
         # and getting track of composer maps
         for composer_map in compo.composerMapItems():
@@ -413,14 +415,9 @@ class aeag_mask(QObject):
         if not self.layer:
             return
 
-        if hasattr(compo.atlasComposition(), "currentGeometry"): #qgis 2.14
-            geom = compo.atlasComposition().currentGeometry()
-        elif hasattr(compo, "createExpressionContext"): #qgis 2.12
-            ctxt = compo.createExpressionContext()
-            e = QgsExpression("@atlas_geometry")
-            geom = e.evaluate(ctxt)
-        else:
-            geom = QgsExpression.specialColumn("$atlasgeometry")
+        geom = QgsExpressionContextUtils.atlasScope(compo.atlasComposition()).variable('atlas_geometry')       
+        if not geom:
+            return
 
         masked_atlas_geometry = [geom]
         self.layer = self.apply_mask_parameters( self.layer,
