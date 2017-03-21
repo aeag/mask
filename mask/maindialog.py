@@ -210,6 +210,7 @@ class MainDialog( QDialog ):
             self.ui.filePath.setText( fn )
             self.ui.formatLbl.setText( self.save_format[0] )
             self.parameters.file_format = self.save_format[0]
+            self.parameters.file_path = fn
 
     def on_style_edit( self ):
         # QgsRenderV2PropertiesDialog has a Cancel button that is not correctly plugged

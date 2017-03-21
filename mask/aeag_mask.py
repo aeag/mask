@@ -527,24 +527,24 @@ class aeag_mask(QObject):
                     return
                     
                 except RuntimeError as ex:
-                    e = ex.message
-                    if e == 1:
-                        QMessageBox.critical( None, self.tr("Mask plugin error"), self.tr("Driver not found !") )
-                    elif e == 2:
-                        QMessageBox.critical( None, self.tr("Mask plugin error"), self.tr("Cannot create data source !") )
-                    elif e == 3:
-                        QMessageBox.critical( None, self.tr("Mask plugin error"), self.tr("Cannot create layer !") )
-                    elif e == 4:
-                        QMessageBox.critical( None, self.tr("Mask plugin error"), self.tr("Attribute type unsupported !") )
-                    elif e == 5:
-                        QMessageBox.critical( None, self.tr("Mask plugin error"), self.tr("Attribute creation failed !") )
-                    elif e == 6:
-                        QMessageBox.critical( None, self.tr("Mask plugin error"), self.tr("Projection error !") )
-                    elif e == 7:
-                        QMessageBox.critical( None, self.tr("Mask plugin error"), self.tr("Feature write failed !") )
-                    elif e == 8:
-                        QMessageBox.critical( None, self.tr("Mask plugin error"), self.tr("Invalid layer !") )
-                    return
+                    for m in ex.args:
+                        if m == 1:
+                            QMessageBox.critical( None, self.tr("Mask plugin error"), self.tr("Driver not found !") )
+                        elif m == 2:
+                            QMessageBox.critical( None, self.tr("Mask plugin error"), self.tr("Cannot create data source !") )
+                        elif m == 3:
+                            QMessageBox.critical( None, self.tr("Mask plugin error"), self.tr("Cannot create layer !") )
+                        elif m == 4:
+                            QMessageBox.critical( None, self.tr("Mask plugin error"), self.tr("Attribute type unsupported !") )
+                        elif m == 5:
+                            QMessageBox.critical( None, self.tr("Mask plugin error"), self.tr("Attribute creation failed !") )
+                        elif m == 6:
+                            QMessageBox.critical( None, self.tr("Mask plugin error"), self.tr("Projection error !") )
+                        elif m == 7:
+                            QMessageBox.critical( None, self.tr("Mask plugin error"), self.tr("Feature write failed !") )
+                        elif m == 8:
+                            QMessageBox.critical( None, self.tr("Mask plugin error"), self.tr("Invalid layer !") )
+                        return
     
                 if nlayer is None:
                     QMessageBox.critical( None, self.tr("Mask plugin error"), self.tr("Problem saving the mask layer") )
@@ -704,7 +704,8 @@ class aeag_mask(QObject):
         layer.startEditing()
         layer.addAttribute( QgsField( "params", QVariant.String) )
         fet1 = QgsFeature(0)
-        fet1.setAttributes( [serialized] )
+        fet1.setFields(layer.fields())
+        fet1.setAttribute( "params", str(serialized)[2:-1] )
         fet1.setGeometry(parameters.geometry)
         pr.addFeatures([ fet1 ])
         layer.commitChanges()
@@ -725,6 +726,7 @@ class aeag_mask(QObject):
                 os.unlink( save_as )
 
         # create the disk layer
+        QgsMessageLog.logMessage("Mask saving '{}' as {}".format(save_as, file_format), 'Extensions')
         error = QgsVectorFileWriter.writeAsVectorFormat( layer,
                                                          save_as,
                                                          "System",
@@ -785,7 +787,7 @@ class aeag_mask(QObject):
 
         try:
             # layer is not None but destroyed ?
-            self.layer
+            self.layer.id()
         except:
             self.reset_mask_layer()
             return False;

@@ -41,6 +41,7 @@ class MaskParameters:
             style = self.style
         else:
             style = None
+            
         if with_geometry:
             t = pickle.dumps([self.do_buffer,
                              self.buffer_units,
@@ -155,7 +156,6 @@ class MaskParameters:
     # try to load parameters from a mask layer
     # for compatibility with older versions where parameters were saved in attributes of the mask layer
     def load_from_layer( self, layer ):
-
         # return False on failure
         pr = layer.dataProvider()
         fields = pr.fields()
@@ -171,7 +171,7 @@ class MaskParameters:
         it = pr.getFeatures()
         fet = QgsFeature()
         it.nextFeature(fet)
-        st = fet.attributes()[field]
+        st = fet.attribute(field)
 
         self.unserialize(base64.b64decode(st))
 
