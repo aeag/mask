@@ -5,7 +5,7 @@ Description          : Aide à la création de masque
 Date                 : Feb/12 
 copyright            : (C) 2011 by AEAG
                        (c) 2014 Oslandia
-email                : xavier.culos@eau-adour-garonne.fr 
+email                : geocatalogue@eau-adour-garonne.fr 
                        hugo.mercier@oslandia.com
 todo: 
 
@@ -115,8 +115,9 @@ in_mask(2154)"""))
         return QCoreApplication.translate('InMaskFunction', message)
 
     def func(self, values, context, parent):
-        return self.mask.in_mask( context, values[0] )
+        return self.mask.in_mask( context.feature(), values[0])
 
+        
 class aeag_mask(QObject):
 
     def __init__(self, iface):
@@ -776,9 +777,10 @@ class aeag_mask(QObject):
 
         return geom, bbox
 
-    def in_mask( self, context, srid ):
-        if context.feature() is None: # expression overview
+    def in_mask( self, feature, srid=None ):
+        if feature is None: # expression overview
             return False
+            
         if self.layer is None:
             return False
 
@@ -795,20 +797,22 @@ class aeag_mask(QObject):
         
 
         mask_geom, bbox = self.mask_geometry()
-        geom = QgsGeometry( context.feature().geometry() )
+        geom = QgsGeometry( feature.geometry() )
         if not geom.isGeosValid():
             geom = geom.buffer( 0.0, 1 )
+            
         if geom is None:
-            print('geometry absente')  #debug 
-
             return False
 
-
-        if self.layer.crs().postgisSrid() != srid:
+        if srid != None and self.layer.crs().postgisSrid() != srid:
             src_crs = QgsCoordinateReferenceSystem( srid )
             dest_crs = self.layer.crs()
             xform = QgsCoordinateTransform( src_crs, dest_crs )
-            geom.transform( xform )
+            try:
+                geom.transform( xform )
+            except:
+                # transformation error. Check layer projection.                
+                pass
         
         if geom.type() == QgsWkbTypes.PolygonGeometry:
             if self.parameters.polygon_mask_method == 2 and not self.has_point_on_surface:
