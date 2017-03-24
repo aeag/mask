@@ -80,7 +80,19 @@ class MaskParameters:
         style = None
         orig_geom = None
         geom = None
-        t = pickle.loads( st )
+
+        try:
+            t = pickle.loads( st )
+        except Exception as e:
+            try:
+                t = pickle.loads( st, encoding='utf-8' )
+                # strange, Exception says : No module named 'PyQt4'
+            except Exception as e:
+                for m in e.args:
+                    QgsMessageLog.logMessage(str(m), 'Extensions')
+                    
+                raise Exception("Mask - Error when loading mask")
+                    
         if len(t) == 12: # older version
             (self.do_buffer,
              self.buffer_units,
