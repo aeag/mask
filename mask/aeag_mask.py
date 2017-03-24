@@ -361,17 +361,22 @@ class aeag_mask(QObject):
         composition.atlasComposition().renderBegun.connect( self.on_atlas_begin_render )
         composition.atlasComposition().renderEnded.connect( self.on_atlas_end_render )
 
-        composition.itemAdded.connect( self.on_composer_item_added )
-        composition.itemRemoved.connect( self.on_composer_item_removed )
+        composition.itemAdded.connect( lambda item: self.on_composer_item_added(composition, item) )
+        composition.itemRemoved.connect( lambda item: self.on_composer_item_removed(composition,item) )
+
         for item in composition.composerMapItems():
             QgsMessageLog.logMessage("on_composer_added item  "+str(type(item)), 'Extensions')       
             self.on_composer_item_added( composition, item )
 
     def on_composer_item_added( self, compo, item ):
+        # The second argument, which is supposed to be a QgsComposerMap is sometimes a QObject (also in 2.99).
+        # ?! So we circumvent this problem in passing the QgsComposition container
+        # and getting track of composer maps
         QgsMessageLog.logMessage("on_composer_item_added {} {}".format(str(type(compo)), str(type(item))), 'Extensions')       
-        if item not in self.composers[compo] and type(item) == QgsComposerMap:
-            self.composers[compo].append(item)
-            item.preparedForAtlas.connect( lambda this=self,c=compo, i=item: this.on_prepared_for_atlas(c, i) )
+        for item in compo.composerMapItems():
+            if item not in self.composers[compo] and type(item) == QgsComposerMap:
+                self.composers[compo].append(item)
+                item.preparedForAtlas.connect( lambda this=self,c=compo: this.on_prepared_for_atlas(c, item) )
 
     def on_composer_item_removed( self, compo, item ):
         QgsMessageLog.logMessage("on_composer_item_removed {} {}".format(str(type(compo)), str(type(item))), 'Extensions')       
@@ -439,7 +444,7 @@ class aeag_mask(QObject):
             return
 
         # save the mask geometry
-        self.geometries_backup = [ QgsGeometry(g) for g in self.parameters.orig_geometry]
+        self.geometries_backup = [QgsGeometry(g) for g in self.parameters.orig_geometry]
 
     def on_atlas_end_render( self ):
         if not self.layer:
