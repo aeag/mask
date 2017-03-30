@@ -38,8 +38,7 @@ from PyQt5.QtWidgets import QAction, QMessageBox
 
 from qgis.core import (QgsExpression, QgsAtlasComposition, 
                        QgsGeometry, QgsPalLayerSettings, QgsProject, 
-                       QgsMapLayer, QgsComposerItem, QgsComposition, 
-                       QgsComposerMap,
+                       QgsMapLayer, QgsComposerMap,
                        QgsVectorLayer, QgsWkbTypes, QgsLayerTreeLayer, 
                        QgsField, QgsFeature, QgsVectorFileWriter, 
                        QgsRectangle, QgsMapToPixelSimplifier, 
@@ -469,7 +468,7 @@ class aeag_mask(QObject):
             compo.refreshItems()
 
     def apply_mask_parameters( self, layer, parameters, dest_crs = None, poly = None, name = None, cleanup_and_zoom = True, keep_layer = True ):
-        QgsMessageLog.logMessage("apply_mask_parameters - {} {}".format(layer.name(), name), 'Extensions')
+        #QgsMessageLog.logMessage("apply_mask_parameters - {} {}".format(layer.name() if layer != None else "", name), 'Extensions')
         
         # Apply given mask parameters to the given layer. Returns the new layer
         # The given layer is removed and then recreated in the layer tree

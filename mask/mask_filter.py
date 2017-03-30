@@ -1,4 +1,4 @@
-from qgis.core import (QgsVectorLayer, QgsPalLayerSettings, QgsMessageLog, QgsProperty)
+from qgis.core import (QgsVectorLayer, QgsPalLayerSettings, QgsProperty)
 
 SPATIAL_FILTER = "in_mask"
 
