@@ -49,6 +49,9 @@ from .mask_parameters import MaskParameters
 from .htmldialog import HtmlDialog
 from . import style_tools
 
+# Initialize Qt resources from file resources.py
+from . import resources_rc
+
 aeag_mask_instance = None
 
 
