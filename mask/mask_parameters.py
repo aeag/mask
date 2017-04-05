@@ -15,8 +15,9 @@ from qgis.core import (QgsGeometry, QgsProject, QgsFeature, QgsMessageLog)
 import pickle
 import base64
 
+
 class MaskParameters:
-    def __init__( self ):
+    def __init__(self):
         # selection | mask
         self.do_buffer = False
         self.buffer_units = 1
@@ -36,29 +37,32 @@ class MaskParameters:
         self.orig_geometry = None
         self.geometry = None
 
-    def serialize( self, with_style = True, with_geometry = True ):
+    def serialize(self, with_style=True, with_geometry=True):
         if with_style:
             style = self.style
         else:
             style = None
-            
+
         if with_geometry:
-            t = pickle.dumps([self.do_buffer,
-                             self.buffer_units,
-                             self.buffer_segments,
-                             self.do_simplify,
-                             self.simplify_tolerance,
-                             self.do_save_as,
-                             self.file_path,
-                             self.file_format,
-                             self.limited_layers_obsolete,
-                             style,
-                             self.polygon_mask_method,
-                             self.line_mask_method,
-                             [ g.exportToWkb() for g in self.orig_geometry ] if self.orig_geometry is not None else None,
-                             self.geometry.exportToWkb() if self.geometry is not None else None]
-                , protocol=0, fix_imports=True
-            )
+            t = pickle.dumps([
+                self.do_buffer,
+                self.buffer_units,
+                self.buffer_segments,
+                self.do_simplify,
+                self.simplify_tolerance,
+                self.do_save_as,
+                self.file_path,
+                self.file_format,
+                self.limited_layers_obsolete,
+                style,
+                self.polygon_mask_method,
+                self.line_mask_method,
+                [g.exportToWkb() for g in self.orig_geometry]
+                if self.orig_geometry is not None else None,
+                self.geometry.exportToWkb() if self.geometry is not None else None],
+                protocol=0,
+                fix_imports=True
+                )
         else:
             t = pickle.dumps([self.do_buffer,
                              self.buffer_units,
@@ -71,29 +75,30 @@ class MaskParameters:
                              self.limited_layers_obsolete,
                              style,
                              self.polygon_mask_method,
-                             self.line_mask_method]
-                , protocol=0, fix_imports=True
-            )
+                             self.line_mask_method],
+                             protocol=0,
+                             fix_imports=True
+                             )
         return t
 
-    def unserialize( self, st ):
+    def unserialize(self, st):
         style = None
         orig_geom = None
         geom = None
 
         try:
-            t = pickle.loads( st )
+            t = pickle.loads(st)
         except Exception as e:
             try:
-                t = pickle.loads( st, encoding='utf-8' )
+                t = pickle.loads(st, encoding='utf-8')
                 # strange, Exception says : No module named 'PyQt4'
             except Exception as e:
                 for m in e.args:
                     QgsMessageLog.logMessage(str(m), 'Extensions')
-                    
+
                 raise Exception("Mask - Error when loading mask")
-                    
-        if len(t) == 12: # older version
+
+        if len(t) == 12:  # older version
             (self.do_buffer,
              self.buffer_units,
              self.buffer_segments,
@@ -121,24 +126,26 @@ class MaskParameters:
              self.line_mask_method,
              orig_geom,
              geom
-            ) = t
+             ) = t
         self.style = None
         self.geometry = None
         if style is not None:
             self.style = style
         if geom is not None:
             self.geometry = QgsGeometry()
-            self.geometry.fromWkb( geom )
+            self.geometry.fromWkb(geom)
         if orig_geom is not None:
             gl = []
             for g in orig_geom:
                 geo = QgsGeometry()
-                geo.fromWkb( g )
-                gl.append( geo )
+                geo.fromWkb(g)
+                gl.append(geo)
             self.orig_geometry = gl
 
-    def have_same_layer_options( self, other ):
-        "Returns true if the other parameters have the same layer options (file path, file format) than self"
+    def have_same_layer_options(self, other):
+        """ Returns true if the other parameters have the same layer options
+           (file path, file format) than self
+        """
         if not self.do_save_as:
             return not other.do_save_as
         else:
@@ -147,27 +154,28 @@ class MaskParameters:
             else:
                 return self.file_path == other.file_path and self.file_format == other.file_format
 
-    def save_to_project( self ):
-        serialized = base64.b64encode( self.serialize() )
+    def save_to_project(self):
+        serialized = base64.b64encode(self.serialize())
         try:
-            QgsProject.instance().writeEntry( "Mask", "parameters", serialized )
+            QgsProject.instance().writeEntry("Mask", "parameters", serialized)
         except:
             # strange behaviour, pickle change his format ?
-            QgsProject.instance().writeEntry( "Mask", "parameters", str(serialized)[2:-1] )
+            QgsProject.instance().writeEntry("Mask", "parameters", str(serialized)[2:-1])
 
         return True
 
-    def load_from_project( self ):
-        st, ok = QgsProject.instance().readEntry( "Mask", "parameters" )
+    def load_from_project(self):
+        st, ok = QgsProject.instance().readEntry("Mask", "parameters")
         if st == '':
             return False
 
-        self.unserialize( base64.b64decode(st) )
+        self.unserialize(base64.b64decode(st))
         return True
 
     # try to load parameters from a mask layer
-    # for compatibility with older versions where parameters were saved in attributes of the mask layer
-    def load_from_layer( self, layer ):
+    # for compatibility with older versions where parameters were saved in
+    # attributes of the mask layer
+    def load_from_layer(self, layer):
         # return False on failure
         pr = layer.dataProvider()
         fields = pr.fields()
@@ -188,9 +196,7 @@ class MaskParameters:
         self.unserialize(base64.b64decode(st))
 
         if self.geometry is None:
-            self.geometry = QgsGeometry( fet.geometry() )
-            self.orig_geometry = [QgsGeometry( fet.geometry() )]
+            self.geometry = QgsGeometry(fet.geometry())
+            self.orig_geometry = [QgsGeometry(fet.geometry())]
 
         return True
-
-
