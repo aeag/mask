@@ -7,7 +7,7 @@ qgisMaximumVersion=3.99
 
 description=Help to create mask, filter labels in it and automate Atlas generation with mask
 description[fr]=Aide à la création de masque, filtrage d'étiquette et automatisation de masque pour Atlas
-version=1.7
+version=1.8
 # end of mandatory metadata
 
 # Optional items:
@@ -15,6 +15,7 @@ about=This plugin allows user to quickly transform a polygon selection into a ma
 about[fr]=Cette extension permet de générer un masque à partir d'une sélection de polygones. Le plugin permet également de filtrer l'étiquetage uniquement pour les objets à l'intérieur de ce masque. 
 # Uncomment the following line and add your changelog entries:
 changelog=
+    1.8 : Some API changes (QgsExpression, QgsPalLayerSettings)
     1.7 : Migration to QGis 3
     1.6 : master developpement version (not released)
     1.5.1 : enables plugin only for qgis <=2.8 . See https://github.com/aeag/mask/issues/51 
