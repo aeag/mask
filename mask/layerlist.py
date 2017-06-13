@@ -1,7 +1,7 @@
 from PyQt5.QtCore import (Qt)
 from PyQt5.QtWidgets import (QWidget, QTableWidgetItem, QDialog, QCheckBox,
                              QDialogButtonBox, QVBoxLayout)
-from qgis.core import (QgsProject, QgsVectorLayer, QgsPalLayerSettings)
+from qgis.core import (QgsProject, QgsVectorLayer)
 
 from .ui_layer_list import Ui_LayerListWidget
 
@@ -47,10 +47,8 @@ class LayerListWidget(QWidget):
             if not isinstance(layer, QgsVectorLayer):
                 continue
 
-            pal = QgsPalLayerSettings()
-            pal.readFromLayer(layer)
             # skip layers without labels
-            if not pal.enabled:
+            if layer.labeling() is None:
                 continue
 
             do_limit = False
@@ -67,7 +65,7 @@ class LayerListWidget(QWidget):
             name_item.setData(Qt.DisplayRole, layer.name())
             self.ui.layerTable.setItem(n, 1, name_item)
             w = QCheckBox(self.ui.layerTable)
-            w.setEnabled(pal.enabled)
+            w.setEnabled(layer.labeling() is not None)
             w.setChecked(do_limit or is_new)
             self.ui.layerTable.setCellWidget(n, 0, w)
             item = QTableWidgetItem()
@@ -80,22 +78,20 @@ class LayerListWidget(QWidget):
 
     def update_labeling_from_list(self):
         ll = self.ui.layerTable
-        pal = QgsPalLayerSettings()
+
         for i in range(ll.rowCount()):
             do_limit = ll.cellWidget(i, 0).isChecked()
             layer = ll.item(i, 0).data(Qt.UserRole)
-            pal.readFromLayer(layer)
             did_limit = layer.id() in self.limited
 
             if not did_limit and do_limit:
                 # add spatial filtering
-                pal = mask_filter.add_mask_filter(pal, layer)
+                mask_filter.add_mask_filter(layer)
                 self.limited.append(layer.id())
-            if did_limit and not do_limit:
-                pal = mask_filter.remove_mask_filter(pal)
-                self.limited.remove(layer.id())
 
-            pal.writeToLayer(layer)
+            if did_limit and not do_limit:
+                mask_filter.remove_mask_filter(layer)
+                self.limited.remove(layer.id())
 
 
 class LayerListDialog(QDialog):

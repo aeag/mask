@@ -2,6 +2,7 @@ import os
 
 from PyQt5.QtCore import QSettings
 from PyQt5.QtXml import QDomDocument, QDomImplementation
+from qgis.core import QgsReadWriteContext
 
 from .mask_parameters import MaskParameters
 
@@ -11,7 +12,8 @@ def set_layer_symbology(layer, symbology):
         doc = QDomDocument("qgis")
         doc.setContent(symbology)
         errorMsg = ''
-        layer.readSymbology(doc.firstChildElement("qgis"), errorMsg)
+        ctx = QgsReadWriteContext()
+        layer.readSymbology(doc.firstChildElement("qgis"), errorMsg, ctx)
 
 
 def get_layer_symbology(layer):
@@ -21,7 +23,8 @@ def get_layer_symbology(layer):
     rootNode = doc.createElement("qgis")
     doc.appendChild(rootNode)
     errorMsg = ''
-    layer.writeSymbology(rootNode, doc, errorMsg)
+    ctx = QgsReadWriteContext()
+    layer.writeSymbology(rootNode, doc, errorMsg, ctx)
     return doc.toByteArray()
 
 

@@ -36,7 +36,8 @@ from PyQt5.QtCore import (QCoreApplication, QObject, QSettings, QTranslator, QUr
 from PyQt5.QtGui import QIcon, QDesktopServices
 from PyQt5.QtWidgets import QAction, QMessageBox
 
-from qgis.core import (QgsExpression, QgsAtlasComposition, QgsGeometry, QgsPalLayerSettings,
+from qgis.core import (QgsExpression, QgsExpressionFunction, QgsAtlasComposition, QgsGeometry,
+                       QgsPalLayerSettings,
                        QgsProject, QgsMapLayer, QgsComposerMap, QgsVectorLayer, QgsWkbTypes,
                        QgsLayerTreeLayer, QgsField, QgsFeature, QgsVectorFileWriter,
                        QgsRectangle, QgsMapToPixelSimplifier, QgsCoordinateReferenceSystem,
@@ -73,9 +74,9 @@ def is_in_qgis_core(sym):
     return sym in dir(qgis.core)
 
 
-class MaskGeometryFunction(QgsExpression.Function):
+class MaskGeometryFunction(QgsExpressionFunction):
     def __init__(self, mask):
-        QgsExpression.Function.__init__(self, "$mask_geometry", 0, "Python",
+        QgsExpressionFunction.__init__(self, "$mask_geometry", 0, "Python",
                                         self.tr("""<h1>$mask_geometry</h1>
 Variable filled by mask plugin.<br/>
 When mask has been triggered on some polygon, mask_geometry is filled with the
@@ -93,9 +94,9 @@ The geometry of the current mask
         return self.mask.mask_geometry()[0]
 
 
-class InMaskFunction(QgsExpression.Function):
+class InMaskFunction(QgsExpressionFunction):
     def __init__(self, mask):
-        QgsExpression.Function.__init__(self, "in_mask", 1, "Python",
+        QgsExpressionFunction.__init__(self, "in_mask", 1, "Python",
                                         self.tr("""<h1>in_mask function</h1>
 Expression function added by mask plugin. Returns true if current feature
 crosses mask geometry.<br/>
@@ -172,10 +173,7 @@ class aeag_mask(QObject):
         for name, layer in QgsProject.instance().mapLayers().items():
             if mask_filter.has_mask_filter(layer):
                 # remove mask filter from layer, if any
-                pal = QgsPalLayerSettings()
-                pal.readFromLayer(layer)
-                pal = mask_filter.remove_mask_filter(pal)
-                pal.writeToLayer(layer)
+                mask_filter.remove_mask_filter(layer)
 
         self.simplified_geometries = {}
 
@@ -378,7 +376,6 @@ class aeag_mask(QObject):
             lambda item: self.on_composer_item_removed(composition, item))
 
         for item in composition.composerMapItems():
-            QgsMessageLog.logMessage("on_composer_added item  "+str(type(item)), 'Extensions')
             self.on_composer_item_added(composition, item)
 
     def on_composer_item_added(self, compo, item):
@@ -431,7 +428,7 @@ class aeag_mask(QObject):
         return geom
 
     def on_prepared_for_atlas(self, compo, item):
-        QgsMessageLog.logMessage("on_prepared_for_atlas "+str(type(compo)), 'Extensions')
+        # QgsMessageLog.logMessage("on_prepared_for_atlas "+str(type(compo)), 'Extensions')
         # called for each atlas feature
         if not self.layer:
             return
@@ -489,6 +486,8 @@ class aeag_mask(QObject):
                               poly=None,
                               name=None, cleanup_and_zoom=True, keep_layer=True):
 
+        # QgsMessageLog.logMessage('apply_mask_parameters', 'Extensions')
+        
         # Apply given mask parameters to the given layer. Returns the new layer
         # The given layer is removed and then recreated in the layer tree
         # if poly is not None, it is used as the mask geometry
@@ -517,12 +516,8 @@ class aeag_mask(QObject):
             for name, l in self.project.mapLayers().items():
                 if not isinstance(l, QgsVectorLayer):
                     continue
-                pal = QgsPalLayerSettings()
-                pal.readFromLayer(l)
-                if not pal.enabled:
-                    continue
-                npal = mask_filter.add_mask_filter(pal, l)
-                npal.writeToLayer(l)
+
+                mask_filter.add_mask_filter(l)
 
         parameters.layer = layer
         # compute the geometry
@@ -708,11 +703,11 @@ class aeag_mask(QObject):
     def get_layer_style(self, layer):
         if layer is None:
             return None
-        return (layer.layerTransparency(), layer.featureBlendMode(), layer.blendMode(),
+        return (layer.opacity(), layer.featureBlendMode(), layer.blendMode(),
                 layer.renderer().clone())
 
     def set_layer_style(self, nlayer, style):
-        nlayer.setLayerTransparency(style[0])
+        nlayer.setOpacity(style[0])
         nlayer.setFeatureBlendMode(style[1])
         nlayer.setBlendMode(style[2])
         nlayer.setRenderer(style[3])

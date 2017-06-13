@@ -1,4 +1,5 @@
-from qgis.core import (QgsVectorLayer, QgsPalLayerSettings, QgsProperty)
+from qgis.core import (QgsVectorLayer, QgsPalLayerSettings, QgsProperty, QgsMessageLog, 
+                        QgsVectorLayerSimpleLabeling)
 
 SPATIAL_FILTER = "in_mask"
 
@@ -8,34 +9,56 @@ def has_mask_filter(layer):
         return False
 
     # check if a layer has already a mask filter enabled
-    pal = QgsPalLayerSettings()
-    pal.readFromLayer(layer)
-    if not pal.enabled:
+    if layer.labeling() is None:
         return False
 
-    show_expr = pal.dataDefinedProperties().property(QgsPalLayerSettings.Show)
+    settings = layer.labeling().settings()
+    show_expr = settings.dataDefinedProperties().property(QgsPalLayerSettings.Show)
     if show_expr is None:
         return False
 
     return show_expr.expressionString().startswith(SPATIAL_FILTER)
 
 
-def remove_mask_filter(pal):
-    npal = QgsPalLayerSettings(pal)
-    dprop = npal.dataDefinedProperties()
+def remove_mask_filter(layer):
+    if not isinstance(layer, QgsVectorLayer):
+        return False
 
-    if npal.enabled and dprop.property(QgsPalLayerSettings.Show) is not None and \
-            dprop.property(QgsPalLayerSettings.Show).expressionString().startswith(SPATIAL_FILTER):
-        dprop.setProperty(QgsPalLayerSettings.Show, True)
+    # check if a layer has already a mask filter enabled
+    if layer.labeling() is None:
+        return False
 
-    return npal
+    settings = layer.labeling().settings()
+
+    try:
+        if settings.dataDefinedProperties().hasProperty(QgsPalLayerSettings.Show) and \
+                settings.dataDefinedProperties().property(QgsPalLayerSettings.Show).expressionString().startswith(SPATIAL_FILTER):
+            # new settings
+            settings = QgsPalLayerSettings(layer.labeling().settings())
+            settings.dataDefinedProperties().setProperty(QgsPalLayerSettings.Show, True)
+            layer.setLabeling(QgsVectorLayerSimpleLabeling(settings))
+    except Exception as e:
+        for m in e.args:
+            QgsMessageLog.logMessage(m, 'Extensions')
 
 
-def add_mask_filter(pal, layer):
-    npal = QgsPalLayerSettings(pal)
-    expr = "%s(%d)" % (SPATIAL_FILTER, layer.crs().postgisSrid())
-    prop = QgsProperty()
-    prop.setExpressionString(expr)
-    npal.dataDefinedProperties().setProperty(QgsPalLayerSettings.Show, prop)
+def add_mask_filter(layer):
+    if not isinstance(layer, QgsVectorLayer):
+        return False
 
-    return npal
+    # check if a layer has already a mask filter enabled
+    if layer.labeling() is None:
+        return False
+
+    try:
+        expr = "%s(%d)" % (SPATIAL_FILTER, layer.crs().postgisSrid())
+        prop = QgsProperty()
+        prop.setExpressionString(expr)
+
+        # new settings
+        settings = QgsPalLayerSettings(layer.labeling().settings())
+        settings.dataDefinedProperties().setProperty(QgsPalLayerSettings.Show, prop)
+        layer.setLabeling(QgsVectorLayerSimpleLabeling(settings))
+    except Exception as e:
+        for m in e.args:
+            QgsMessageLog.logMessage(m, 'Extensions')

@@ -8,7 +8,7 @@ from PyQt5.QtWidgets import (QDialog,
 from PyQt5.QtGui import (QDoubleValidator, QIntValidator, QDesktopServices,
                          QPixmap)
 
-from qgis.core import (QgsVectorLayer,
+from qgis.core import (QgsVectorLayer, QgsMessageLog,
                        QgsStyle, QgsProject, QgsVectorFileWriter,
                        QgsRenderContext,
                        QgsGeometry, QgsVectorSimplifyMethod)
@@ -108,8 +108,10 @@ class MainDialog(QDialog):
     def update_parameters_from_style(self, parameters):
         try:
             parameters.style = style_tools.get_layer_symbology(self.parameters.layer)
-        except:
-            pass
+        except Exception as e:
+            for m in e.args:
+                QgsMessageLog.logMessage("Mask error update_parameters_from_style - {}".format(m),
+                                         'Extensions')
 
     def update_ui_from_parameters(self, parameters):
         self.update_style_from_parameters(parameters)
@@ -268,7 +270,11 @@ class MainDialog(QDialog):
             if self.parameters.polygon_mask_method == 2:
                 self.parameters.polygon_mask_method = 1
 
-        self.update_style_preview(self.parameters.layer)
+        try:
+            self.update_style_preview(self.parameters.layer)
+        except Exception as e:
+            for m in e.args:
+                QgsMessageLog.logMessage(m, 'Extensions')
 
         return QDialog.exec_(self)
 
