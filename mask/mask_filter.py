@@ -36,7 +36,8 @@ def remove_mask_filter(layer):
             # new settings
             settings = QgsPalLayerSettings(layer.labeling().settings())
             settings.dataDefinedProperties().setProperty(QgsPalLayerSettings.Show, True)
-            layer.setLabeling(QgsVectorLayerSimpleLabeling(settings))
+            if isinstance(layer.labeling(), QgsVectorLayerSimpleLabeling):
+                layer.setLabeling(QgsVectorLayerSimpleLabeling(settings))
     except Exception as e:
         for m in e.args:
             QgsMessageLog.logMessage(m, 'Extensions')
@@ -58,7 +59,8 @@ def add_mask_filter(layer):
         # new settings
         settings = QgsPalLayerSettings(layer.labeling().settings())
         settings.dataDefinedProperties().setProperty(QgsPalLayerSettings.Show, prop)
-        layer.setLabeling(QgsVectorLayerSimpleLabeling(settings))
+        if isinstance(layer.labeling(), QgsVectorLayerSimpleLabeling):
+            layer.setLabeling(QgsVectorLayerSimpleLabeling(settings))
     except Exception as e:
         for m in e.args:
             QgsMessageLog.logMessage(m, 'Extensions')
