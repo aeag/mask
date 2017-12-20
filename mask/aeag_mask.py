@@ -840,7 +840,7 @@ class aeag_mask(QObject):
         if srid is not None and self.layer.crs().postgisSrid() != srid:
             src_crs = QgsCoordinateReferenceSystem(srid)
             dest_crs = self.layer.crs()
-            xform = QgsCoordinateTransform(src_crs, dest_crs)
+            xform = QgsCoordinateTransform(src_crs, dest_crs, QgsProject.instance())
             try:
                 geom.transform(xform)
             except:
