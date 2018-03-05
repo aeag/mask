@@ -36,9 +36,9 @@ from PyQt5.QtCore import (QCoreApplication, QObject, QSettings, QTranslator, QUr
 from PyQt5.QtGui import QIcon, QDesktopServices
 from PyQt5.QtWidgets import QAction, QMessageBox
 
-from qgis.core import (QgsExpression, QgsExpressionFunction, QgsAtlasComposition, QgsGeometry,
+from qgis.core import (QgsExpression, QgsExpressionFunction, QgsGeometry,
                        QgsPalLayerSettings,
-                       QgsProject, QgsMapLayer, QgsComposerMap, QgsVectorLayer, QgsWkbTypes,
+                       QgsProject, QgsMapLayer, QgsVectorLayer, QgsWkbTypes,
                        QgsLayerTreeLayer, QgsField, QgsFeature, QgsVectorFileWriter,
                        QgsRectangle, QgsMapToPixelSimplifier, QgsCoordinateReferenceSystem,
                        QgsCoordinateTransform, QgsVectorSimplifyMethod, QgsMessageLog,
@@ -146,10 +146,6 @@ class aeag_mask(QObject):
             self.canvas = self.iface.mapCanvas()
             self.old_active_layer = None
 
-            self.composers = {}
-
-            # test qgis version for the presence of signals
-            self.has_atlas_signals = 'renderBegun' in dir(QgsAtlasComposition)
             # test qgis version for the presence of the simplifier
             self.has_simplifier = is_in_qgis_core('QgsMapToPixelSimplifier')
             # test qgis version for the presence of pointOnSurface
@@ -225,15 +221,14 @@ class aeag_mask(QObject):
         mask_id, ok = QgsProject.instance().readEntry("Mask", "layer_id")
         self.layer = self.project.mapLayer(mask_id)
 
-        if self.has_atlas_signals:
-            # register composer signals
-            lm = QgsProject.instance().layoutManager()
-            lm.compositionAdded.connect(self.on_composer_added)
-            lm.compositionAboutToBeRemoved.connect(self.on_composer_removed)
+        # register layout signals
+        lm = QgsProject.instance().layoutManager()
+        lm.layoutAdded.connect(self.on_layout_added)
+        lm.layoutAboutToBeRemoved.connect(self.on_layout_removed)
 
-            # register already existing composers
-            for compo in lm.compositions():
-                self.on_composer_added(compo.name())
+        # register already existing layouts
+        for layout in lm.layouts():
+            self.on_layout_added(layout.name())
 
         # register to the change of active layer for enabling/disabling
         #   of the action
@@ -332,14 +327,13 @@ class aeag_mask(QObject):
 
         self.project.layerWillBeRemoved.disconnect(self.on_remove_mask)
 
-        if self.has_atlas_signals:
-            lm = QgsProject.instance().layoutManager()
-            lm.compositionAdded.disconnect(self.on_composer_added)
-            lm.compositionAboutToBeRemoved.disconnect(self.on_composer_removed)
+        lm = QgsProject.instance().layoutManager()
+        lm.layoutAdded.disconnect(self.on_layout_added)
+        lm.layoutAboutToBeRemoved.disconnect(self.on_layout_removed)
 
-            # remove composer signals
-            for compo in lm.compositions():
-                self.on_composer_removed(compo.name())
+        # remove layout signals
+        for layout in lm.layouts():
+            self.on_layout_removed(layout.name())
 
         self.iface.mapCanvas().currentLayerChanged.disconnect(self.on_current_layer_changed)
         self.iface.mainWindow().projectRead.disconnect(self.on_project_open)
@@ -365,50 +359,21 @@ class aeag_mask(QObject):
                                            keep_layer=False)
         return layer, parameters
 
-    def on_composer_added(self, compoName):
-        composition = QgsProject.instance().layoutManager().compositionByName(compoName)
-        self.composers[composition] = []
-        composition.atlasComposition().renderBegun.connect(self.on_atlas_begin_render)
-        composition.atlasComposition().renderEnded.connect(self.on_atlas_end_render)
+    def on_layout_added(self, layoutName):
+        layout = QgsProject.instance().layoutManager().layoutByName(layoutName)
+        layout.atlas().renderBegun.connect(self.on_atlas_begin_render)
+        layout.atlas().renderEnded.connect(self.on_atlas_end_render)
 
-        composition.itemAdded.connect(lambda item: self.on_composer_item_added(composition, item))
-        composition.itemRemoved.connect(
-            lambda item: self.on_composer_item_removed(composition, item))
+        #for item in layout.layoutItems(QgsLayoutItemMap ):
+        #    item.preparedForAtlas.connect(lambda this=self, c=layout: this.on_prepared_for_atlas(c, item))
+        
 
-        for item in composition.composerMapItems():
-            self.on_composer_item_added(composition, item)
-
-    def on_composer_item_added(self, compo, item):
-        # The second argument, which is supposed to be a QgsComposerMap is
-        # sometimes a QObject (also in 2.99).
-        # ?! So we circumvent this problem in passing the QgsComposition
-        # container and getting track of composer maps
-        for item in compo.composerMapItems():
-            if item not in self.composers[compo] and type(item) == QgsComposerMap:
-                self.composers[compo].append(item)
-                item.preparedForAtlas.connect(
-                    lambda this=self, c=compo: this.on_prepared_for_atlas(c, item))
-
-    def on_composer_item_removed(self, compo, item):
-        try:
-            self.composers[compo].remove(item)
-            item.preparedForAtlas.disconnect()
-        except Exception as e:
-            for m in e.args:
-                QgsMessageLog.logMessage("Mask error when removing item - {}".format(m),
-                                         'Extensions')
-
-    def on_composer_removed(self, compoName):
-        composition = QgsProject.instance().layoutManager().compositionByName(compoName)
-        items = composition.composerMapItems()
-        composition.atlasComposition().renderBegun.disconnect(self.on_atlas_begin_render)
-        composition.atlasComposition().renderEnded.disconnect(self.on_atlas_end_render)
-        composition.itemAdded.disconnect()
-        composition.itemRemoved.disconnect()
-        for item in items:
-            self.on_composer_item_removed(composition, item)
-
-        del self.composers[composition]
+    def on_layout_removed(self, layoutName):
+        layout = QgsProject.instance().layoutManager().layoutByName(layoutName)
+        layout.atlas().renderBegun.disconnect(self.on_atlas_begin_render)
+        layout.atlas().renderEnded.disconnect(self.on_atlas_end_render)
+        #for item in layout.composerMapItems():
+        #    item.preparedForAtlas.disconnect()
 
     def compute_mask_geometries(self, parameters, poly):
         geom = None
@@ -427,14 +392,14 @@ class aeag_mask(QObject):
 
         return geom
 
-    def on_prepared_for_atlas(self, compo, item):
-        # QgsMessageLog.logMessage("on_prepared_for_atlas "+str(type(compo)), 'Extensions')
+    def on_prepared_for_atlas(self, layout, item):
+        # QgsMessageLog.logMessage("on_prepared_for_atlas "+str(type(layout)), 'Extensions')
         # called for each atlas feature
         if not self.layer:
             return
 
         geom = QgsExpressionContextUtils.atlasScope(
-            compo.atlasComposition()).variable('atlas_geometry')
+            layout.atlas()).variable('atlas_geometry')
 
         if not geom:
             QgsMessageLog.logMessage("   no geom", 'Extensions')
@@ -443,14 +408,15 @@ class aeag_mask(QObject):
         masked_atlas_geometry = [geom]
         # no need to zoom, it has already been scaled by atlas
         self.layer = self.apply_mask_parameters(self.layer,
-                                                self.parameters, dest_crs=self.layer.crs(),
+                                                self.parameters, 
+                                                dest_crs=self.layer.crs(),
                                                 poly=masked_atlas_geometry,
                                                 name=self.layer.name(),
                                                 cleanup_and_zoom=False)
 
         # update maps
         QCoreApplication.processEvents()
-        compo.refreshItems()
+        layout.refreshItems()
 
     def on_atlas_begin_render(self):
         if not self.layer:
@@ -479,8 +445,8 @@ class aeag_mask(QObject):
         QCoreApplication.processEvents()
 
         # update maps
-        for compo in QgsProject.instance().layoutManager().compositions():
-            compo.refreshItems()
+        for layout in QgsProject.instance().layoutManager().layouts():
+            layout.refreshItems()
 
     def apply_mask_parameters(self, layer, parameters, dest_crs=None,
                               poly=None,
@@ -590,7 +556,7 @@ class aeag_mask(QObject):
                 fid = 0
                 for f in pr.getFeatures():
                     fid = f.id()
-                pr.changeGeometryValues({fid: parameters.geometry})
+                pr.changeGeometryValues({fid : parameters.geometry})
 
             if cleanup_and_zoom:
                 # RH 04 05 2015 > clean up selection of all layers
