@@ -57,9 +57,9 @@ class MaskParameters:
                 style,
                 self.polygon_mask_method,
                 self.line_mask_method,
-                [g.exportToWkb() for g in self.orig_geometry]
+                [g.asWkb() for g in self.orig_geometry]
                 if self.orig_geometry is not None else None,
-                self.geometry.exportToWkb() if self.geometry is not None else None],
+                self.geometry.asWkb() if self.geometry is not None else None],
                 protocol=0,
                 fix_imports=True
                 )
