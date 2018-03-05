@@ -37,7 +37,7 @@ from PyQt5.QtGui import QIcon, QDesktopServices
 from PyQt5.QtWidgets import QAction, QMessageBox
 
 from qgis.core import (QgsExpression, QgsExpressionFunction, QgsGeometry,
-                       QgsPalLayerSettings,
+                       QgsPointXY, QgsPalLayerSettings,
                        QgsProject, QgsMapLayer, QgsVectorLayer, QgsWkbTypes,
                        QgsLayerTreeLayer, QgsField, QgsFeature, QgsVectorFileWriter,
                        QgsRectangle, QgsMapToPixelSimplifier, QgsCoordinateReferenceSystem,
@@ -90,7 +90,7 @@ The geometry of the current mask
     def tr(self, message):
         return QCoreApplication.translate('MaskGeometryFunction', message)
 
-    def func(self, values, feature, parent):
+    def func(self, values, feature, parent, node):
         return self.mask.mask_geometry()[0]
 
 
@@ -115,7 +115,7 @@ in_mask(2154)"""))
     def tr(self, message):
         return QCoreApplication.translate('InMaskFunction', message)
 
-    def func(self, values, context, parent):
+    def func(self, values, context, parent, node):
         return self.mask.in_mask(context.feature(), values[0])
 
 
@@ -361,17 +361,16 @@ class aeag_mask(QObject):
 
     def on_layout_added(self, layoutName):
         layout = QgsProject.instance().layoutManager().layoutByName(layoutName)
-        layout.atlas().renderBegun.connect(self.on_atlas_begin_render)
-        layout.atlas().renderEnded.connect(self.on_atlas_end_render)
-
+        #layout.atlas().renderBegun.connect(self.on_atlas_begin_render)
+        #layout.atlas().renderEnded.connect(self.on_atlas_end_render)
         #for item in layout.layoutItems(QgsLayoutItemMap ):
         #    item.preparedForAtlas.connect(lambda this=self, c=layout: this.on_prepared_for_atlas(c, item))
         
 
     def on_layout_removed(self, layoutName):
         layout = QgsProject.instance().layoutManager().layoutByName(layoutName)
-        layout.atlas().renderBegun.disconnect(self.on_atlas_begin_render)
-        layout.atlas().renderEnded.disconnect(self.on_atlas_end_render)
+        #layout.atlas().renderBegun.disconnect(self.on_atlas_begin_render)
+        #layout.atlas().renderEnded.disconnect(self.on_atlas_end_render)
         #for item in layout.composerMapItems():
         #    item.preparedForAtlas.disconnect()
 
@@ -451,8 +450,6 @@ class aeag_mask(QObject):
     def apply_mask_parameters(self, layer, parameters, dest_crs=None,
                               poly=None,
                               name=None, cleanup_and_zoom=True, keep_layer=True):
-
-        # QgsMessageLog.logMessage('apply_mask_parameters', 'Extensions')
         
         # Apply given mask parameters to the given layer. Returns the new layer
         # The given layer is removed and then recreated in the layer tree
@@ -556,8 +553,13 @@ class aeag_mask(QObject):
                 fid = 0
                 for f in pr.getFeatures():
                     fid = f.id()
-                pr.changeGeometryValues({fid : parameters.geometry})
-
+                    
+                pr.truncate()     
+                fet1 = QgsFeature(fid)
+                fet1.setFields(layer.fields())
+                fet1.setGeometry(parameters.geometry)
+                pr.addFeatures([fet1])
+                
             if cleanup_and_zoom:
                 # RH 04 05 2015 > clean up selection of all layers
                 for l in self.canvas.layers():
@@ -823,11 +825,11 @@ class aeag_mask(QObject):
             elif self.parameters.polygon_mask_method == 1:
                 # the fastest method, but with possible inaccuracies
                 pt = geom.vertexAt(0)
-                return bbox.contains(pt) and mask_geom.contains(geom.centroid())
+                return bbox.contains(QgsPointXY(pt)) and mask_geom.contains(geom.centroid())
             elif self.parameters.polygon_mask_method == 2:
                 # will always work
                 pt = geom.vertexAt(0)
-                return bbox.contains(pt) and mask_geom.contains(geom.pointOnSurface())
+                return bbox.contains(QgsPointXY(pt)) and mask_geom.contains(geom.pointOnSurface())
             else:
                 return False
         elif geom.type() == QgsWkbTypes.LineGeometry:
