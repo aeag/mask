@@ -47,6 +47,7 @@ def add_mask_filter(layer):
     if not isinstance(layer, QgsVectorLayer):
         return False
 
+    
     # check if a layer has already a mask filter enabled
     if layer.labeling() is None:
         return False
@@ -61,6 +62,7 @@ def add_mask_filter(layer):
         settings.dataDefinedProperties().setProperty(QgsPalLayerSettings.Show, prop)
         if isinstance(layer.labeling(), QgsVectorLayerSimpleLabeling):
             layer.setLabeling(QgsVectorLayerSimpleLabeling(settings))
+        
     except Exception as e:
         for m in e.args:
             QgsMessageLog.logMessage(m, 'Extensions')

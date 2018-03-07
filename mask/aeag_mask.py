@@ -227,8 +227,8 @@ class aeag_mask(QObject):
         lm.layoutAboutToBeRemoved.connect(self.on_layout_removed)
 
         # register already existing layouts
-        for layout in lm.layouts():
-            self.on_layout_added(layout.name())
+        for layout in lm.printLayouts():
+            self.on_layout_added(layout)
 
         # register to the change of active layer for enabling/disabling
         #   of the action
@@ -332,8 +332,8 @@ class aeag_mask(QObject):
         lm.layoutAboutToBeRemoved.disconnect(self.on_layout_removed)
 
         # remove layout signals
-        for layout in lm.layouts():
-            self.on_layout_removed(layout.name())
+        for layout in lm.printLayouts():
+            self.on_layout_removed(layout)
 
         self.iface.mapCanvas().currentLayerChanged.disconnect(self.on_current_layer_changed)
         self.iface.mainWindow().projectRead.disconnect(self.on_project_open)
@@ -361,19 +361,21 @@ class aeag_mask(QObject):
 
     def on_layout_added(self, layoutName):
         layout = QgsProject.instance().layoutManager().layoutByName(layoutName)
+        # layout is a QgsReport ?? (qgis 3.0)
+        
         #layout.atlas().renderBegun.connect(self.on_atlas_begin_render)
         #layout.atlas().renderEnded.connect(self.on_atlas_end_render)
         #for item in layout.layoutItems(QgsLayoutItemMap ):
-        #    item.preparedForAtlas.connect(lambda this=self, c=layout: this.on_prepared_for_atlas(c, item))
-        
-
+        #    item.preparedForAtlas.connect(lambda this=self, c=layout: this.on_prepared_for_atlas(c, item))              
     def on_layout_removed(self, layoutName):
         layout = QgsProject.instance().layoutManager().layoutByName(layoutName)
+        # layout is a QgsReport ?? (qgis 3.0)
+        
         #layout.atlas().renderBegun.disconnect(self.on_atlas_begin_render)
         #layout.atlas().renderEnded.disconnect(self.on_atlas_end_render)
         #for item in layout.composerMapItems():
         #    item.preparedForAtlas.disconnect()
-
+            
     def compute_mask_geometries(self, parameters, poly):
         geom = None
         for g in poly:
@@ -392,16 +394,12 @@ class aeag_mask(QObject):
         return geom
 
     def on_prepared_for_atlas(self, layout, item):
-        # QgsMessageLog.logMessage("on_prepared_for_atlas "+str(type(layout)), 'Extensions')
         # called for each atlas feature
         if not self.layer:
             return
 
-        geom = QgsExpressionContextUtils.atlasScope(
-            layout.atlas()).variable('atlas_geometry')
-
+        geom = QgsExpressionContextUtils.atlasScope(layout.atlas()).variable('atlas_geometry')
         if not geom:
-            QgsMessageLog.logMessage("   no geom", 'Extensions')
             return
 
         masked_atlas_geometry = [geom]
@@ -444,7 +442,7 @@ class aeag_mask(QObject):
         QCoreApplication.processEvents()
 
         # update maps
-        for layout in QgsProject.instance().layoutManager().layouts():
+        for layout in QgsProject.instance().layoutManager().printLayouts():
             layout.refreshItems()
 
     def apply_mask_parameters(self, layer, parameters, dest_crs=None,
@@ -455,6 +453,7 @@ class aeag_mask(QObject):
         # The given layer is removed and then recreated in the layer tree
         # if poly is not None, it is used as the mask geometry
         # else, the geometry is taken from parameters.geometry
+        
         if name is None:
             mask_name = self.MASK_NAME
         else:
