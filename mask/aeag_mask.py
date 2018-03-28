@@ -189,14 +189,9 @@ class aeag_mask(QObject):
                                      self.tr("Create a mask"),
                                      self.iface.mainWindow())
 
-        # Specific to AEAG for internal integration. Please keep it
-        try:
-            from aeag import aeag
-            self.toolBar = aeag.aeagToolbarAdd(self.act_aeag_mask)
-        except:
-            self.toolBar = self.iface.pluginToolBar()
-            self.toolBar.addAction(self.act_aeag_mask)
-            self.iface.addPluginToMenu("&Mask", self.act_aeag_mask)
+        self.toolBar = self.iface.pluginToolBar()
+        self.toolBar.addAction(self.act_aeag_mask)
+        self.iface.addPluginToMenu("&Mask", self.act_aeag_mask)
 
         # turn it to true to enable test
         if False:
@@ -306,17 +301,8 @@ class aeag_mask(QObject):
             self.act_aeag_mask.setEnabled(poly != [])
 
     def unload(self):
-        # Specific to AEAG for internal integration. Please keep it
-        try:
-            from aeag import aeag
-            self.toolBar = aeag.aeagToolbarRemove(self.toolBar, self.act_aeag_mask)
-        except:
-            self.toolBar.removeAction(self.act_aeag_mask)
-            self.iface.removePluginMenu("&Mask", self.act_aeag_mask)
-
-        if False:
-            self.toolBar.removeAction(self.act_test)
-            self.iface.removePluginMenu("&Mask", self.act_test)
+        self.toolBar.removeAction(self.act_aeag_mask)
+        self.iface.removePluginMenu("&Mask", self.act_aeag_mask)
 
         # remove doc links
         self.iface.removePluginMenu("&Mask", self.act_aeag_about)
@@ -363,18 +349,21 @@ class aeag_mask(QObject):
         layout = QgsProject.instance().layoutManager().layoutByName(layoutName)
         # layout is a QgsReport ?? (qgis 3.0)
         
-        #layout.atlas().renderBegun.connect(self.on_atlas_begin_render)
-        #layout.atlas().renderEnded.connect(self.on_atlas_end_render)
-        #for item in layout.layoutItems(QgsLayoutItemMap ):
-        #    item.preparedForAtlas.connect(lambda this=self, c=layout: this.on_prepared_for_atlas(c, item))              
+        if 'atlas' in layout.__dict__:
+            layout.atlas().renderBegun.connect(self.on_atlas_begin_render)
+            layout.atlas().renderEnded.connect(self.on_atlas_end_render)
+            for item in layout.layoutItems(QgsLayoutItemMap ):
+                item.preparedForAtlas.connect(lambda this=self, c=layout: this.on_prepared_for_atlas(c, item))         
+        
     def on_layout_removed(self, layoutName):
         layout = QgsProject.instance().layoutManager().layoutByName(layoutName)
         # layout is a QgsReport ?? (qgis 3.0)
         
-        #layout.atlas().renderBegun.disconnect(self.on_atlas_begin_render)
-        #layout.atlas().renderEnded.disconnect(self.on_atlas_end_render)
-        #for item in layout.composerMapItems():
-        #    item.preparedForAtlas.disconnect()
+        if 'atlas' in layout.__dict__:
+            layout.atlas().renderBegun.disconnect(self.on_atlas_begin_render)
+            layout.atlas().renderEnded.disconnect(self.on_atlas_end_render)
+            for item in layout.composerMapItems():
+                item.preparedForAtlas.disconnect()
             
     def compute_mask_geometries(self, parameters, poly):
         geom = None
