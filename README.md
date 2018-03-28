@@ -2,6 +2,8 @@ mask
 ===========
 
 Attention : master branch being migrated to QGis 3. See qgis2 branch for QGis >= 2.3
+Attention : Atlas does not work anymore (qgis 3.0)
+
 
 date: 2014 06 17
 AEAG Mask plugin
@@ -16,7 +18,7 @@ Current Atlas coverage feature will be used to generate a temporary mask layer.
 
 This plugin requires QGIS >= 2.99
 
-Contributors : Hugo Mercier (Oslandia - https://github.com/mhugo), Xavier Culos (Agence de l'au Adour-Garonne - https://github.com/xcaeag), Régis Haubourg (Oslandia - https://github.com/haubourg)
+Contributors : Hugo Mercier (Oslandia - https://github.com/mhugo), Xavier Culos (Agence de l'eau Adour-Garonne - https://github.com/xcaeag), Régis Haubourg (Oslandia - https://github.com/haubourg)
 Funded by Agence de l'eau Adour Garonne eau-adour-garonne.fr   https://github.com/aeag
 
 This program is free software ; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by   the Free Software Foundation ; either version 2 of the License, or (at your option) any later version.                                  
