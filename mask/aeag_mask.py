@@ -153,18 +153,19 @@ class aeag_mask(QObject):
 
             self.MASK_NAME = "Mask"
 
-            self.reset_mask_layer()
+            self.reset_mask_layer(False)
 
         except Exception as e:
             for m in e.args:
                 QgsMessageLog.logMessage(m, 'Extensions')
 
-    def reset_mask_layer(self):
+    def reset_mask_layer(self, toSave=True):
         self.layer = None
         # mask parameters
         self.parameters = MaskParameters()
 
-        self.save_to_project(self.layer, self.parameters)
+        if toSave:
+            self.save_to_project(self.layer, self.parameters)
 
         for name, layer in QgsProject.instance().mapLayers().items():
             if mask_filter.has_mask_filter(layer):
