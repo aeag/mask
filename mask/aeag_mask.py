@@ -224,7 +224,7 @@ class aeag_mask(QObject):
 
         # register already existing layouts
         for layout in lm.printLayouts():
-            self.on_layout_added(layout)
+            self.on_layout_added(layout.name())
 
         # register to the change of active layer for enabling/disabling
         #   of the action
@@ -287,9 +287,13 @@ class aeag_mask(QObject):
             self.old_active_layer = None
             return
 
-        if self.old_active_layer is not None:
-            self.old_active_layer.selectionChanged.disconnect(
-                self.on_current_layer_selection_changed)
+        try:
+            if self.old_active_layer is not None:
+                self.old_active_layer.selectionChanged.disconnect(
+                    self.on_current_layer_selection_changed)
+        except:
+            pass
+
         if layer is not None:
             layer.selectionChanged.connect(self.on_current_layer_selection_changed)
 
@@ -320,7 +324,7 @@ class aeag_mask(QObject):
 
         # remove layout signals
         for layout in lm.printLayouts():
-            self.on_layout_removed(layout)
+            self.on_layout_removed(layout.name())
 
         self.iface.mapCanvas().currentLayerChanged.disconnect(self.on_current_layer_changed)
         self.iface.mainWindow().projectRead.disconnect(self.on_project_open)
@@ -346,25 +350,35 @@ class aeag_mask(QObject):
                                            keep_layer=False)
         return layer, parameters
 
-    def on_layout_added(self, layoutName):
+    def on_layout_added(self, layoutName):        
         layout = QgsProject.instance().layoutManager().layoutByName(layoutName)
         # layout is a QgsReport ?? (qgis 3.0)
-        
-        if 'atlas' in layout.__dict__:
+       
+        try:
             layout.atlas().renderBegun.connect(self.on_atlas_begin_render)
             layout.atlas().renderEnded.connect(self.on_atlas_end_render)
-            for item in layout.layoutItems(QgsLayoutItemMap ):
-                item.preparedForAtlas.connect(lambda this=self, c=layout: this.on_prepared_for_atlas(c, item))         
+            refMap = layout.referenceMap()
+            refMap.preparedForAtlas.connect(lambda this=self, c=layout: this.on_prepared_for_atlas(c, refMap))
+            #for item in layout.layoutItems(QgsLayoutItemMap ):  # layoutItems not available in Python bindings
+            #    item.preparedForAtlas.connect(lambda this=self, c=layout: this.on_prepared_for_atlas(c, item))         
+        except Exception as e:
+            for m in e.args:
+                QgsMessageLog.logMessage("Mask error in on_layout_added - {}".format(m), 'Extensions')
         
     def on_layout_removed(self, layoutName):
         layout = QgsProject.instance().layoutManager().layoutByName(layoutName)
         # layout is a QgsReport ?? (qgis 3.0)
         
-        if 'atlas' in layout.__dict__:
+        try:
             layout.atlas().renderBegun.disconnect(self.on_atlas_begin_render)
             layout.atlas().renderEnded.disconnect(self.on_atlas_end_render)
-            for item in layout.composerMapItems():
-                item.preparedForAtlas.disconnect()
+            refMap = layout.referenceMap()
+            refMap.preparedForAtlas.disconnect()
+            #for item in layout.composerMapItems():
+            #    item.preparedForAtlas.disconnect()
+        except Exception as e:
+            for m in e.args:
+                QgsMessageLog.logMessage("Mask error in on_layout_removed - {}".format(m), 'Extensions')
             
     def compute_mask_geometries(self, parameters, poly):
         geom = None
@@ -403,7 +417,7 @@ class aeag_mask(QObject):
 
         # update maps
         QCoreApplication.processEvents()
-        layout.refreshItems()
+        #layout.refreshItems()
 
     def on_atlas_begin_render(self):
         if not self.layer:
@@ -432,8 +446,8 @@ class aeag_mask(QObject):
         QCoreApplication.processEvents()
 
         # update maps
-        for layout in QgsProject.instance().layoutManager().printLayouts():
-            layout.refreshItems()
+        #for layout in QgsProject.instance().layoutManager().printLayouts():
+        #    layout.refreshItems()
 
     def apply_mask_parameters(self, layer, parameters, dest_crs=None,
                               poly=None,
