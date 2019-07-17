@@ -102,8 +102,10 @@ class MainDialog(QDialog):
         try:
             style_tools.set_layer_symbology(self.parameters.layer, parameters.style)
             self.update_style_preview(self.parameters.layer)
-        except:
-            pass
+        except Exception as e:
+            for m in e.args:
+                QgsMessageLog.logMessage("Mask error update_style_from_parameters - {}".format(m),
+                                         'Extensions')
 
     def update_parameters_from_style(self, parameters):
         try:
