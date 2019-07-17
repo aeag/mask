@@ -273,7 +273,7 @@ class aeag_mask(QObject):
         if self.layer is not None:
             self.layer = self.apply_mask_parameters(self.layer, self.parameters, dest_crs=None,
                                                     poly=None, name=self.layer.name(),
-                                                    keep_layer=False)
+                                                    keep_layer=True)
             self.act_aeag_mask.setEnabled(True)
 
     def on_current_layer_changed(self, layer):
@@ -291,8 +291,11 @@ class aeag_mask(QObject):
             if self.old_active_layer is not None:
                 self.old_active_layer.selectionChanged.disconnect(
                     self.on_current_layer_selection_changed)
-        except:
-            pass
+
+        except Exception as e:
+            for m in e.args:
+                QgsMessageLog.logMessage("on_current_layer_changed - {}".format(m), 'Extensions')
+
 
         if layer is not None:
             layer.selectionChanged.connect(self.on_current_layer_selection_changed)
@@ -508,9 +511,10 @@ class aeag_mask(QObject):
                 try:
                     nlayer = self.create_layer(parameters, mask_name, is_mem, dest_crs,
                                                layer_style)
-                except AttributeError as ex:
-                    # Error unknown (dest_crs is None...)
-                    return
+                except Exception as e:
+                    for m in e.args:
+                        QgsMessageLog.logMessage("apply_mask_parameters - {}".format(m), 'Extensions')
+
 
                 except RuntimeError as ex:
                     for m in ex.args:
@@ -580,6 +584,8 @@ class aeag_mask(QObject):
                 extent.scale(1.1)  # scales extent by 10% unzoomed
                 canvas.setExtent(extent)
 
+            self.update_menus()
+            
             # refresh
             self.canvas.clearCache()
 
@@ -732,11 +738,14 @@ class aeag_mask(QObject):
         error = QgsVectorFileWriter.writeAsVectorFormat(layer, save_as, "System", dest_crs,
                                                         file_format)
 
-        if error == 0:
+        if error[0] == 0:
+            QgsMessageLog.logMessage("Error = 0", 'Extensions')
             nlayer = QgsVectorLayer(save_as, name, "ogr")
             if not nlayer.dataProvider().isValid():
+                QgsMessageLog.logMessage("Invalid dataProvider", 'Extensions')
                 return None
-            if not nlayer.hasGeometryType():
+            if not nlayer.isSpatial():
+                QgsMessageLog.logMessage("No GeometryType", 'Extensions')
                 return None
             # force CRS
             nlayer.setCrs(dest_crs)
@@ -814,9 +823,12 @@ class aeag_mask(QObject):
             xform = QgsCoordinateTransform(src_crs, dest_crs, QgsProject.instance())
             try:
                 geom.transform(xform)
-            except:
-                # transformation error. Check layer projection.
-                pass
+
+            except Exception as e:
+                for m in e.args:
+                    QgsMessageLog.logMessage("in_mask - {}".format(m), 'Extensions')
+                    # transformation error. Check layer projection.
+                    pass
 
         if geom.type() == QgsWkbTypes.PolygonGeometry:
             if self.parameters.polygon_mask_method == 2 and not self.has_point_on_surface:

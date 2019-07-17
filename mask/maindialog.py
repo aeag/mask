@@ -170,21 +170,21 @@ class MainDialog(QDialog):
         drivers = QgsVectorFileWriter.ogrDriverList()
         filterList = []
         filterMap = {}
-        for ln, n in drivers.items():
+        for driver in drivers:
             # grrr, driverMetadata is not really consistent
-            if n == "ESRI Shapefile":
+            if driver.driverName == "ESRI Shapefile":
                 ext = "shp"
                 glob = "*.shp"
             else:
                 md = QgsVectorFileWriter.MetaData()
-                if QgsVectorFileWriter.driverMetadata(n, md):
+                if QgsVectorFileWriter.driverMetadata(driver.driverName, md):
                     ext = md.ext
                     glob = md.glob
                 else:
                     continue
 
-            fn = "%s (%s)" % (ln, glob)
-            filterMap[fn] = (n, ext, glob)
+            fn = "%s (%s)" % (driver.longName, glob)
+            filterMap[fn] = (driver.driverName, ext, glob)
             filterList += [fn]
 
         fileFilters = ';;'.join(filterList)
