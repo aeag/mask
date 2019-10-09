@@ -37,7 +37,7 @@ from PyQt5.QtGui import QIcon, QDesktopServices
 from PyQt5.QtWidgets import QAction, QMessageBox
 
 from qgis.core import (QgsExpression, QgsExpressionFunction, QgsGeometry,
-                       QgsPointXY, QgsPalLayerSettings,
+                       QgsPointXY,
                        QgsProject, QgsMapLayer, QgsVectorLayer, QgsWkbTypes,
                        QgsLayerTreeLayer, QgsField, QgsFeature, QgsVectorFileWriter,
                        QgsRectangle, QgsMapToPixelSimplifier, QgsCoordinateReferenceSystem,
@@ -77,7 +77,7 @@ def is_in_qgis_core(sym):
 class MaskGeometryFunction(QgsExpressionFunction):
     def __init__(self, mask):
         QgsExpressionFunction.__init__(self, "$mask_geometry", 0, "Python",
-                                        self.tr("""<h1>$mask_geometry</h1>
+                                       self.tr("""<h1>$mask_geometry</h1>
 Variable filled by mask plugin.<br/>
 When mask has been triggered on some polygon, mask_geometry is filled with the
 mask geometry and can be reused for expression/python calculation. in_mask
@@ -97,7 +97,7 @@ The geometry of the current mask
 class InMaskFunction(QgsExpressionFunction):
     def __init__(self, mask):
         QgsExpressionFunction.__init__(self, "in_mask", 1, "Python",
-                                        self.tr("""<h1>in_mask function</h1>
+                                       self.tr("""<h1>in_mask function</h1>
 Expression function added by mask plugin. Returns true if current feature
 crosses mask geometry.<br/>
 The spatial expression to use is set from the mask UI button (exact, fast
@@ -245,7 +245,7 @@ class aeag_mask(QObject):
             if not ok:
                 # no parameters in the project
                 # look for a vector layer called 'Mask'
-                for id, l in list(QgsProject.instance().mapLayers().items()):
+                for _id, l in list(QgsProject.instance().mapLayers().items()):
                     if l.type() == QgsMapLayer.VectorLayer and l.name() == 'Mask':
                         return self.load_from_layer(l)
 
@@ -295,7 +295,6 @@ class aeag_mask(QObject):
         except Exception as e:
             for m in e.args:
                 QgsMessageLog.logMessage("on_current_layer_changed - {}".format(m), 'Extensions')
-
 
         if layer is not None:
             layer.selectionChanged.connect(self.on_current_layer_selection_changed)
@@ -353,36 +352,36 @@ class aeag_mask(QObject):
                                            keep_layer=False)
         return layer, parameters
 
-    def on_layout_added(self, layoutName):        
+    def on_layout_added(self, layoutName):
         layout = QgsProject.instance().layoutManager().layoutByName(layoutName)
         # layout is a QgsReport ?? (qgis 3.0)
-       
+
         try:
             layout.atlas().renderBegun.connect(self.on_atlas_begin_render)
             layout.atlas().renderEnded.connect(self.on_atlas_end_render)
             refMap = layout.referenceMap()
             refMap.preparedForAtlas.connect(lambda this=self, c=layout: this.on_prepared_for_atlas(c, refMap))
-            #for item in layout.layoutItems(QgsLayoutItemMap ):  # layoutItems not available in Python bindings
-            #    item.preparedForAtlas.connect(lambda this=self, c=layout: this.on_prepared_for_atlas(c, item))         
+            # for item in layout.layoutItems(QgsLayoutItemMap ):  # layoutItems not available in Python bindings
+            #    item.preparedForAtlas.connect(lambda this=self, c=layout: this.on_prepared_for_atlas(c, item))
         except Exception as e:
             for m in e.args:
                 QgsMessageLog.logMessage("Mask error in on_layout_added - {}".format(m), 'Extensions')
-        
+
     def on_layout_removed(self, layoutName):
         layout = QgsProject.instance().layoutManager().layoutByName(layoutName)
         # layout is a QgsReport ?? (qgis 3.0)
-        
+
         try:
             layout.atlas().renderBegun.disconnect(self.on_atlas_begin_render)
             layout.atlas().renderEnded.disconnect(self.on_atlas_end_render)
             refMap = layout.referenceMap()
             refMap.preparedForAtlas.disconnect()
-            #for item in layout.composerMapItems():
+            # for item in layout.composerMapItems():
             #    item.preparedForAtlas.disconnect()
         except Exception as e:
             for m in e.args:
                 QgsMessageLog.logMessage("Mask error in on_layout_removed - {}".format(m), 'Extensions')
-            
+
     def compute_mask_geometries(self, parameters, poly):
         geom = None
         for g in poly:
@@ -412,7 +411,7 @@ class aeag_mask(QObject):
         masked_atlas_geometry = [geom]
         # no need to zoom, it has already been scaled by atlas
         self.layer = self.apply_mask_parameters(self.layer,
-                                                self.parameters, 
+                                                self.parameters,
                                                 dest_crs=self.layer.crs(),
                                                 poly=masked_atlas_geometry,
                                                 name=self.layer.name(),
@@ -420,7 +419,7 @@ class aeag_mask(QObject):
 
         # update maps
         QCoreApplication.processEvents()
-        #layout.refreshItems()
+        # layout.refreshItems()
 
     def on_atlas_begin_render(self):
         if not self.layer:
@@ -449,18 +448,18 @@ class aeag_mask(QObject):
         QCoreApplication.processEvents()
 
         # update maps
-        #for layout in QgsProject.instance().layoutManager().printLayouts():
+        # for layout in QgsProject.instance().layoutManager().printLayouts():
         #    layout.refreshItems()
 
     def apply_mask_parameters(self, layer, parameters, dest_crs=None,
                               poly=None,
                               name=None, cleanup_and_zoom=True, keep_layer=True):
-        
+
         # Apply given mask parameters to the given layer. Returns the new layer
         # The given layer is removed and then recreated in the layer tree
         # if poly is not None, it is used as the mask geometry
         # else, the geometry is taken from parameters.geometry
-        
+
         if name is None:
             mask_name = self.MASK_NAME
         else:
@@ -515,7 +514,6 @@ class aeag_mask(QObject):
                     for m in e.args:
                         QgsMessageLog.logMessage("apply_mask_parameters - {}".format(m), 'Extensions')
 
-
                 except RuntimeError as ex:
                     for m in ex.args:
                         if m == 1:
@@ -560,13 +558,13 @@ class aeag_mask(QObject):
                 fid = 0
                 for f in pr.getFeatures():
                     fid = f.id()
-                    
-                pr.truncate()     
+
+                pr.truncate()
                 fet1 = QgsFeature(fid)
                 fet1.setFields(layer.fields())
                 fet1.setGeometry(parameters.geometry)
                 pr.addFeatures([fet1])
-                
+
             if cleanup_and_zoom:
                 # RH 04 05 2015 > clean up selection of all layers
                 for l in self.canvas.layers():
@@ -585,7 +583,7 @@ class aeag_mask(QObject):
                 canvas.setExtent(extent)
 
             self.update_menus()
-            
+
             # refresh
             self.canvas.clearCache()
 
@@ -877,7 +875,7 @@ class aeag_mask(QObject):
             (False, True, 2),
             (True, True, 1),
             (True, True, 2)
-            ]
+        ]
 
         # (False, False, 0) 0.3265
         # (True, True, 0) 0.1790
