@@ -6,7 +6,8 @@
 #
 # WARNING! All changes made in this file will be lost!
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5 import QtCore, QtWidgets
+
 
 class Ui_MainDialog(object):
     def setupUi(self, MainDialog):
@@ -140,7 +141,7 @@ class Ui_MainDialog(object):
         self.verticalLayout_4.addItem(spacerItem1)
         self.buttonBox = QtWidgets.QDialogButtonBox(MainDialog)
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
-        self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Apply|QtWidgets.QDialogButtonBox.Cancel|QtWidgets.QDialogButtonBox.Help|QtWidgets.QDialogButtonBox.Ok)
+        self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Apply | QtWidgets.QDialogButtonBox.Cancel | QtWidgets.QDialogButtonBox.Help | QtWidgets.QDialogButtonBox.Ok)
         self.buttonBox.setObjectName("buttonBox")
         self.verticalLayout_4.addWidget(self.buttonBox)
 
@@ -171,4 +172,3 @@ class Ui_MainDialog(object):
         self.saveLayerGroup.setTitle(_translate("MainDialog", "Save as"))
         self.browseBtn.setText(_translate("MainDialog", "..."))
         self.formatLbl.setText(_translate("MainDialog", "\'\'"))
-
