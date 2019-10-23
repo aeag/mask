@@ -20,6 +20,7 @@ from .mask_parameters import MaskParameters
 from .htmldialog import HtmlDialog
 
 from . import style_tools
+import locale
 
 
 def is_in_qgis_core(sym):
@@ -33,6 +34,7 @@ class MainDialog(QDialog):
 
     def __init__(self, parameters, is_new):
         QDialog.__init__(self, None)
+        locale.setlocale(locale.LC_ALL, '')
 
         self.ui = Ui_MainDialog()
         self.ui.setupUi(self)
@@ -119,25 +121,33 @@ class MainDialog(QDialog):
         self.update_style_from_parameters(parameters)
         self.ui.bufferGroup.setChecked(parameters.do_buffer)
         self.ui.saveLayerGroup.setChecked(parameters.do_save_as)
-        self.ui.bufferUnits.setText(str(parameters.buffer_units))
+        self.ui.bufferUnits.setText(locale.str(parameters.buffer_units))
         self.ui.bufferSegments.setText(str(parameters.buffer_segments))
         self.ui.formatLbl.setText('' if parameters.file_format is None else parameters.file_format)
         self.ui.filePath.setText(parameters.file_path)
         self.ui.simplifyGroup.setChecked(parameters.do_simplify)
-        self.ui.simplifyTolerance.setText(str(parameters.simplify_tolerance))
+        self.ui.simplifyTolerance.setText(locale.str(parameters.simplify_tolerance))
         self.ui.layer_list.ui.polygonOperatorCombo.setCurrentIndex(parameters.polygon_mask_method)
         self.ui.layer_list.ui.lineOperatorCombo.setCurrentIndex(parameters.line_mask_method)
 
     def update_parameters_from_ui(self, parameters):
         self.update_parameters_from_style(parameters)
         parameters.do_buffer = self.ui.bufferGroup.isChecked()
-        parameters.buffer_units = float(self.ui.bufferUnits.text() or 0)
+        try:
+            parameters.buffer_units = locale.atof(self.ui.bufferUnits.text() or '0.0')
+        except:
+            parameters.buffer_units = float(self.ui.bufferUnits.text().replace(',', '.') or '0.0')
+
         parameters.buffer_segments = int(self.ui.bufferSegments.text() or 0)
         parameters.do_save_as = self.ui.saveLayerGroup.isChecked()
         parameters.file_format = self.parameters.file_format
         parameters.file_path = self.ui.filePath.text()
         parameters.do_simplify = self.ui.simplifyGroup.isChecked()
-        parameters.simplify_tolerance = float(self.ui.simplifyTolerance.text() or 0.0)
+        try:
+            parameters.simplify_tolerance = locale.atof(self.ui.simplifyTolerance.text() or '0.0')
+        except:
+            parameters.simplify_tolerance = float(self.ui.simplifyTolerance.text().replace(',', '.') or '0.0')
+
         parameters.polygon_mask_method = self.ui.layer_list.ui.polygonOperatorCombo.currentIndex()
         parameters.line_mask_method = self.ui.layer_list.ui.lineOperatorCombo.currentIndex()
 
@@ -324,6 +334,3 @@ class MainDialog(QDialog):
     def on_apply(self):
         self.apply()
         self.applied.emit()
-
-
-
