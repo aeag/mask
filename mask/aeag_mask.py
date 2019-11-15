@@ -566,6 +566,8 @@ class aeag_mask(QObject):
                 pr.addFeatures([fet1])
 
             if cleanup_and_zoom:
+                layer.updateExtents()
+
                 # RH 04 05 2015 > clean up selection of all layers
                 for l in self.canvas.layers():
                     if l.type() != QgsMapLayer.VectorLayer:
