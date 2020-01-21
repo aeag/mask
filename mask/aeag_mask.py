@@ -122,12 +122,14 @@ in_mask(2154)"""))
 class aeag_mask(QObject):
 
     def __init__(self, iface):
+        QObject.__init__(self)
+        # Save reference to the QGIS interface
+
+        global aeag_mask_instance
+        aeag_mask_instance = self
+        self.iface = iface
+
         try:
-            QObject.__init__(self)
-
-            global aeag_mask_instance
-            aeag_mask_instance = self
-
             # install translator
             self.plugin_dir = os.path.dirname(__file__)
             locale = QSettings().value("locale/userLocale")[0:2]
@@ -138,8 +140,6 @@ class aeag_mask(QObject):
                 self.translator.load(localePath)
                 QCoreApplication.installTranslator(self.translator)
 
-            # Save reference to the QGIS interface
-            self.iface = iface
             self.toolBar = None
             self.act_aeag_mask = None
             self.act_aeag_toolbar_help = None
@@ -153,8 +153,12 @@ class aeag_mask(QObject):
 
             self.MASK_NAME = "Mask"
 
-            self.reset_mask_layer(False)
+        except Exception as e:
+            for m in e.args:
+                QgsMessageLog.logMessage(m, 'Extensions')
 
+        try:
+            self.reset_mask_layer(False)
         except Exception as e:
             for m in e.args:
                 QgsMessageLog.logMessage(m, 'Extensions')

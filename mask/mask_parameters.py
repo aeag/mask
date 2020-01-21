@@ -62,7 +62,7 @@ class MaskParameters:
                 self.geometry.asWkb() if self.geometry is not None else None],
                 protocol=0,
                 fix_imports=True
-                )
+            )
         else:
             t = pickle.dumps([self.do_buffer,
                              self.buffer_units,
@@ -88,7 +88,7 @@ class MaskParameters:
 
         try:
             t = pickle.loads(st)
-        except Exception as e:
+        except:
             try:
                 t = pickle.loads(st, encoding='utf-8')
                 # strange, Exception says : No module named 'PyQt4'
