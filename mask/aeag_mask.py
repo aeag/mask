@@ -372,8 +372,7 @@ class aeag_mask(QObject):
                 if isinstance(item, QgsLayoutItemMap):
                     item.preparedForAtlas.connect(partial(self.on_prepared_for_atlas, layout))
         except Exception:
-            for m in e.args:
-                QgsMessageLog.logMessage("Mask error in on_layout_added - {}".format(m), 'Extensions')
+            pass
 
     def disconnect_layout_events(self, layout):
         try:
