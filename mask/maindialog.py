@@ -34,7 +34,6 @@ class MainDialog(QDialog):
 
     def __init__(self, parameters, is_new):
         QDialog.__init__(self, None)
-        locale.setlocale(locale.LC_ALL, '')
 
         self.ui = Ui_MainDialog()
         self.ui.setupUi(self)
