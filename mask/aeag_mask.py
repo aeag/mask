@@ -32,7 +32,7 @@ todo:
 # Import the PyQt and QGIS libraries
 import os
 import base64
-from PyQt5.QtCore import (QCoreApplication, QObject, QSettings, QTranslator, QUrl, QVariant)
+from PyQt5.QtCore import (QCoreApplication, QObject, QSettings, QTranslator, QUrl, QVariant, QFileInfo)
 from PyQt5.QtGui import QIcon, QDesktopServices
 from PyQt5.QtWidgets import QAction, QMessageBox
 
@@ -131,15 +131,21 @@ class aeag_mask(QObject):
 
         try:
             # install translator
-            self.plugin_dir = os.path.dirname(__file__)
             locale = QSettings().value("locale/userLocale")[0:2]
-            localePath = os.path.join(self.plugin_dir,
-                                      'mask_{}.qm'.format(locale))
-            if os.path.exists(localePath):
+
+            localePath = QFileInfo(os.path.realpath(__file__)).path() +\
+                "/i18n/{}.qm".format(locale)
+
+            if QFileInfo(localePath).exists():
                 self.translator = QTranslator()
                 self.translator.load(localePath)
                 QCoreApplication.installTranslator(self.translator)
 
+        except Exception:
+            # no translation
+            pass
+
+        try:
             self.toolBar = None
             self.act_aeag_mask = None
             self.act_aeag_toolbar_help = None
@@ -364,9 +370,7 @@ class aeag_mask(QObject):
             layout.atlas().renderBegun.connect(self.on_atlas_begin_render)
             layout.atlas().renderEnded.connect(self.on_atlas_end_render)
             refMap = layout.referenceMap()
-            refMap.preparedForAtlas.connect(lambda this=self, c=layout: this.on_prepared_for_atlas(c, refMap))
-            # for item in layout.layoutItems(QgsLayoutItemMap ):  # layoutItems not available in Python bindings
-            #    item.preparedForAtlas.connect(lambda this=self, c=layout: this.on_prepared_for_atlas(c, item))
+            refMap.preparedForAtlas.connect(lambda this=self, c=layout: this.on_prepared_for_atlas(c))
         except Exception as e:
             for m in e.args:
                 QgsMessageLog.logMessage("Mask error in on_layout_added - {}".format(m), 'Extensions')
@@ -403,7 +407,7 @@ class aeag_mask(QObject):
 
         return geom
 
-    def on_prepared_for_atlas(self, layout, item):
+    def on_prepared_for_atlas(self, layout):
         # called for each atlas feature
         if not self.layer:
             return
@@ -423,7 +427,6 @@ class aeag_mask(QObject):
 
         # update maps
         QCoreApplication.processEvents()
-        # layout.refreshItems()
 
     def on_atlas_begin_render(self):
         if not self.layer:
