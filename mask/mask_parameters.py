@@ -34,7 +34,7 @@ class MaskParameters:
         self.line_mask_method = 0
         # layers (list of id) where labeling has to be limited
         self.limited_layers_obsolete = []
-        self.orig_geometry = None
+        self.orig_geometry = []
         self.geometry = None
 
     def serialize(self, with_style=True, with_geometry=True):

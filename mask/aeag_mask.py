@@ -42,13 +42,14 @@ from qgis.core import (QgsExpression, QgsExpressionFunction, QgsGeometry,
                        QgsLayerTreeLayer, QgsField, QgsFeature, QgsVectorFileWriter,
                        QgsRectangle, QgsMapToPixelSimplifier, QgsCoordinateReferenceSystem,
                        QgsCoordinateTransform, QgsVectorSimplifyMethod, QgsMessageLog,
-                       QgsExpressionContextUtils)
+                       QgsExpressionContextUtils, QgsLayoutItemMap)
 
 from .maindialog import MainDialog
 from . import mask_filter
 from .mask_parameters import MaskParameters
 from .htmldialog import HtmlDialog
 from . import style_tools
+from functools import partial
 
 # Initialize Qt resources from file resources.py
 from . import resources_rc
@@ -362,33 +363,46 @@ class aeag_mask(QObject):
                                            keep_layer=False)
         return layer, parameters
 
-    def on_layout_added(self, layoutName):
-        layout = QgsProject.instance().layoutManager().layoutByName(layoutName)
-        # layout is a QgsReport ?? (qgis 3.0)
-
+    def connect_layout_events(self, layout):
         try:
             layout.atlas().renderBegun.connect(self.on_atlas_begin_render)
             layout.atlas().renderEnded.connect(self.on_atlas_end_render)
-            refMap = layout.referenceMap()
-            refMap.preparedForAtlas.connect(lambda this=self, c=layout: this.on_prepared_for_atlas(c))
-        except Exception as e:
+
+            for item in layout.items():
+                if isinstance(item, QgsLayoutItemMap):
+                    item.preparedForAtlas.connect(partial(self.on_prepared_for_atlas, layout))
+        except Exception:
             for m in e.args:
                 QgsMessageLog.logMessage("Mask error in on_layout_added - {}".format(m), 'Extensions')
 
-    def on_layout_removed(self, layoutName):
-        layout = QgsProject.instance().layoutManager().layoutByName(layoutName)
-        # layout is a QgsReport ?? (qgis 3.0)
-
+    def disconnect_layout_events(self, layout):
         try:
             layout.atlas().renderBegun.disconnect(self.on_atlas_begin_render)
             layout.atlas().renderEnded.disconnect(self.on_atlas_end_render)
-            refMap = layout.referenceMap()
-            refMap.preparedForAtlas.disconnect()
-            # for item in layout.composerMapItems():
-            #    item.preparedForAtlas.disconnect()
-        except Exception as e:
-            for m in e.args:
-                QgsMessageLog.logMessage("Mask error in on_layout_removed - {}".format(m), 'Extensions')
+
+            for item in layout.items():
+                if isinstance(item, QgsLayoutItemMap):
+                    item.preparedForAtlas.disconnect()
+        except Exception:
+            pass
+
+    def refreshEvents(self, layout):
+        self.disconnect_layout_events(layout)
+        self.connect_layout_events(layout)
+
+    def on_layout_added(self, layoutName):
+        layout = QgsProject.instance().layoutManager().layoutByName(layoutName)
+
+        # It is impossible to detect the addition of a 'map' item to the layout (first time case).
+        # The user is forced to close the composer then, open it again so that the mask works with the atlas.
+        # layout.refreshed.connect(self.on_layout_refreshed)
+        self.iface.layoutDesignerClosed.connect(partial(self.refreshEvents, layout))
+
+        self.connect_layout_events(layout)
+
+    def on_layout_removed(self, layoutName):
+        layout = QgsProject.instance().layoutManager().layoutByName(layoutName)
+        self.disconnect_layout_events(layout)
 
     def compute_mask_geometries(self, parameters, poly):
         geom = None
