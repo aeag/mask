@@ -1,5 +1,5 @@
-from PyQt5.QtCore import QSettings, QUrl, Qt
-from PyQt5.QtWidgets import QDialog, QVBoxLayout, QTextBrowser, QDialogButtonBox
+from qgis.PyQt.QtCore import QSettings, QUrl, Qt
+from qgis.PyQt.QtWidgets import QDialog, QVBoxLayout, QTextBrowser, QDialogButtonBox
 
 import os
 

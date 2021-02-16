@@ -1,7 +1,7 @@
-from PyQt5.QtCore import Qt, QUrl, QSettings, QDir
-from PyQt5 import QtCore
+from qgis.PyQt.QtCore import Qt, QUrl, QSettings, QDir
+from qgis.PyQt import QtCore
 
-from PyQt5.QtWidgets import (
+from qgis.PyQt.QtWidgets import (
     QDialog,
     QDialogButtonBox,
     QVBoxLayout,
@@ -10,7 +10,7 @@ from PyQt5.QtWidgets import (
     QMessageBox,
 )
 
-from PyQt5.QtGui import QDoubleValidator, QIntValidator, QDesktopServices, QPixmap
+from qgis.PyQt.QtGui import QDoubleValidator, QIntValidator, QDesktopServices, QPixmap
 
 from qgis.core import (
     QgsVectorLayer,

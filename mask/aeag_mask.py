@@ -32,7 +32,7 @@ todo:
 # Import the PyQt and QGIS libraries
 import os
 import base64
-from PyQt5.QtCore import (
+from qgis.PyQt.QtCore import (
     QCoreApplication,
     QObject,
     QSettings,
@@ -41,8 +41,8 @@ from PyQt5.QtCore import (
     QVariant,
     QFileInfo,
 )
-from PyQt5.QtGui import QIcon, QDesktopServices
-from PyQt5.QtWidgets import QAction, QMessageBox
+from qgis.PyQt.QtGui import QIcon, QDesktopServices
+from qgis.PyQt.QtWidgets import QAction, QMessageBox
 
 from qgis.core import (
     QgsExpression,

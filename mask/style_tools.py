@@ -1,7 +1,7 @@
 import os
 
-from PyQt5.QtCore import QSettings
-from PyQt5.QtXml import QDomDocument, QDomImplementation
+from qgis.PyQt.QtCore import QSettings
+from qgis.PyQt.QtXml import QDomDocument, QDomImplementation
 from qgis.core import QgsReadWriteContext
 
 from .mask_parameters import MaskParameters
