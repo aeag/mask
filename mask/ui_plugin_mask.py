@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Form implementation generated from reading ui file 'W:\GitHub\mask\mask\ui_plugin_mask.ui'
 #
 # Created by: PyQt5 UI code generator 5.6
@@ -22,7 +20,9 @@ class Ui_MainDialog(object):
         self.horizontalLayout_4 = QtWidgets.QHBoxLayout(self.groupBox)
         self.horizontalLayout_4.setObjectName("horizontalLayout_4")
         self.stylePreview = QtWidgets.QLabel(self.groupBox)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Minimum)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Minimum
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.stylePreview.sizePolicy().hasHeightForWidth())
@@ -36,7 +36,9 @@ class Ui_MainDialog(object):
         self.editStyleBtn = QtWidgets.QPushButton(self.groupBox)
         self.editStyleBtn.setObjectName("editStyleBtn")
         self.horizontalLayout_4.addWidget(self.editStyleBtn)
-        spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        spacerItem = QtWidgets.QSpacerItem(
+            40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum
+        )
         self.horizontalLayout_4.addItem(spacerItem)
         self.verticalLayout_4.addWidget(self.groupBox)
         self.bufferGroup = QtWidgets.QGroupBox(MainDialog)
@@ -49,7 +51,9 @@ class Ui_MainDialog(object):
         self.horizontalLayout_3 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_3.setObjectName("horizontalLayout_3")
         self.label_2 = QtWidgets.QLabel(self.bufferGroup)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.label_2.sizePolicy().hasHeightForWidth())
@@ -57,7 +61,9 @@ class Ui_MainDialog(object):
         self.label_2.setObjectName("label_2")
         self.horizontalLayout_3.addWidget(self.label_2)
         self.bufferUnits = QtWidgets.QLineEdit(self.bufferGroup)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.bufferUnits.sizePolicy().hasHeightForWidth())
@@ -65,7 +71,9 @@ class Ui_MainDialog(object):
         self.bufferUnits.setObjectName("bufferUnits")
         self.horizontalLayout_3.addWidget(self.bufferUnits)
         self.label_4 = QtWidgets.QLabel(self.bufferGroup)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.label_4.sizePolicy().hasHeightForWidth())
@@ -73,10 +81,14 @@ class Ui_MainDialog(object):
         self.label_4.setObjectName("label_4")
         self.horizontalLayout_3.addWidget(self.label_4)
         self.bufferSegments = QtWidgets.QLineEdit(self.bufferGroup)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.bufferSegments.sizePolicy().hasHeightForWidth())
+        sizePolicy.setHeightForWidth(
+            self.bufferSegments.sizePolicy().hasHeightForWidth()
+        )
         self.bufferSegments.setSizePolicy(sizePolicy)
         self.bufferSegments.setObjectName("bufferSegments")
         self.horizontalLayout_3.addWidget(self.bufferSegments)
@@ -91,7 +103,9 @@ class Ui_MainDialog(object):
         self.horizontalLayout_5 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_5.setObjectName("horizontalLayout_5")
         self.label_5 = QtWidgets.QLabel(self.simplifyGroup)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.label_5.sizePolicy().hasHeightForWidth())
@@ -99,10 +113,14 @@ class Ui_MainDialog(object):
         self.label_5.setObjectName("label_5")
         self.horizontalLayout_5.addWidget(self.label_5)
         self.simplifyTolerance = QtWidgets.QLineEdit(self.simplifyGroup)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.simplifyTolerance.sizePolicy().hasHeightForWidth())
+        sizePolicy.setHeightForWidth(
+            self.simplifyTolerance.sizePolicy().hasHeightForWidth()
+        )
         self.simplifyTolerance.setSizePolicy(sizePolicy)
         self.simplifyTolerance.setObjectName("simplifyTolerance")
         self.horizontalLayout_5.addWidget(self.simplifyTolerance)
@@ -137,11 +155,18 @@ class Ui_MainDialog(object):
         self.horizontalLayout.addWidget(self.formatLbl)
         self.verticalLayout.addLayout(self.horizontalLayout)
         self.verticalLayout_4.addWidget(self.saveLayerGroup)
-        spacerItem1 = QtWidgets.QSpacerItem(20, 0, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        spacerItem1 = QtWidgets.QSpacerItem(
+            20, 0, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding
+        )
         self.verticalLayout_4.addItem(spacerItem1)
         self.buttonBox = QtWidgets.QDialogButtonBox(MainDialog)
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
-        self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Apply | QtWidgets.QDialogButtonBox.Cancel | QtWidgets.QDialogButtonBox.Help | QtWidgets.QDialogButtonBox.Ok)
+        self.buttonBox.setStandardButtons(
+            QtWidgets.QDialogButtonBox.Apply
+            | QtWidgets.QDialogButtonBox.Cancel
+            | QtWidgets.QDialogButtonBox.Help
+            | QtWidgets.QDialogButtonBox.Ok
+        )
         self.buttonBox.setObjectName("buttonBox")
         self.verticalLayout_4.addWidget(self.buttonBox)
 
@@ -153,22 +178,45 @@ class Ui_MainDialog(object):
     def retranslateUi(self, MainDialog):
         _translate = QtCore.QCoreApplication.translate
         MainDialog.setWindowTitle(_translate("MainDialog", "Define a mask"))
-        self.groupBox.setToolTip(_translate("MainDialog", "Style to use for mask layer"))
+        self.groupBox.setToolTip(
+            _translate("MainDialog", "Style to use for mask layer")
+        )
         self.groupBox.setTitle(_translate("MainDialog", "Style"))
         self.editStyleBtn.setText(_translate("MainDialog", "Edit"))
-        self.bufferGroup.setToolTip(_translate("MainDialog", "Buffer around the mask geometry"))
+        self.bufferGroup.setToolTip(
+            _translate("MainDialog", "Buffer around the mask geometry")
+        )
         self.bufferGroup.setTitle(_translate("MainDialog", "Buffer"))
         self.label_2.setText(_translate("MainDialog", "Units"))
         self.label_4.setText(_translate("MainDialog", "Segments"))
         self.bufferSegments.setText(_translate("MainDialog", "5"))
-        self.simplifyGroup.setToolTip(_translate("MainDialog", "On-the-fly simplification used for the mask geometry used in expressions ($mask_geometry)"))
-        self.simplifyGroup.setTitle(_translate("MainDialog", "On-the-fly simplification"))
+        self.simplifyGroup.setToolTip(
+            _translate(
+                "MainDialog",
+                "On-the-fly simplification used for the mask geometry used in expressions ($mask_geometry)",
+            )
+        )
+        self.simplifyGroup.setTitle(
+            _translate("MainDialog", "On-the-fly simplification")
+        )
         self.label_5.setText(_translate("MainDialog", "Tolerance"))
         self.simplifyTolerance.setText(_translate("MainDialog", "1.0"))
         self.label_3.setText(_translate("MainDialog", "pixels"))
-        self.labelingGroup.setToolTip(_translate("MainDialog", "If a layer is checked here, its labeling options will be modified in order that its labels will be only visible from inside the mask\'s polygon"))
-        self.labelingGroup.setTitle(_translate("MainDialog", "Limit labeling to mask\'s polygon"))
-        self.saveLayerGroup.setToolTip(_translate("MainDialog", "Whether the save the mask layer. By default a memory layer is created"))
+        self.labelingGroup.setToolTip(
+            _translate(
+                "MainDialog",
+                "If a layer is checked here, its labeling options will be modified in order that its labels will be only visible from inside the mask's polygon",
+            )
+        )
+        self.labelingGroup.setTitle(
+            _translate("MainDialog", "Limit labeling to mask's polygon")
+        )
+        self.saveLayerGroup.setToolTip(
+            _translate(
+                "MainDialog",
+                "Whether the save the mask layer. By default a memory layer is created",
+            )
+        )
         self.saveLayerGroup.setTitle(_translate("MainDialog", "Save as"))
         self.browseBtn.setText(_translate("MainDialog", "..."))
-        self.formatLbl.setText(_translate("MainDialog", "\'\'"))
+        self.formatLbl.setText(_translate("MainDialog", "''"))

@@ -1,5 +1,10 @@
-from qgis.core import (QgsVectorLayer, QgsPalLayerSettings, QgsProperty, QgsMessageLog,
-                       QgsVectorLayerSimpleLabeling)
+from qgis.core import (
+    QgsVectorLayer,
+    QgsPalLayerSettings,
+    QgsProperty,
+    QgsMessageLog,
+    QgsVectorLayerSimpleLabeling,
+)
 
 SPATIAL_FILTER = "in_mask"
 
@@ -31,8 +36,13 @@ def remove_mask_filter(layer):
     settings = layer.labeling().settings()
 
     try:
-        if settings.dataDefinedProperties().hasProperty(QgsPalLayerSettings.Show) and \
-                settings.dataDefinedProperties().property(QgsPalLayerSettings.Show).expressionString().startswith(SPATIAL_FILTER):
+        if settings.dataDefinedProperties().hasProperty(
+            QgsPalLayerSettings.Show
+        ) and settings.dataDefinedProperties().property(
+            QgsPalLayerSettings.Show
+        ).expressionString().startswith(
+            SPATIAL_FILTER
+        ):
             # new settings
             settings = QgsPalLayerSettings(layer.labeling().settings())
             settings.dataDefinedProperties().setProperty(QgsPalLayerSettings.Show, True)
@@ -40,7 +50,7 @@ def remove_mask_filter(layer):
                 layer.setLabeling(QgsVectorLayerSimpleLabeling(settings))
     except Exception as e:
         for m in e.args:
-            QgsMessageLog.logMessage(m, 'Extensions')
+            QgsMessageLog.logMessage(m, "Extensions")
 
 
 def add_mask_filter(layer):
@@ -64,4 +74,4 @@ def add_mask_filter(layer):
 
     except Exception as e:
         for m in e.args:
-            QgsMessageLog.logMessage(m, 'Extensions')
+            QgsMessageLog.logMessage(m, "Extensions")

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Form implementation generated from reading ui file 'W:\GitHub\mask\mask\ui_layer_list.ui'
 #
 # Created by: PyQt5 UI code generator 5.6
@@ -8,6 +6,7 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
+
 class Ui_LayerListWidget(object):
     def setupUi(self, LayerListWidget):
         LayerListWidget.setObjectName("LayerListWidget")
@@ -15,7 +14,9 @@ class Ui_LayerListWidget(object):
         self.verticalLayout = QtWidgets.QVBoxLayout(LayerListWidget)
         self.verticalLayout.setObjectName("verticalLayout")
         self.formLayout = QtWidgets.QFormLayout()
-        self.formLayout.setFieldGrowthPolicy(QtWidgets.QFormLayout.AllNonFixedFieldsGrow)
+        self.formLayout.setFieldGrowthPolicy(
+            QtWidgets.QFormLayout.AllNonFixedFieldsGrow
+        )
         self.formLayout.setObjectName("formLayout")
         self.label = QtWidgets.QLabel(LayerListWidget)
         self.label.setObjectName("label")
@@ -25,7 +26,9 @@ class Ui_LayerListWidget(object):
         self.polygonOperatorCombo.addItem("")
         self.polygonOperatorCombo.addItem("")
         self.polygonOperatorCombo.addItem("")
-        self.formLayout.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.polygonOperatorCombo)
+        self.formLayout.setWidget(
+            0, QtWidgets.QFormLayout.FieldRole, self.polygonOperatorCombo
+        )
         self.label_2 = QtWidgets.QLabel(LayerListWidget)
         self.label_2.setObjectName("label_2")
         self.formLayout.setWidget(1, QtWidgets.QFormLayout.LabelRole, self.label_2)
@@ -33,7 +36,9 @@ class Ui_LayerListWidget(object):
         self.lineOperatorCombo.setObjectName("lineOperatorCombo")
         self.lineOperatorCombo.addItem("")
         self.lineOperatorCombo.addItem("")
-        self.formLayout.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.lineOperatorCombo)
+        self.formLayout.setWidget(
+            1, QtWidgets.QFormLayout.FieldRole, self.lineOperatorCombo
+        )
         self.verticalLayout.addLayout(self.formLayout)
         self.layerTable = QtWidgets.QTableWidget(LayerListWidget)
         self.layerTable.setObjectName("layerTable")
@@ -63,17 +68,41 @@ class Ui_LayerListWidget(object):
     def retranslateUi(self, LayerListWidget):
         _translate = QtCore.QCoreApplication.translate
         LayerListWidget.setWindowTitle(_translate("LayerListWidget", "Form"))
-        self.label.setText(_translate("LayerListWidget", "Function used for labeling filtering on polygons"))
-        self.polygonOperatorCombo.setItemText(0, _translate("LayerListWidget", "Exact (slow and will disable simplification)"))
-        self.polygonOperatorCombo.setItemText(1, _translate("LayerListWidget", "The mask geometry contains the centroid"))
-        self.polygonOperatorCombo.setItemText(2, _translate("LayerListWidget", "The mask geometry contains a point on the polygon surface"))
-        self.label_2.setText(_translate("LayerListWidget", "Function used for labeling filtering on lines"))
-        self.lineOperatorCombo.setItemText(0, _translate("LayerListWidget", "The mask geometry intersects the line"))
-        self.lineOperatorCombo.setItemText(1, _translate("LayerListWidget", "The mask geometry contains the line"))
+        self.label.setText(
+            _translate(
+                "LayerListWidget", "Function used for labeling filtering on polygons"
+            )
+        )
+        self.polygonOperatorCombo.setItemText(
+            0,
+            _translate(
+                "LayerListWidget", "Exact (slow and will disable simplification)"
+            ),
+        )
+        self.polygonOperatorCombo.setItemText(
+            1, _translate("LayerListWidget", "The mask geometry contains the centroid")
+        )
+        self.polygonOperatorCombo.setItemText(
+            2,
+            _translate(
+                "LayerListWidget",
+                "The mask geometry contains a point on the polygon surface",
+            ),
+        )
+        self.label_2.setText(
+            _translate(
+                "LayerListWidget", "Function used for labeling filtering on lines"
+            )
+        )
+        self.lineOperatorCombo.setItemText(
+            0, _translate("LayerListWidget", "The mask geometry intersects the line")
+        )
+        self.lineOperatorCombo.setItemText(
+            1, _translate("LayerListWidget", "The mask geometry contains the line")
+        )
         item = self.layerTable.horizontalHeaderItem(0)
         item.setText(_translate("LayerListWidget", "Limit"))
         item = self.layerTable.horizontalHeaderItem(1)
         item.setText(_translate("LayerListWidget", "Layer"))
         self.selectAllBtn.setText(_translate("LayerListWidget", "Select all"))
         self.unselectAllBtn.setText(_translate("LayerListWidget", "Unselect all"))
-

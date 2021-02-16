@@ -11,7 +11,7 @@ Class to store mask parameters
  ***************************************************************************/
 """
 
-from qgis.core import (QgsGeometry, QgsProject, QgsFeature, QgsMessageLog)
+from qgis.core import QgsGeometry, QgsProject, QgsFeature, QgsMessageLog
 import pickle
 import base64
 
@@ -44,7 +44,68 @@ class MaskParameters:
             style = None
 
         if with_geometry:
-            t = pickle.dumps([
+            t = pickle.dumps(
+                [
+                    self.do_buffer,
+                    self.buffer_units,
+                    self.buffer_segments,
+                    self.do_simplify,
+                    self.simplify_tolerance,
+                    self.do_save_as,
+                    self.file_path,
+                    self.file_format,
+                    self.limited_layers_obsolete,
+                    style,
+                    self.polygon_mask_method,
+                    self.line_mask_method,
+                    [g.asWkb() for g in self.orig_geometry]
+                    if self.orig_geometry is not None
+                    else None,
+                    self.geometry.asWkb() if self.geometry is not None else None,
+                ],
+                protocol=0,
+                fix_imports=True,
+            )
+        else:
+            t = pickle.dumps(
+                [
+                    self.do_buffer,
+                    self.buffer_units,
+                    self.buffer_segments,
+                    self.do_simplify,
+                    self.simplify_tolerance,
+                    self.do_save_as,
+                    self.file_path,
+                    self.file_format,
+                    self.limited_layers_obsolete,
+                    style,
+                    self.polygon_mask_method,
+                    self.line_mask_method,
+                ],
+                protocol=0,
+                fix_imports=True,
+            )
+        return t
+
+    def unserialize(self, st):
+        style = None
+        orig_geom = None
+        geom = None
+
+        try:
+            t = pickle.loads(st)
+        except:
+            try:
+                t = pickle.loads(st, encoding="utf-8")
+                # strange, Exception says : No module named 'PyQt4'
+            except Exception as e:
+                for m in e.args:
+                    QgsMessageLog.logMessage(str(m), "Extensions")
+
+                raise Exception("Mask - Error when loading mask")
+
+        if len(t) == 12:  # older version
+            (
                 self.do_buffer,
                 self.buffer_units,
                 self.buffer_segments,
@@ -57,76 +118,24 @@ class MaskParameters:
                 style,
                 self.polygon_mask_method,
                 self.line_mask_method,
-                [g.asWkb() for g in self.orig_geometry]
-                if self.orig_geometry is not None else None,
-                self.geometry.asWkb() if self.geometry is not None else None],
-                protocol=0,
-                fix_imports=True
-            )
+            ) = t
         else:
-            t = pickle.dumps([self.do_buffer,
-                             self.buffer_units,
-                             self.buffer_segments,
-                             self.do_simplify,
-                             self.simplify_tolerance,
-                             self.do_save_as,
-                             self.file_path,
-                             self.file_format,
-                             self.limited_layers_obsolete,
-                             style,
-                             self.polygon_mask_method,
-                             self.line_mask_method],
-                             protocol=0,
-                             fix_imports=True
-                             )
-        return t
-
-    def unserialize(self, st):
-        style = None
-        orig_geom = None
-        geom = None
-
-        try:
-            t = pickle.loads(st)
-        except:
-            try:
-                t = pickle.loads(st, encoding='utf-8')
-                # strange, Exception says : No module named 'PyQt4'
-            except Exception as e:
-                for m in e.args:
-                    QgsMessageLog.logMessage(str(m), 'Extensions')
-
-                raise Exception("Mask - Error when loading mask")
-
-        if len(t) == 12:  # older version
-            (self.do_buffer,
-             self.buffer_units,
-             self.buffer_segments,
-             self.do_simplify,
-             self.simplify_tolerance,
-             self.do_save_as,
-             self.file_path,
-             self.file_format,
-             self.limited_layers_obsolete,
-             style,
-             self.polygon_mask_method,
-             self.line_mask_method) = t
-        else:
-            (self.do_buffer,
-             self.buffer_units,
-             self.buffer_segments,
-             self.do_simplify,
-             self.simplify_tolerance,
-             self.do_save_as,
-             self.file_path,
-             self.file_format,
-             self.limited_layers_obsolete,
-             style,
-             self.polygon_mask_method,
-             self.line_mask_method,
-             orig_geom,
-             geom
-             ) = t
+            (
+                self.do_buffer,
+                self.buffer_units,
+                self.buffer_segments,
+                self.do_simplify,
+                self.simplify_tolerance,
+                self.do_save_as,
+                self.file_path,
+                self.file_format,
+                self.limited_layers_obsolete,
+                style,
+                self.polygon_mask_method,
+                self.line_mask_method,
+                orig_geom,
+                geom,
+            ) = t
         self.style = None
         self.geometry = None
         if style is not None:
@@ -143,8 +152,8 @@ class MaskParameters:
             self.orig_geometry = gl
 
     def have_same_layer_options(self, other):
-        """ Returns true if the other parameters have the same layer options
-           (file path, file format) than self
+        """Returns true if the other parameters have the same layer options
+        (file path, file format) than self
         """
         if not self.do_save_as:
             return not other.do_save_as
@@ -152,7 +161,10 @@ class MaskParameters:
             if not other.do_save_as:
                 return False
             else:
-                return self.file_path == other.file_path and self.file_format == other.file_format
+                return (
+                    self.file_path == other.file_path
+                    and self.file_format == other.file_format
+                )
 
     def save_to_project(self):
         serialized = base64.b64encode(self.serialize())
@@ -160,13 +172,15 @@ class MaskParameters:
             QgsProject.instance().writeEntry("Mask", "parameters", serialized)
         except:
             # strange behaviour, pickle change his format ?
-            QgsProject.instance().writeEntry("Mask", "parameters", str(serialized)[2:-1])
+            QgsProject.instance().writeEntry(
+                "Mask", "parameters", str(serialized)[2:-1]
+            )
 
         return True
 
     def load_from_project(self):
         st, ok = QgsProject.instance().readEntry("Mask", "parameters")
-        if st == '':
+        if st == "":
             return False
 
         self.unserialize(base64.b64decode(st))

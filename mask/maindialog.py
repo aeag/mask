@@ -1,18 +1,28 @@
-from PyQt5.QtCore import (Qt, QUrl, QSettings, QDir)
+from PyQt5.QtCore import Qt, QUrl, QSettings, QDir
 from PyQt5 import QtCore
 
-from PyQt5.QtWidgets import (QDialog,
-                             QDialogButtonBox, QVBoxLayout, QPushButton,
-                             QFileDialog, QMessageBox)
+from PyQt5.QtWidgets import (
+    QDialog,
+    QDialogButtonBox,
+    QVBoxLayout,
+    QPushButton,
+    QFileDialog,
+    QMessageBox,
+)
 
-from PyQt5.QtGui import (QDoubleValidator, QIntValidator, QDesktopServices,
-                         QPixmap)
+from PyQt5.QtGui import QDoubleValidator, QIntValidator, QDesktopServices, QPixmap
 
-from qgis.core import (QgsVectorLayer, QgsMessageLog,
-                       QgsStyle, QgsProject, QgsVectorFileWriter,
-                       QgsRenderContext,
-                       QgsGeometry, QgsVectorSimplifyMethod)
-from qgis.gui import (QgsRendererPropertiesDialog)
+from qgis.core import (
+    QgsVectorLayer,
+    QgsMessageLog,
+    QgsStyle,
+    QgsProject,
+    QgsVectorFileWriter,
+    QgsRenderContext,
+    QgsGeometry,
+    QgsVectorSimplifyMethod,
+)
+from qgis.gui import QgsRendererPropertiesDialog
 
 from .ui_plugin_mask import Ui_MainDialog
 from .layerlist import LayerListWidget
@@ -25,6 +35,7 @@ import locale
 
 def is_in_qgis_core(sym):
     import qgis.core
+
     return sym in dir(qgis.core)
 
 
@@ -58,18 +69,27 @@ class MainDialog(QDialog):
         self.ui.buttonBox.addButton(self.ui.tipsBtn, QDialogButtonBox.ActionRole)
         self.ui.tipsBtn.clicked.connect(self.show_tips)
         # add a "save as defaults" button
-        self.ui.saveDefaultsBtn = QPushButton(self.tr("Save as defaults"), self.ui.buttonBox)
-        self.ui.buttonBox.addButton(self.ui.saveDefaultsBtn, QDialogButtonBox.ActionRole)
+        self.ui.saveDefaultsBtn = QPushButton(
+            self.tr("Save as defaults"), self.ui.buttonBox
+        )
+        self.ui.buttonBox.addButton(
+            self.ui.saveDefaultsBtn, QDialogButtonBox.ActionRole
+        )
         self.ui.saveDefaultsBtn.clicked.connect(self.on_save_defaults)
         # add a "load defaults" button
-        self.ui.loadDefaultsBtn = QPushButton(self.tr("Load defaults"), self.ui.buttonBox)
-        self.ui.buttonBox.addButton(self.ui.loadDefaultsBtn, QDialogButtonBox.ActionRole)
+        self.ui.loadDefaultsBtn = QPushButton(
+            self.tr("Load defaults"), self.ui.buttonBox
+        )
+        self.ui.buttonBox.addButton(
+            self.ui.loadDefaultsBtn, QDialogButtonBox.ActionRole
+        )
         self.ui.loadDefaultsBtn.clicked.connect(self.load_defaults)
         # connect the "help" button
         self.ui.buttonBox.helpRequested.connect(self.on_help)
 
         self.ui.layer_list.ui.polygonOperatorCombo.currentIndexChanged[int].connect(
-            self.on_polygon_operator_changed)
+            self.on_polygon_operator_changed
+        )
 
         # connect the "apply" button
         for btn in self.ui.buttonBox.buttons():
@@ -105,16 +125,20 @@ class MainDialog(QDialog):
             self.update_style_preview(self.parameters.layer)
         except Exception as e:
             for m in e.args:
-                QgsMessageLog.logMessage("Mask error update_style_from_parameters - {}".format(m),
-                                         'Extensions')
+                QgsMessageLog.logMessage(
+                    "Mask error update_style_from_parameters - {}".format(m),
+                    "Extensions",
+                )
 
     def update_parameters_from_style(self, parameters):
         try:
             parameters.style = style_tools.get_layer_symbology(self.parameters.layer)
         except Exception as e:
             for m in e.args:
-                QgsMessageLog.logMessage("Mask error update_parameters_from_style - {}".format(m),
-                                         'Extensions')
+                QgsMessageLog.logMessage(
+                    "Mask error update_parameters_from_style - {}".format(m),
+                    "Extensions",
+                )
 
     def update_ui_from_parameters(self, parameters):
         self.update_style_from_parameters(parameters)
@@ -122,20 +146,28 @@ class MainDialog(QDialog):
         self.ui.saveLayerGroup.setChecked(parameters.do_save_as)
         self.ui.bufferUnits.setText(locale.str(parameters.buffer_units))
         self.ui.bufferSegments.setText(str(parameters.buffer_segments))
-        self.ui.formatLbl.setText('' if parameters.file_format is None else parameters.file_format)
+        self.ui.formatLbl.setText(
+            "" if parameters.file_format is None else parameters.file_format
+        )
         self.ui.filePath.setText(parameters.file_path)
         self.ui.simplifyGroup.setChecked(parameters.do_simplify)
         self.ui.simplifyTolerance.setText(locale.str(parameters.simplify_tolerance))
-        self.ui.layer_list.ui.polygonOperatorCombo.setCurrentIndex(parameters.polygon_mask_method)
-        self.ui.layer_list.ui.lineOperatorCombo.setCurrentIndex(parameters.line_mask_method)
+        self.ui.layer_list.ui.polygonOperatorCombo.setCurrentIndex(
+            parameters.polygon_mask_method
+        )
+        self.ui.layer_list.ui.lineOperatorCombo.setCurrentIndex(
+            parameters.line_mask_method
+        )
 
     def update_parameters_from_ui(self, parameters):
         self.update_parameters_from_style(parameters)
         parameters.do_buffer = self.ui.bufferGroup.isChecked()
         try:
-            parameters.buffer_units = locale.atof(self.ui.bufferUnits.text() or '0.0')
+            parameters.buffer_units = locale.atof(self.ui.bufferUnits.text() or "0.0")
         except:
-            parameters.buffer_units = float(self.ui.bufferUnits.text().replace(',', '.') or '0.0')
+            parameters.buffer_units = float(
+                self.ui.bufferUnits.text().replace(",", ".") or "0.0"
+            )
 
         parameters.buffer_segments = int(self.ui.bufferSegments.text() or 0)
         parameters.do_save_as = self.ui.saveLayerGroup.isChecked()
@@ -143,12 +175,20 @@ class MainDialog(QDialog):
         parameters.file_path = self.ui.filePath.text()
         parameters.do_simplify = self.ui.simplifyGroup.isChecked()
         try:
-            parameters.simplify_tolerance = locale.atof(self.ui.simplifyTolerance.text() or '0.0')
+            parameters.simplify_tolerance = locale.atof(
+                self.ui.simplifyTolerance.text() or "0.0"
+            )
         except:
-            parameters.simplify_tolerance = float(self.ui.simplifyTolerance.text().replace(',', '.') or '0.0')
+            parameters.simplify_tolerance = float(
+                self.ui.simplifyTolerance.text().replace(",", ".") or "0.0"
+            )
 
-        parameters.polygon_mask_method = self.ui.layer_list.ui.polygonOperatorCombo.currentIndex()
-        parameters.line_mask_method = self.ui.layer_list.ui.lineOperatorCombo.currentIndex()
+        parameters.polygon_mask_method = (
+            self.ui.layer_list.ui.polygonOperatorCombo.currentIndex()
+        )
+        parameters.line_mask_method = (
+            self.ui.layer_list.ui.lineOperatorCombo.currentIndex()
+        )
 
     def load_defaults(self):
         settings = QSettings()
@@ -173,9 +213,9 @@ class MainDialog(QDialog):
 
         # look for directory
         path = QgsProject.instance().homePath()
-        if path == '':
-            path = settings.value("mask/file_dir", '')
-            if path == '':
+        if path == "":
+            path = settings.value("mask/file_dir", "")
+            if path == "":
                 path = QDir.homePath()
 
         drivers = QgsVectorFileWriter.ogrDriverList()
@@ -198,9 +238,13 @@ class MainDialog(QDialog):
             filterMap[fn] = (driver.driverName, ext, glob)
             filterList += [fn]
 
-        fileFilters = ';;'.join(filterList)
-        fd = QFileDialog(None, self.tr("Select a filename to save the mask layer to"),
-                         path, fileFilters)
+        fileFilters = ";;".join(filterList)
+        fd = QFileDialog(
+            None,
+            self.tr("Select a filename to save the mask layer to"),
+            path,
+            fileFilters,
+        )
         save_format_name = self.parameters.file_format
         self.save_format = None
         for k, v in filterMap.items():
@@ -232,7 +276,9 @@ class MainDialog(QDialog):
         dlg = QDialog(self)
 
         dlg.layout = QVBoxLayout(dlg)
-        dlg.widget = QgsRendererPropertiesDialog(self.parameters.layer, self.style, True)
+        dlg.widget = QgsRendererPropertiesDialog(
+            self.parameters.layer, self.style, True
+        )
         dlg.widget.setLayout(dlg.layout)
         dlg.buttons = QDialogButtonBox(dlg)
 
@@ -272,11 +318,11 @@ class MainDialog(QDialog):
             self.update_ui_from_parameters(self.parameters)
 
         # disable simplification if the simplifier is not available
-        if not is_in_qgis_core('QgsMapToPixelSimplifier'):
+        if not is_in_qgis_core("QgsMapToPixelSimplifier"):
             self.ui.simplifyGroup.setEnabled(False)
             self.parameters.do_simplify = False
         # disable pointOnSurface if not available
-        if 'pointOnSurface' not in dir(QgsGeometry):
+        if "pointOnSurface" not in dir(QgsGeometry):
             self.ui.layer_list.ui.polygonOperatorCombo.removeItem(2)
             if self.parameters.polygon_mask_method == 2:
                 self.parameters.polygon_mask_method = 1
@@ -285,7 +331,7 @@ class MainDialog(QDialog):
             self.update_style_preview(self.parameters.layer)
         except Exception as e:
             for m in e.args:
-                QgsMessageLog.logMessage(m, 'Extensions')
+                QgsMessageLog.logMessage(m, "Extensions")
 
         return QDialog.exec_(self)
 
@@ -312,17 +358,24 @@ class MainDialog(QDialog):
             for name, layer in QgsProject.instance().mapLayers().items():
                 if not isinstance(layer, QgsVectorLayer):
                     continue
-                if layer.id() in limited and int(layer.simplifyMethod().simplifyHints()) > 0:
+                if (
+                    layer.id() in limited
+                    and int(layer.simplifyMethod().simplifyHints()) > 0
+                ):
                     # simplification is enabled
                     slayers.append(layer)
 
             if len(slayers) > 0:
                 r = QMessageBox.question(
-                    None, self.tr("Warning"),
-                    self.tr("Some layer have rendering simplification turned on, \
+                    None,
+                    self.tr("Warning"),
+                    self.tr(
+                        "Some layer have rendering simplification turned on, \
                     which is not compatible with the labeling filtering you choose. \
-                    Force simplification disabling ?"),
-                    buttons=QMessageBox.Yes | QMessageBox.No)
+                    Force simplification disabling ?"
+                    ),
+                    buttons=QMessageBox.Yes | QMessageBox.No,
+                )
 
                 if r == QMessageBox.Yes:
                     for l in slayers:

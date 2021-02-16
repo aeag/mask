@@ -4,7 +4,7 @@
 #        copyright            : (C) 2014 by Oslandia
 #        email                : hugo.mercier@oslandia.com
 # ***************************************************************************/
-# 
+#
 #/***************************************************************************
 # *                                                                         *
 # *   This program is free software; you can redistribute it and/or modify  *
@@ -16,7 +16,7 @@
 
 QGISDIR=.qgis2
 
-# Makefile for a PyQGIS plugin 
+# Makefile for a PyQGIS plugin
 
 # global
 
@@ -69,12 +69,12 @@ derase:
 
 # The zip target deploys the plugin and creates a zip file with the deployed
 # content. You can then upload the zip file on http://plugins.qgis.org
-zip: deploy dclean 
+zip: deploy dclean
 	rm -f $(PLUGINNAME).zip
 	cd $(HOME)/$(QGISDIR)/python/plugins; zip -9r $(CURDIR)/$(PLUGINNAME).zip $(PLUGINNAME)
 
-# Create a zip package of the plugin named $(PLUGINNAME).zip. 
-# This requires use of git (your plugin development directory must be a 
+# Create a zip package of the plugin named $(PLUGINNAME).zip.
+# This requires use of git (your plugin development directory must be a
 # git repository).
 # To use, pass a valid commit or tag as follows:
 #   make package VERSION=Version_0.3.2
@@ -104,5 +104,5 @@ clean:
 	rm $(UI_FILES) $(RESOURCE_FILES)
 
 # build documentation with sphinx
-#doc: 
+#doc:
 #	cd help; make html

@@ -1,11 +1,10 @@
-from PyQt5.QtCore import (QSettings, QUrl, Qt)
-from PyQt5.QtWidgets import (QDialog, QVBoxLayout, QTextBrowser, QDialogButtonBox)
+from PyQt5.QtCore import QSettings, QUrl, Qt
+from PyQt5.QtWidgets import QDialog, QVBoxLayout, QTextBrowser, QDialogButtonBox
 
 import os
 
 
 class HtmlDialog(QDialog):
-
     def __init__(self, parent, url):
         QDialog.__init__(self, parent)
 
@@ -16,7 +15,7 @@ class HtmlDialog(QDialog):
         self.te = QTextBrowser(self)
         self.te.sourceChanged.connect(self.onSourceChanged)
         self.te.setOpenExternalLinks(True)
-        if not url.startswith('http'):
+        if not url.startswith("http"):
             pwd = os.path.dirname(__file__)
             locale = QSettings().value("locale/userLocale")[0:2]
             file = "{}/doc/{}/{}".format(pwd, locale, url)

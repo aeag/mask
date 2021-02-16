@@ -1,7 +1,13 @@
-from PyQt5.QtCore import (Qt)
-from PyQt5.QtWidgets import (QWidget, QTableWidgetItem, QDialog, QCheckBox,
-                             QDialogButtonBox, QVBoxLayout)
-from qgis.core import (QgsProject, QgsVectorLayer)
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import (
+    QWidget,
+    QTableWidgetItem,
+    QDialog,
+    QCheckBox,
+    QDialogButtonBox,
+    QVBoxLayout,
+)
+from qgis.core import QgsProject, QgsVectorLayer
 
 from .ui_layer_list import Ui_LayerListWidget
 
@@ -41,7 +47,7 @@ class LayerListWidget(QWidget):
         n = 0
         for name, layer in layers.items():
 
-            if layer.name() == 'Mask':
+            if layer.name() == "Mask":
                 continue
             # skip non vector layers
             if not isinstance(layer, QgsVectorLayer):
@@ -104,7 +110,9 @@ class LayerListDialog(QDialog):
         self.layer_list = LayerListWidget(self)
         self.button_box = QDialogButtonBox(self)
         self.button_box.setOrientation(Qt.Horizontal)
-        self.button_box.setStandardButtons(QDialogButtonBox.Cancel | QDialogButtonBox.Ok)
+        self.button_box.setStandardButtons(
+            QDialogButtonBox.Cancel | QDialogButtonBox.Ok
+        )
         self.button_box.accepted.connect(self.accept)
         self.button_box.rejected.connect(self.reject)
 

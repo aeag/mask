@@ -9,7 +9,7 @@
 Expression function added by mask plugin. Returns true if current feature crosses mask geometry.&lt;br/&gt;
 The spatial expression to use is set from the mask UI button (exact, fast using centroids, intermediate using point on surface).&lt;br/&gt;
 in_mask takes a CRS EPSG code as first parameter, which is the CRS code of the evaluated features.&lt;br/&gt;
-It can be used to filter labels only in that area, or since QGIS 2.13, legend items only visible in mask area.&lt;br/&gt; 
+It can be used to filter labels only in that area, or since QGIS 2.13, legend items only visible in mask area.&lt;br/&gt;
 &lt;h2&gt;Return value&lt;/h2&gt;
 true/false (0/1)&lt;br/&gt;
 &lt;h2&gt;Usage&lt;/h2&gt;
@@ -18,7 +18,7 @@ in_mask(2154)</source>
 Fonction ajoutée par le plugin Mask. Renvoie vrai si l&apos;entité courante intersecte la géométrie de masque.&lt;br/&gt;
 Les options de l&apos;intersection spatiale (exacte, utilisant les centroïdes ou un point sur la surface, etc.) peuvent être réglées par la boite de dialogue de configuration du plugin Mask.&lt;br/&gt;
 in_mask prend un code EPSG de projection en premier paramètre qui représente la projection de l&apos;entité courante.&lt;br/&gt;
-Cette fonction peut être utilisée pour filtrer des étiquettes ou, à partir de QGIS 2.13, pour filtrer des élements de légende.&lt;br/&gt; 
+Cette fonction peut être utilisée pour filtrer des étiquettes ou, à partir de QGIS 2.13, pour filtrer des élements de légende.&lt;br/&gt;
 &lt;h2&gt;Valeur retournée&lt;/h2&gt;
 vrai/faux (0/1)&lt;br/&gt;
 &lt;h2&gt;Utilisation&lt;/h2&gt;

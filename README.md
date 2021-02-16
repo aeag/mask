@@ -13,7 +13,7 @@ This plugin requires QGIS >= 3.4
 
 Contributors : Hugo Mercier (Oslandia - https://github.com/mhugo), Xavier Culos (Agence de l'eau Adour-Garonne - https://github.com/xcaeag), Régis Haubourg (Oslandia - https://github.com/haubourg) Funded by Agence de l'eau Adour Garonne eau-adour-garonne.fr https://github.com/aeag
 
-This program is free software ; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation ; either version 2 of the License, or (at your option) any later version.                               
+This program is free software ; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation ; either version 2 of the License, or (at your option) any later version.  
 
 
 An alternative, to combine mask and Atlas without plugin (3.x)
