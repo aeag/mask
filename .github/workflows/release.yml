@@ -1,0 +1,82 @@
+name: Release 🚀
+
+env:
+  PROJECT_FOLDER: "mask"
+  PYTHON_VERSION: 3.8
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    # - name: Install Qt lrelease
+    #   run: sudo apt install qt5-default qttools5-dev-tools
+
+    - name: Setup Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Get tag name as version
+      id: get_version
+      run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+
+    - name: Install project requirements
+      run: |
+        python -m pip install -U pip setuptools wheel
+        python -m pip install -U 'qgis-plugin-ci>=1.8,<1.9'
+
+    - id: get-myversion
+      run: |
+        myversion=$(echo ${{ github.ref }} | cut -dv -f2)
+        echo "::set-output name=myversion::$myversion"
+    - run: echo "${{steps.get-myversion.outputs.myversion}}"
+
+    - name: Package the version
+      run: |
+        qgis-plugin-ci package ${{steps.get-myversion.outputs.myversion}}
+
+    #- uses: actions/upload-artifact@v2
+    #  with:
+    #    name: ${{ env.PROJECT_FOLDER }}-${{steps.get-myversion.outputs.myversion}}
+    #    path: ${{ env.PROJECT_FOLDER }}.${{steps.get-myversion.outputs.myversion}}.zip
+    #    if-no-files-found: error
+
+    - name : Get current changelog for ${{ github.ref }}
+      run: qgis-plugin-ci changelog ${{steps.get-myversion.outputs.myversion}} >> release.md
+
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        draft: false
+        prerelease: false
+        tag_name: ${{ github.ref }}
+        release_name: ${{ github.ref }}
+        body_path: release.md
+
+    - name: upload plugin artifact
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ${{ env.PROJECT_FOLDER }}.${{steps.get-myversion.outputs.myversion}}.zip
+        asset_name: ${{ env.PROJECT_FOLDER }}-${{steps.get-myversion.outputs.myversion}}.zip
+        asset_content_type: application/zip
+
+    # - name: Deploy plugin
+    #   run: >-
+    #     qgis-plugin-ci
+    #     release ${GITHUB_REF/refs\/tags\//}
+    #     --github-token ${{ secrets.BOT_HUB_TOKEN }}
+    #     --transifex-token ${{ secrets.TRANSIFEX_TOKEN }}
