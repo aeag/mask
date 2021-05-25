@@ -67,5 +67,5 @@ experimental=False
 deprecated=False
 
 # Author contact information
-author=Hugo Mercier (Oslandia) - Xavier Culos (Agence de l'eau Adour Garonne) - Régis Haubourg (Oslandia)
+author=Hugo Mercier (https://github.com/mhugo) - Xavier Culos (Agence de l'eau Adour Garonne) - Régis Haubourg (https://github.com/haubourg)
 email=geocatalogue@eau-adour-garonne.fr
