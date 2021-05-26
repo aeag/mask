@@ -1,3 +1,5 @@
+#! python3  # noqa: E265
+
 from qgis.core import (
     QgsVectorLayer,
     QgsPalLayerSettings,

@@ -19,8 +19,6 @@ caption: Others
 
 That tool is designed to help users to quickly generate cartographic masking layer to enlight an area of interest.  
   
-Mask plugin was developped by Xavier Culos (AEAG) and contributed by Hugo Mercier (Oslandia) on funding by Agence de l'eau Adour Garonne.
-
 Please notify any issue or enhancement request [here](https://github.com/aeag/mask_plugin/issues/)
 
 ### **How to use it ?**
@@ -60,9 +58,7 @@ aeag_mask.do(sr, { geom }, "MyMask")
 
 Cet outil a été développé pour aider les utilisateurs à générer rapidement des couches de masque pour mettre en évidence une zone d'intérêt.
 
-Le plugin Mask a été développé par Xavier Culos (AEAG) avec des contributions de Hugo Mercier (Oslandia) sur financements de l'Agence de l'eau Adour Garonne.
-
-  Merci de notifier tout problème ou demande d'évolution [ici](https://github.com/aeag/mask_plugin/issues/)
+Merci de notifier tout problème ou demande d'évolution [ici](https://github.com/aeag/mask_plugin/issues/)
 
 ### **Comment l'utiliser ?**
 

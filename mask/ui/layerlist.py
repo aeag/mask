@@ -9,9 +9,9 @@ from qgis.PyQt.QtWidgets import (
 )
 from qgis.core import QgsProject, QgsVectorLayer
 
-from .ui.ui_layer_list import Ui_LayerListWidget
+from .ui_layer_list import Ui_LayerListWidget
 
-from . import mask_filter
+from mask.logic.mask_filter import has_mask_filter, add_mask_filter, remove_mask_filter
 
 
 class LayerListWidget(QWidget):
@@ -59,7 +59,7 @@ class LayerListWidget(QWidget):
 
             do_limit = False
             did_limit = layer.id() in self.limited
-            do_limit = mask_filter.has_mask_filter(layer)
+            do_limit = has_mask_filter(layer)
 
             if do_limit and not did_limit:
                 self.limited.append(layer.id())
@@ -92,11 +92,11 @@ class LayerListWidget(QWidget):
 
             if not did_limit and do_limit:
                 # add spatial filtering
-                mask_filter.add_mask_filter(layer)
+                add_mask_filter(layer)
                 self.limited.append(layer.id())
 
             if did_limit and not do_limit:
-                mask_filter.remove_mask_filter(layer)
+                remove_mask_filter(layer)
                 self.limited.remove(layer.id())
 
 

@@ -40,6 +40,6 @@ def set_default_layer_symbology(layer):
         set_layer_symbology(layer, parameters.style)
     else:
         default_style = os.path.join(
-            os.path.dirname(__file__), "default_mask_style.qml"
+            os.path.dirname(__file__), "../resources/default_mask_style.qml"
         )
         layer.loadNamedStyle(default_style)

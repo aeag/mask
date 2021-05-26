@@ -69,10 +69,11 @@ from qgis.core import (
 from qgis.utils import showPluginHelp
 
 from .ui.maindialog import MainDialog
-from . import mask_filter
-from .mask_parameters import MaskParameters
-from . import style_tools
+from .logic import mask_filter
+from .logic.mask_parameters import MaskParameters
+from .logic import style_tools
 from functools import partial
+from .__about__ import DIR_PLUGIN_ROOT
 
 aeag_mask_instance = None
 
@@ -233,7 +234,7 @@ class aeag_mask(QObject):
         self.project.layerWillBeRemoved.connect(self.on_remove_mask)
 
         self.act_aeag_mask = QAction(
-            QIcon(":plugins/mask/aeag_mask.png"),
+            QIcon(str(DIR_PLUGIN_ROOT / "resources/aeag_mask.png")),
             self.tr("Create a mask"),
             self.iface.mainWindow(),
         )
@@ -245,7 +246,7 @@ class aeag_mask(QObject):
         # turn it to true to enable test
         if False:
             self.act_test = QAction(
-                QIcon(":plugins/mask/aeag_mask.png"), "Test", self.iface.mainWindow()
+                 QIcon(str(DIR_PLUGIN_ROOT / "resources/aeag_mask.png")), "Test", self.iface.mainWindow()
             )
             self.toolBar.addAction(self.act_test)
             self.iface.addPluginToMenu("&Mask", self.act_test)
@@ -834,7 +835,7 @@ class aeag_mask(QObject):
             parameters.unserialize(defaults)
         else:
             default_style = os.path.join(
-                os.path.dirname(__file__), "default_mask_style.qml"
+                os.path.dirname(__file__), "/resources/default_mask_style.qml"
             )
             layer.loadNamedStyle(default_style)
 

@@ -27,10 +27,9 @@ from qgis.utils import showPluginHelp
 
 from .ui_plugin_mask import Ui_MainDialog
 from .layerlist import LayerListWidget
-from .mask_parameters import MaskParameters
-from .htmldialog import HtmlDialog
+from mask.logic.mask_parameters import MaskParameters
 
-from . import style_tools
+from mask.logic import style_tools
 import locale
 
 
@@ -183,11 +182,13 @@ class MainDialog(QDialog):
     def load_defaults(self):
         settings = QSettings()
 
+        mlayer = self.parameters.layer
         self.parameters = MaskParameters()
         defaults = settings.value("mask/defaults", None)
         if defaults is not None:
             self.parameters.unserialize(defaults)
 
+        self.parameters.layer = mlayer
         self.update_ui_from_parameters(self.parameters)
 
     def on_save_defaults(self):

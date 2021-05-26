@@ -59,7 +59,7 @@ tags=mask, ROI, filter labels, étiquettes, masque, zone d'intérêt
 homepage=https://github.com/aeag/mask
 tracker=https://github.com/aeag/mask/issues
 repository=https://github.com/aeag/mask
-icon=aeag_mask.png
+icon=resources/aeag_mask.png
 # experimental flag
 experimental=False
 
