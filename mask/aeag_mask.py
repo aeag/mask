@@ -67,18 +67,13 @@ from qgis.core import (
     QgsLayoutItemMap,
 )
 
-from .maindialog import MainDialog
+from .ui.maindialog import MainDialog
 from . import mask_filter
 from .mask_parameters import MaskParameters
-from .htmldialog import HtmlDialog
 from . import style_tools
 from functools import partial
 
-# Initialize Qt resources from file resources.py
-from . import resources_rc
-
 aeag_mask_instance = None
-
 
 # to be called from another plugin
 # from mask import aeag_mask
@@ -256,11 +251,8 @@ class aeag_mask(QObject):
             self.act_test.triggered.connect(self.do_test)
 
         # Add documentation links to the menu
-        self.act_aeag_about = QAction(self.tr("About"), self.iface.mainWindow())
-        self.act_aeag_about.triggered.connect(self.on_about)
         self.act_aeag_doc = QAction(self.tr("Documentation"), self.iface.mainWindow())
-        self.act_aeag_doc.triggered.connect(self.on_doc)
-        self.iface.addPluginToMenu("&Mask", self.act_aeag_about)
+        self.act_aeag_doc.triggered.connect(lambda: showPluginHelp(filename="doc/index"))
         self.iface.addPluginToMenu("&Mask", self.act_aeag_doc)
 
         # Add actions to the toolbar
@@ -381,7 +373,6 @@ class aeag_mask(QObject):
         self.iface.removePluginMenu("&Mask", self.act_aeag_mask)
 
         # remove doc links
-        self.iface.removePluginMenu("&Mask", self.act_aeag_about)
         self.iface.removePluginMenu("&Mask", self.act_aeag_doc)
 
         QgsExpression.unregisterFunction("$mask_geometry")
@@ -401,13 +392,6 @@ class aeag_mask(QObject):
             self.on_current_layer_changed
         )
         self.iface.mainWindow().projectRead.disconnect(self.on_project_open)
-
-    def on_about(self):
-        dlg = HtmlDialog(None, "about.html")
-        dlg.exec_()
-
-    def on_doc(self):
-        QDesktopServices.openUrl(QUrl("https://github.com/aeag/mask/wiki"))
 
     # force loading of parameters from a layer
     # for backward compatibility with older versions

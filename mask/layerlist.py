@@ -9,7 +9,7 @@ from qgis.PyQt.QtWidgets import (
 )
 from qgis.core import QgsProject, QgsVectorLayer
 
-from .ui_layer_list import Ui_LayerListWidget
+from .ui.ui_layer_list import Ui_LayerListWidget
 
 from . import mask_filter
 

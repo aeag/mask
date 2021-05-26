@@ -64,10 +64,6 @@ class MainDialog(QDialog):
         self.ui.editStyleBtn.clicked.connect(self.on_style_edit)
         # connect file browser
         self.ui.browseBtn.clicked.connect(self.on_file_browse)
-        # add a "tips" button
-        self.ui.tipsBtn = QPushButton(self.tr("Tips"), self.ui.buttonBox)
-        self.ui.buttonBox.addButton(self.ui.tipsBtn, QDialogButtonBox.ActionRole)
-        self.ui.tipsBtn.clicked.connect(self.show_tips)
         # add a "save as defaults" button
         self.ui.saveDefaultsBtn = QPushButton(
             self.tr("Save as defaults"), self.ui.buttonBox
@@ -85,7 +81,7 @@ class MainDialog(QDialog):
         )
         self.ui.loadDefaultsBtn.clicked.connect(self.load_defaults)
         # connect the "help" button
-        self.ui.buttonBox.helpRequested.connect(self.on_help)
+        self.ui.buttonBox.helpRequested.connect(lambda: showPluginHelp(filename="../doc/index"))
 
         self.ui.layer_list.ui.polygonOperatorCombo.currentIndexChanged[int].connect(
             self.on_polygon_operator_changed
@@ -107,13 +103,6 @@ class MainDialog(QDialog):
             self.setWindowTitle(self.tr("Create a mask"))
         else:
             self.setWindowTitle(self.tr("Update the current mask"))
-
-    def on_help(self):
-        QDesktopServices.openUrl(QUrl("https://github.com/aeag/mask/wiki"))
-
-    def show_tips(self):
-        dlg = HtmlDialog(self, "tips.html")
-        dlg.exec_()
 
     def on_polygon_operator_changed(self, idx):
         if idx == 0 and self.ui.simplifyGroup.isChecked():
