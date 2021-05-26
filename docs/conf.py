@@ -72,8 +72,8 @@ pygments_style = "sphinx"
 
 # -- Theme
 
-html_favicon = "../mask/aeag_mask.png"
-html_logo = "../mask/aeag_mask.png"
+html_favicon = "../mask/resources/aeag_mask.png"
+html_logo = "../mask/resources/aeag_mask.png"
 html_static_path = ["static"]
 html_theme = "furo"
 # html_theme_options = {

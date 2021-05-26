@@ -23,6 +23,7 @@ from qgis.core import (
     QgsVectorSimplifyMethod,
 )
 from qgis.gui import QgsRendererPropertiesDialog
+from qgis.utils import showPluginHelp
 
 from .ui_plugin_mask import Ui_MainDialog
 from .layerlist import LayerListWidget

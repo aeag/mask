@@ -66,6 +66,7 @@ from qgis.core import (
     QgsExpressionContextUtils,
     QgsLayoutItemMap,
 )
+from qgis.utils import showPluginHelp
 
 from .ui.maindialog import MainDialog
 from . import mask_filter
