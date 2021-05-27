@@ -34,7 +34,20 @@ Then you can modifies the mask layer properties:
       
 ### **Mask and labels**
 
+The configuration interface allows you to fine-tune the filtering of the labels, by adding for you the expression 'in_mask ()' in the property 'show label' of the corresponding layers.
+
+![tuto-labels](https://raw.githubusercontent.com/aeag/mask/master/docs/static/mask-labels.gif)
+
 ### **Mask and Atlas generation**
+
+When a mask is defined, the cover layer used by atlas (cf. layouts) uses it, the geometry of the mask then takes the form of the current entity.
+Warning: It can be confusing when you close the 'layout' window.
+
+Remember to define extent 'controlled by the atlas', on the map object.
+
+Warning: when creating a layout, the mask is not synchronized with atlas. It will be during the following openings.
+
+![tuto-atlas](https://raw.githubusercontent.com/aeag/mask/master/docs/static/mask-atlas.gif)
 
 ### **Advanced usage**
 
@@ -68,12 +81,25 @@ Vous pouvez alors modifier les propriétés du masque :
 
   - options de style (par défaut: polygone inversé avec bords flous)
   - tampon autour du masque
-  - filtre des étiquettes pour les entités qui sont à l'intérieur de la zone d'intérêt (obtenu via la fonction filtre booléenne **in_mask(SRID)** sur les options de positionnement des étiquettes)
+  - filtre des étiquettes pour les entités qui sont à l'intérieur de la zone (avec la fonction filtre booléenne **in_mask(SRID)** sur les options de positionnement des étiquettes)
   - choix du format de la couche de masque (couche mémoire ou OGR)
 
 ### **Le masque et les étiquettes**
 
+L'interface de configuration vous permet de régler finement le filtrage des étiquettes, en ajoutant pour vous l'expression 'in_mask()' dans la propriété 'montrer l'étiquette' des couches correspondantes.
+
+![tuto-labels](https://raw.githubusercontent.com/aeag/mask/master/docs/static/mask-labels.gif)
+
 ### **Le masque et la production d'atlas**
+
+Lorsqu'un masque est défini, la couche de couverture exploitée par l'atlas (cf. les mises en page) exploite celui-ci, la géométrie du masque prend alors la forme de l'entité courante.  
+Attention : Cela peut être déroutant lorsque vous fermez la fenêtre 'mise en page'.
+
+Pensez à définir une emprise 'contrôlée par l'atlas', au niveau de l'objet carte.
+
+Attention : à la création d'une mise en page, le masque n'est pas synchronisé avec l'atlas. Il le sera lors des ouvertures suivantes.
+
+![tuto-atlas](https://raw.githubusercontent.com/aeag/mask/master/docs/static/mask-atlas.gif)
 
 ### **Usage avancé**
 

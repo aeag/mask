@@ -3,4 +3,4 @@ __pycache__
 .vscode/*
 pb_tool.cfg
 *.log
-mask/*.sh
+*.sh
