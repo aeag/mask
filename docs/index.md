@@ -65,6 +65,17 @@ sr.createFromSrid(2154)
 geom = QgsGeometry.fromWkt("POLYGON((356419 6120047, 1051423 6120047, 1051423 6595985, 356419 6595985, 356419 6120047))")
 aeag_mask.do(sr, { geom }, "MyMask")
 ```
+
+### **An alternative, to combine mask and Atlas without plugin (3.x)**
+
+The principle is to use the renderer "inverted polygons" + "Rule-based" to filter the current mask feature, with the style "Shapeburst fill".
+
+The 'mask' filter of the rule :
+`attribute($currentfeature, 'the_primary_key_field') = attribute(@atlas_feature , 'the_primary_key_field')`
+
+The label layer filter if neaded :
+`contains(@atlas_geometry, $geometry)`
+
 ## En Français
 
 ### **À propos**
@@ -116,3 +127,14 @@ sr = QgsCoordinateReferenceSystem()
 sr.createFromSrid(2154)
 geom = QgsGeometry.fromWkt("POLYGON((356419 6120047, 1051423 6120047, 1051423 6595985, 356419 6595985, 356419 6120047))")
 aeag_mask.do(sr, { geom }, "MyMask")
+```
+
+### **Une alternative, pour utiliser le masque avec un atlas, sans ce plugin**
+
+Le principe est d'utiliser le rendu 'polygone inversé' sur une couche qui nous servira de couverture d'atlas et de masque, de filtrer selon des règles...
+
+Le filtrage des entité :
+`attribute($currentfeature, 'nom_de_colonne_cle_primaire') = attribute(@atlas_feature , 'nom_de_colonne_cle_primaire')`
+
+Le filtrage des étiquettes si besoin :
+`contains(@atlas_geometry, $geometry)`
