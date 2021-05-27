@@ -149,7 +149,8 @@ in_mask(2154)"""
         )
         self.mask = mask
 
-    def tr(self, message):
+    @staticmethod
+    def tr(message):
         return QCoreApplication.translate("InMaskFunction", message)
 
     def func(self, values, context, parent, node):
@@ -164,20 +165,18 @@ class aeag_mask(QObject):
         global aeag_mask_instance
         aeag_mask_instance = self
         self.iface = iface
+        self.path = QFileInfo(os.path.realpath(__file__)).path()
 
         try:
             # install translator
-            locale = QSettings().value("locale/userLocale")[0:2]
-
-            localePath = QFileInfo(
-                os.path.realpath(__file__)
-            ).path() + "/i18n/{}.qm".format(locale)
-
+            self.myLocale = QSettings().value("locale/userLocale")[0:2]
+            # dictionary
+            localePath = self.path + "/i18n/" + self.myLocale + ".qm"
+            # translator
             if QFileInfo(localePath).exists():
                 self.translator = QTranslator()
                 self.translator.load(localePath)
                 QCoreApplication.installTranslator(self.translator)
-
         except Exception:
             # no translation
             pass

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>768</width>
-    <height>438</height>
+    <width>761</width>
+    <height>194</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -111,6 +111,13 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>polygonOperatorCombo</tabstop>
+  <tabstop>lineOperatorCombo</tabstop>
+  <tabstop>layerTable</tabstop>
+  <tabstop>selectAllBtn</tabstop>
+  <tabstop>unselectAllBtn</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

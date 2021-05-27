@@ -284,6 +284,17 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>editStyleBtn</tabstop>
+  <tabstop>bufferGroup</tabstop>
+  <tabstop>bufferUnits</tabstop>
+  <tabstop>bufferSegments</tabstop>
+  <tabstop>simplifyGroup</tabstop>
+  <tabstop>simplifyTolerance</tabstop>
+  <tabstop>saveLayerGroup</tabstop>
+  <tabstop>filePath</tabstop>
+  <tabstop>browseBtn</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>
@@ -293,8 +304,8 @@
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>248</x>
-     <y>254</y>
+     <x>257</x>
+     <y>769</y>
     </hint>
     <hint type="destinationlabel">
      <x>157</x>
@@ -309,8 +320,8 @@
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>316</x>
-     <y>260</y>
+     <x>325</x>
+     <y>769</y>
     </hint>
     <hint type="destinationlabel">
      <x>286</x>

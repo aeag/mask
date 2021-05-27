@@ -1,20 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE TS>
-<TS version="2.0" language="fr_FR">
+<!DOCTYPE TS><TS version="2.0" language="fr_FR" sourcelanguage="">
 <context>
     <name>InMaskFunction</name>
     <message>
-        <location filename="aeag_mask.py" line="85"/>
+        <location filename="../aeag_mask.py" line="129"/>
         <source>&lt;h1&gt;in_mask function&lt;/h1&gt;
-Expression function added by mask plugin. Returns true if current feature crosses mask geometry.&lt;br/&gt;
-The spatial expression to use is set from the mask UI button (exact, fast using centroids, intermediate using point on surface).&lt;br/&gt;
-in_mask takes a CRS EPSG code as first parameter, which is the CRS code of the evaluated features.&lt;br/&gt;
-It can be used to filter labels only in that area, or since QGIS 2.13, legend items only visible in mask area.&lt;br/&gt;
+Expression function added by mask plugin. Returns true if current feature
+crosses mask geometry.&lt;br/&gt;
+The spatial expression to use is set from the mask UI button (exact, fast
+using centroids, intermediate using point on surface).&lt;br/&gt;
+in_mask takes a CRS EPSG code as first parameter, which is the CRS code of the
+evaluated features.&lt;br/&gt;
+It can be used to filter labels only in that area, or since QGIS 2.13, legend
+items only visible in mask area.&lt;br/&gt;
 &lt;h2&gt;Return value&lt;/h2&gt;
 true/false (0/1)&lt;br/&gt;
 &lt;h2&gt;Usage&lt;/h2&gt;
 in_mask(2154)</source>
-        <translation>&lt;h1&gt;Fonction in_mask&lt;/h1&gt;
+    <translation>&lt;h1&gt;Fonction in_mask&lt;/h1&gt;
 Fonction ajoutée par le plugin Mask. Renvoie vrai si l&apos;entité courante intersecte la géométrie de masque.&lt;br/&gt;
 Les options de l&apos;intersection spatiale (exacte, utilisant les centroïdes ou un point sur la surface, etc.) peuvent être réglées par la boite de dialogue de configuration du plugin Mask.&lt;br/&gt;
 in_mask prend un code EPSG de projection en premier paramètre qui représente la projection de l&apos;entité courante.&lt;br/&gt;
@@ -28,62 +31,62 @@ in_mask(2154)</translation>
 <context>
     <name>LayerListWidget</name>
     <message>
-        <location filename="ui_layer_list.ui" line="36"/>
+        <location filename="../ui/ui_layer_list.py" line="76"/>
         <source>Exact (slow and will disable simplification)</source>
         <translation>Exacte (lente et désactivera la simplification)</translation>
     </message>
     <message>
-        <location filename="ui_layer_list.ui" line="84"/>
+        <location filename="../ui/ui_layer_list.py" line="104"/>
         <source>Limit</source>
         <translation>Limiter</translation>
     </message>
     <message>
-        <location filename="ui_layer_list.ui" line="89"/>
+        <location filename="../ui/ui_layer_list.py" line="106"/>
         <source>Layer</source>
         <translation>Couche</translation>
     </message>
     <message>
-        <location filename="ui_layer_list.ui" line="14"/>
+        <location filename="../ui/ui_layer_list.py" line="70"/>
         <source>Form</source>
         <translation>Formulaire</translation>
     </message>
     <message>
-        <location filename="ui_layer_list.ui" line="25"/>
+        <location filename="../ui/ui_layer_list.py" line="71"/>
         <source>Function used for labeling filtering on polygons</source>
         <translation>Fonction utilisée pour filtrer les étiquettes des polygones</translation>
     </message>
     <message>
-        <location filename="ui_layer_list.ui" line="41"/>
+        <location filename="../ui/ui_layer_list.py" line="82"/>
         <source>The mask geometry contains the centroid</source>
         <translation>Le masque contient le centroïde</translation>
     </message>
     <message>
-        <location filename="ui_layer_list.ui" line="46"/>
+        <location filename="../ui/ui_layer_list.ui" line="46"/>
         <source>The mask geometry contains a point on the polygon surface</source>
         <translation>Le masque contient un point de la surface</translation>
     </message>
     <message>
-        <location filename="ui_layer_list.ui" line="54"/>
+        <location filename="../ui/ui_layer_list.py" line="92"/>
         <source>Function used for labeling filtering on lines</source>
         <translation>Fonction utilisée pour filtrer les étiquettes des lignes</translation>
     </message>
     <message>
-        <location filename="ui_layer_list.ui" line="65"/>
+        <location filename="../ui/ui_layer_list.py" line="97"/>
         <source>The mask geometry intersects the line</source>
         <translation>Le masque intersecte la ligne</translation>
     </message>
     <message>
-        <location filename="ui_layer_list.ui" line="70"/>
+        <location filename="../ui/ui_layer_list.py" line="100"/>
         <source>The mask geometry contains the line</source>
         <translation>Le masque contient la ligne</translation>
     </message>
     <message>
-        <location filename="ui_layer_list.ui" line="99"/>
+        <location filename="../ui/ui_layer_list.py" line="107"/>
         <source>Select all</source>
         <translation>Sélectionner tout</translation>
     </message>
     <message>
-        <location filename="ui_layer_list.ui" line="106"/>
+        <location filename="../ui/ui_layer_list.py" line="108"/>
         <source>Unselect all</source>
         <translation>Désélectionner tout</translation>
     </message>
@@ -91,153 +94,150 @@ in_mask(2154)</translation>
 <context>
     <name>MainDialog</name>
     <message>
-        <location filename="ui_plugin_mask.ui" line="14"/>
+        <location filename="../ui/ui_plugin_mask.py" line="180"/>
         <source>Define a mask</source>
         <translation>Définir un masque</translation>
     </message>
     <message>
-        <location filename="ui_plugin_mask.ui" line="57"/>
+        <location filename="../ui/ui_plugin_mask.py" line="185"/>
         <source>Edit</source>
         <translation>Editer</translation>
     </message>
     <message>
-        <location filename="ui_plugin_mask.ui" line="83"/>
+        <location filename="../ui/ui_plugin_mask.py" line="189"/>
         <source>Buffer</source>
         <translation>Tampon</translation>
     </message>
     <message>
-        <location filename="ui_plugin_mask.ui" line="106"/>
+        <location filename="../ui/ui_plugin_mask.py" line="190"/>
         <source>Units</source>
         <translation>Unités</translation>
     </message>
     <message>
-        <location filename="ui_plugin_mask.ui" line="129"/>
+        <location filename="../ui/ui_plugin_mask.py" line="191"/>
         <source>Segments</source>
         <translation>Segments</translation>
     </message>
     <message>
-        <location filename="ui_plugin_mask.ui" line="157"/>
+        <location filename="../ui/ui_plugin_mask.py" line="199"/>
         <source>On-the-fly simplification</source>
         <translation>Simplification à la volée</translation>
     </message>
     <message>
-        <location filename="ui_plugin_mask.ui" line="177"/>
+        <location filename="../ui/ui_plugin_mask.py" line="202"/>
         <source>Tolerance</source>
         <translation>Tolérance</translation>
     </message>
     <message>
-        <location filename="ui_plugin_mask.ui" line="197"/>
+        <location filename="../ui/ui_plugin_mask.py" line="204"/>
         <source>pixels</source>
         <translation>pixels</translation>
     </message>
     <message>
-        <location filename="ui_plugin_mask.ui" line="212"/>
+        <location filename="../ui/ui_plugin_mask.py" line="211"/>
         <source>Limit labeling to mask&apos;s polygon</source>
         <translation>Limiter l&apos;étiquettage au polygone de masque</translation>
     </message>
     <message>
-        <location filename="ui_plugin_mask.ui" line="229"/>
+        <location filename="../ui/ui_plugin_mask.py" line="220"/>
         <source>Save as</source>
         <translation>Sauvegarder sous</translation>
     </message>
     <message>
-        <location filename="ui_plugin_mask.ui" line="246"/>
+        <location filename="../ui/ui_plugin_mask.py" line="221"/>
         <source>...</source>
         <translation>...</translation>
     </message>
     <message>
-        <location filename="maindialog.py" line="48"/>
+        <location filename="../ui/maindialog.py" line="68"/>
         <source>Save as defaults</source>
         <translation>Sauver comme valeurs par défaut</translation>
     </message>
     <message>
-        <location filename="maindialog.py" line="52"/>
+        <location filename="../ui/maindialog.py" line="76"/>
         <source>Load defaults</source>
         <translation>Charger les valeurs par défaut</translation>
     </message>
     <message>
-        <location filename="maindialog.py" line="287"/>
+        <location filename="../ui/maindialog.py" line="360"/>
         <source>Warning</source>
         <translation>Attention</translation>
     </message>
     <message>
-        <location filename="maindialog.py" line="287"/>
-        <source>Some layer have rendering simplification turned on, which is not compatible with the labeling filtering you choose. Force simplification disabling ?</source>
-        <translation>La simplification à la volée est activée sur certaines couches, ce qui n&apos;est pas compatible avec la méthode de filtrage des étiquettes choisie. Désactiver la simplification à la volée sur ces couches ?</translation>
-    </message>
-    <message>
-        <location filename="maindialog.py" line="73"/>
+        <location filename="../ui/maindialog.py" line="103"/>
         <source>Create a mask</source>
         <translation>Créer un masque</translation>
     </message>
     <message>
-        <location filename="maindialog.py" line="75"/>
+        <location filename="../ui/maindialog.py" line="105"/>
         <source>Update the current mask</source>
         <translation>Mettre à jour le masque existant</translation>
     </message>
     <message>
-        <location filename="ui_plugin_mask.ui" line="23"/>
+        <location filename="../ui/ui_plugin_mask.py" line="184"/>
         <source>Style</source>
         <translation>Style</translation>
     </message>
     <message>
-        <location filename="ui_plugin_mask.ui" line="142"/>
+        <location filename="../ui/ui_plugin_mask.py" line="192"/>
         <source>5</source>
         <translation>5</translation>
     </message>
     <message>
-        <location filename="ui_plugin_mask.ui" line="190"/>
+        <location filename="../ui/ui_plugin_mask.py" line="203"/>
         <source>1.0</source>
         <translation>1.0</translation>
     </message>
     <message>
-        <location filename="ui_plugin_mask.ui" line="20"/>
+        <location filename="../ui/ui_plugin_mask.py" line="181"/>
         <source>Style to use for mask layer</source>
         <translation>Style à utiliser pour la couche de masque</translation>
     </message>
     <message>
-        <location filename="ui_plugin_mask.ui" line="80"/>
+        <location filename="../ui/ui_plugin_mask.py" line="186"/>
         <source>Buffer around the mask geometry</source>
         <translation>Tampon autour de la géométrie de masque</translation>
     </message>
     <message>
-        <location filename="ui_plugin_mask.ui" line="154"/>
+        <location filename="../ui/ui_plugin_mask.ui" line="154"/>
         <source>On-the-fly simplification used for the mask geometry used in expressions ($mask_geometry)</source>
         <translation>Simplification à la volée utilisée pour la géométrie de masque dans les expressions ($mask_geometry)</translation>
     </message>
     <message>
-        <location filename="ui_plugin_mask.ui" line="209"/>
+        <location filename="../ui/ui_plugin_mask.ui" line="209"/>
         <source>If a layer is checked here, its labeling options will be modified in order that its labels will be only visible from inside the mask&apos;s polygon</source>
         <translation>Si une couche est sélectionnée ici, ses options d&apos;étiquetage seront modifiées pour que les étiquettes ne soient visibles qu&apos;à l&apos;intérieur du polygone de masque</translation>
     </message>
     <message>
-        <location filename="ui_plugin_mask.ui" line="226"/>
+        <location filename="../ui/ui_plugin_mask.ui" line="226"/>
         <source>Whether the save the mask layer. By default a memory layer is created</source>
         <translation>Est-ce que la couche de masque doit être sauvegardée. Par défaut une couche mémoire est créée.</translation>
     </message>
     <message>
-        <location filename="maindialog.py" line="171"/>
+        <location filename="../ui/maindialog.py" line="233"/>
         <source>Select a filename to save the mask layer to</source>
         <translation>Sélectionnez un nom de fichier pour sauvegarder la couche de masque</translation>
     </message>
     <message>
-        <location filename="maindialog.py" line="44"/>
-        <source>Tips</source>
-        <translation>Astuces</translation>
+        <location filename="../ui/ui_plugin_mask.py" line="222"/>
+        <source>&apos;&apos;</source>
+        <translation>&apos;&apos;</translation>
     </message>
     <message>
-        <location filename="ui_plugin_mask.ui" line="253"/>
-        <source>&apos;&apos;</source>
-        <translation type="unfinished"></translation>
+        <location filename="../ui/maindialog.py" line="360"/>
+        <source>Some layer have rendering simplification turned on,                     which is not compatible with the labeling filtering you choose.                     Force simplification disabling ?</source>
+        <translation>La simplification à la volée est activée sur certaines couches, ce qui n&apos;est pas compatible avec la méthode de filtrage des étiquettes choisie. Désactiver la simplification à la volée sur ces couches ?</translation>
     </message>
 </context>
 <context>
     <name>MaskGeometryFunction</name>
     <message>
-        <location filename="aeag_mask.py" line="69"/>
+        <location filename="../aeag_mask.py" line="102"/>
         <source>&lt;h1&gt;$mask_geometry&lt;/h1&gt;
 Variable filled by mask plugin.&lt;br/&gt;
-When mask has been triggered on some polygon, mask_geometry is filled with the mask geometry and can be reused for expression/python calculation. in_mask variable uses that geometry to compute a boolean.
+When mask has been triggered on some polygon, mask_geometry is filled with the
+mask geometry and can be reused for expression/python calculation. in_mask
+variable uses that geometry to compute a boolean.
 &lt;h2&gt;Return value&lt;/h2&gt;
 The geometry of the current mask
         </source>
@@ -251,84 +251,74 @@ La géométrie courante du masque</translation>
 <context>
     <name>aeag_mask</name>
     <message>
-        <location filename="aeag_mask.py" line="554"/>
+        <location filename="../aeag_mask.py" line="727"/>
         <source>Mask plugin error</source>
         <translation>Erreur du plugin Mask</translation>
     </message>
     <message>
-        <location filename="aeag_mask.py" line="554"/>
+        <location filename="../aeag_mask.py" line="727"/>
         <source>No polygon selection !</source>
         <translation>Aucune sélection !</translation>
     </message>
     <message>
-        <location filename="aeag_mask.py" line="587"/>
+        <location filename="../aeag_mask.py" line="770"/>
         <source>Create a mask</source>
         <translation>Créer un masque</translation>
     </message>
     <message>
-        <location filename="aeag_mask.py" line="585"/>
+        <location filename="../aeag_mask.py" line="768"/>
         <source>Update the current mask</source>
         <translation>Mettre à jour le masque existant</translation>
     </message>
     <message>
-        <location filename="aeag_mask.py" line="505"/>
+        <location filename="../aeag_mask.py" line="664"/>
         <source>Problem saving the mask layer</source>
         <translation>Problème lors de la sauvegarde de la couche masque</translation>
     </message>
     <message>
-        <location filename="aeag_mask.py" line="487"/>
+        <location filename="../aeag_mask.py" line="614"/>
         <source>Driver not found !</source>
         <translation>Pilote introuvable !</translation>
     </message>
     <message>
-        <location filename="aeag_mask.py" line="489"/>
+        <location filename="../aeag_mask.py" line="620"/>
         <source>Cannot create data source !</source>
         <translation>Impossible de créer la source de données !</translation>
     </message>
     <message>
-        <location filename="aeag_mask.py" line="491"/>
+        <location filename="../aeag_mask.py" line="626"/>
         <source>Cannot create layer !</source>
         <translation>Impossible de créer la couche !</translation>
     </message>
     <message>
-        <location filename="aeag_mask.py" line="493"/>
+        <location filename="../aeag_mask.py" line="632"/>
         <source>Attribute type unsupported !</source>
         <translation>Type d&apos;attribut non supporté !</translation>
     </message>
     <message>
-        <location filename="aeag_mask.py" line="495"/>
+        <location filename="../aeag_mask.py" line="638"/>
         <source>Attribute creation failed !</source>
         <translation>Echec de création d&apos;attribut !</translation>
     </message>
     <message>
-        <location filename="aeag_mask.py" line="497"/>
+        <location filename="../aeag_mask.py" line="644"/>
         <source>Projection error !</source>
         <translation>Erreur de projection !</translation>
     </message>
     <message>
-        <location filename="aeag_mask.py" line="499"/>
+        <location filename="../aeag_mask.py" line="650"/>
         <source>Feature write failed !</source>
         <translation>Echec d&apos;écriture !</translation>
     </message>
     <message>
-        <location filename="aeag_mask.py" line="501"/>
+        <location filename="../aeag_mask.py" line="656"/>
         <source>Invalid layer !</source>
         <translation>Couche invalide !</translation>
     </message>
     <message>
-        <location filename="aeag_mask.py" line="188"/>
-        <source>About</source>
-        <translation>A propos</translation>
-    </message>
-    <message>
-        <location filename="aeag_mask.py" line="190"/>
+        <location filename="../aeag_mask.py" line="255"/>
         <source>Documentation</source>
         <translation>Documentation</translation>
-    </message>
-    <message>
-        <location filename="aeag_mask.py" line="196"/>
-        <source>Restore mask from selected layer</source>
-        <translation>Récupérer les paramètres depuis la couche sélectionnée</translation>
     </message>
 </context>
 </TS>
