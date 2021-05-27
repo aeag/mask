@@ -8,8 +8,10 @@ from qgis.PyQt.QtWidgets import (
     QVBoxLayout,
 )
 from qgis.core import QgsProject, QgsVectorLayer
+from mask.__about__ import DIR_PLUGIN_ROOT
 
-from .ui_layer_list import Ui_LayerListWidget
+from qgis.PyQt import uic
+Ui_LayerListWidget, _ = uic.loadUiType(DIR_PLUGIN_ROOT / "ui/ui_layer_list.ui")
 
 from mask.logic.mask_filter import has_mask_filter, add_mask_filter, remove_mask_filter
 

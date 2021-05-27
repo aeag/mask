@@ -25,8 +25,11 @@ from qgis.core import (
 from qgis.gui import QgsRendererPropertiesDialog
 from qgis.utils import showPluginHelp
 
-from .ui_plugin_mask import Ui_MainDialog
-from .layerlist import LayerListWidget
+from mask.__about__ import DIR_PLUGIN_ROOT
+from qgis.PyQt import uic
+Ui_MainDialog, _ = uic.loadUiType(DIR_PLUGIN_ROOT / "ui/ui_plugin_mask.ui")
+
+from mask.ui.layerlist import LayerListWidget
 from mask.logic.mask_parameters import MaskParameters
 
 from mask.logic import style_tools
