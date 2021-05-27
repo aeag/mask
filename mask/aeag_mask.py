@@ -6,17 +6,6 @@ Date                 : Feb/12
 copyright            : (C) 2011 by AEAG
                        (c) 2014 Oslandia
 email                : geocatalogue@eau-adour-garonne.fr
-                       hugo.mercier@oslandia.com
-todo:
-
- add help file
- let's user change user defined parameters.
- use a qml file to set masqk style. default qml inside plugin ?
-   Parameter 1 : choose memory output or shp output + directory
-                (default HOME directory)
-   Parameter 2 : choose a qml file. Qml should be parsed to check if
-                 qymbology apply to polygon features
-
  ***************************************************************************/
 
 /***************************************************************************
