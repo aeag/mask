@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>534</width>
-    <height>434</height>
+    <height>454</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -255,6 +255,25 @@
          </widget>
         </item>
        </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="atlasInteraction">
+     <property name="title">
+      <string>Interacts with Atlas (layout)</string>
+     </property>
+     <property name="checkable">
+      <bool>true</bool>
+     </property>
+     <layout class="QHBoxLayout" name="horizontalLayout_2">
+      <item>
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>The mask will automatically be applied to Atlas (by default)</string>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>

@@ -36,55 +36,37 @@ class MaskParameters:
         self.limited_layers_obsolete = []
         self.orig_geometry = []
         self.geometry = None
+        self.do_atlas_interaction = True
 
-    def serialize(self, with_style=True, with_geometry=True):
+    def serialize(self, with_style=True):
         if with_style:
             style = self.style
         else:
             style = None
 
-        if with_geometry:
-            t = pickle.dumps(
-                [
-                    self.do_buffer,
-                    self.buffer_units,
-                    self.buffer_segments,
-                    self.do_simplify,
-                    self.simplify_tolerance,
-                    self.do_save_as,
-                    self.file_path,
-                    self.file_format,
-                    self.limited_layers_obsolete,
-                    style,
-                    self.polygon_mask_method,
-                    self.line_mask_method,
-                    [g.asWkb() for g in self.orig_geometry]
-                    if self.orig_geometry is not None
-                    else None,
-                    self.geometry.asWkb() if self.geometry is not None else None,
-                ],
-                protocol=0,
-                fix_imports=True,
-            )
-        else:
-            t = pickle.dumps(
-                [
-                    self.do_buffer,
-                    self.buffer_units,
-                    self.buffer_segments,
-                    self.do_simplify,
-                    self.simplify_tolerance,
-                    self.do_save_as,
-                    self.file_path,
-                    self.file_format,
-                    self.limited_layers_obsolete,
-                    style,
-                    self.polygon_mask_method,
-                    self.line_mask_method,
-                ],
-                protocol=0,
-                fix_imports=True,
-            )
+        t = pickle.dumps(
+            [
+                self.do_buffer,
+                self.buffer_units,
+                self.buffer_segments,
+                self.do_simplify,
+                self.simplify_tolerance,
+                self.do_save_as,
+                self.file_path,
+                self.file_format,
+                self.limited_layers_obsolete,
+                style,
+                self.polygon_mask_method,
+                self.line_mask_method,
+                [g.asWkb() for g in self.orig_geometry]
+                if self.orig_geometry is not None
+                else None,
+                self.geometry.asWkb() if self.geometry is not None else None,
+                self.do_atlas_interaction,
+            ],
+            protocol=0,
+            fix_imports=True,
+        )
         return t
 
     def unserialize(self, st):
@@ -97,45 +79,36 @@ class MaskParameters:
         except:
             try:
                 t = pickle.loads(st, encoding="utf-8")
-                # strange, Exception says : No module named 'PyQt4'
             except Exception as e:
                 for m in e.args:
                     QgsMessageLog.logMessage(str(m), "Extensions")
 
                 raise Exception("Mask - Error when loading mask")
 
-        if len(t) == 12:  # older version
-            (
-                self.do_buffer,
-                self.buffer_units,
-                self.buffer_segments,
-                self.do_simplify,
-                self.simplify_tolerance,
-                self.do_save_as,
-                self.file_path,
-                self.file_format,
-                self.limited_layers_obsolete,
-                style,
-                self.polygon_mask_method,
-                self.line_mask_method,
-            ) = t
-        else:
-            (
-                self.do_buffer,
-                self.buffer_units,
-                self.buffer_segments,
-                self.do_simplify,
-                self.simplify_tolerance,
-                self.do_save_as,
-                self.file_path,
-                self.file_format,
-                self.limited_layers_obsolete,
-                style,
-                self.polygon_mask_method,
-                self.line_mask_method,
-                orig_geom,
-                geom,
-            ) = t
+        (
+            self.do_buffer,
+            self.buffer_units,
+            self.buffer_segments,
+            self.do_simplify,
+            self.simplify_tolerance,
+            self.do_save_as,
+            self.file_path,
+            self.file_format,
+            self.limited_layers_obsolete,
+            style,
+            self.polygon_mask_method,
+            self.line_mask_method,
+        ) = t[0:12]
+
+        if len(t) >= 13:
+            orig_geom = t[12]
+
+        if len(t) >= 14:
+            geom = t[13]
+
+        if len(t) >= 15:
+            self.do_atlas_interaction = t[14]
+
         self.style = None
         self.geometry = None
         if style is not None:

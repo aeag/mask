@@ -466,6 +466,9 @@ class aeag_mask(QObject):
         if not self.layer:
             return
 
+        if not self.parameters.do_atlas_interaction:
+            return
+
         geom = QgsExpressionContextUtils.atlasScope(layout.atlas()).variable(
             "atlas_geometry"
         )
@@ -490,11 +493,17 @@ class aeag_mask(QObject):
         if not self.layer:
             return
 
+        if not self.parameters.do_atlas_interaction:
+            return
+
         # save the mask geometry
         self.geometries_backup = [QgsGeometry(g) for g in self.parameters.orig_geometry]
 
     def on_atlas_end_render(self):
         if not self.layer:
+            return
+
+        if not self.parameters.do_atlas_interaction:
             return
 
         # restore the mask geometry
@@ -832,7 +841,7 @@ class aeag_mask(QObject):
         file_format = parameters.file_format
         # save paramaters
         serialized = base64.b64encode(
-            parameters.serialize(with_style=False, with_geometry=False)
+            parameters.serialize(with_style=False)
         )
 
         # save geometry

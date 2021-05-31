@@ -150,6 +150,7 @@ class MainDialog(QDialog):
         self.ui.layer_list.ui.lineOperatorCombo.setCurrentIndex(
             parameters.line_mask_method
         )
+        self.ui.atlasInteraction.setChecked(parameters.do_atlas_interaction)
 
     def update_parameters_from_ui(self, parameters):
         self.update_parameters_from_style(parameters)
@@ -181,6 +182,7 @@ class MainDialog(QDialog):
         parameters.line_mask_method = (
             self.ui.layer_list.ui.lineOperatorCombo.currentIndex()
         )
+        parameters.do_atlas_interaction = self.ui.atlasInteraction.isChecked()
 
     def load_defaults(self):
         settings = QSettings()

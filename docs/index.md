@@ -11,6 +11,7 @@
 maxdepth: 1
 caption: Others
 ---
+On QGIS Plugins repository <https://plugins.qgis.org/plugins/mask/>
 ```
 
 ## English version
