@@ -15,7 +15,7 @@ about=This plugin allows user to quickly transform a polygon selection into a ma
 about[fr]=Cette extension permet de générer un masque à partir d'une sélection de polygones. Le plugin permet également de filtrer l'étiquetage uniquement pour les objets à l'intérieur de ce masque.
 # Uncomment the following line and add your changelog entries:
 changelog=
-    1.9.5 : Code reorganization, enhanced documentation
+    1.9.5 : Code reorganization, enhanced documentation, optional mask/atlas interaction 
     1.9.4 : fix #78 : Python error atlas + mask, fix #79 locale.Error
     1.9.3 : fix #77 : The absence of 'locale' probably behind the bug.
     1.9.2 : fix #76 : Updating the existing mask doesn't update extents, and mask little less blue by default
