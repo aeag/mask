@@ -31,9 +31,10 @@ from qgis.PyQt.QtCore import (
     QFileInfo,
 )
 from qgis.PyQt.QtGui import QIcon, QDesktopServices
-from qgis.PyQt.QtWidgets import QAction, QMessageBox
+from qgis.PyQt.QtWidgets import QAction
 
 from qgis.core import (
+    Qgis,
     QgsExpression,
     QgsExpressionFunction,
     QgsGeometry,
@@ -87,6 +88,7 @@ def is_in_qgis_core(sym):
 
 
 class MaskGeometryFunction(QgsExpressionFunction):
+
     def __init__(self, mask):
         QgsExpressionFunction.__init__(
             self,
@@ -147,6 +149,20 @@ in_mask(2154)"""
 
 
 class aeag_mask(QObject):
+    WRITE_ERRORS = {
+        QgsVectorFileWriter.NoError : "Ok",
+        QgsVectorFileWriter.ErrDriverNotFound : "Driver not found",
+        QgsVectorFileWriter.ErrCreateDataSource : "Cannot create data source",
+        QgsVectorFileWriter.ErrCreateLayer : "Cannot create layer",
+        QgsVectorFileWriter.ErrAttributeTypeUnsupported : "Attribute type unsupported",
+        QgsVectorFileWriter.ErrAttributeCreationFailed : "Attribute creation failed",
+        QgsVectorFileWriter.ErrProjection : "Projection error",
+        QgsVectorFileWriter.ErrFeatureWriteFailed : "Feature write failed",
+        QgsVectorFileWriter.ErrInvalidLayer : "Invalid layer",
+        # QgsVectorFileWriter.ErrSavingMetadata : "Metadata saving error",
+        QgsVectorFileWriter.Canceled : "Canceled"
+    }
+
     def __init__(self, iface):
         QObject.__init__(self)
         # Save reference to the QGIS interface
@@ -558,9 +574,7 @@ class aeag_mask(QObject):
                 poly = parameters.orig_geometry
 
         if layer is None and poly is None:
-            QMessageBox.critical(
-                None, self.tr("Mask plugin error"), self.tr("No polygon selection !")
-            )
+            self.iface.messageBar().pushMessage(self.tr("Mask plugin error"), self.tr("No polygon selection !"), level=Qgis.Warning)
             return
 
         if layer is None:
@@ -605,70 +619,13 @@ class aeag_mask(QObject):
                         QgsMessageLog.logMessage(
                             "apply_mask_parameters - {}".format(m), "Extensions"
                         )
-
-                except RuntimeError as ex:
-                    for m in ex.args:
-                        if m == 1:
-                            QMessageBox.critical(
-                                None,
-                                self.tr("Mask plugin error"),
-                                self.tr("Driver not found !"),
-                            )
-                        elif m == 2:
-                            QMessageBox.critical(
-                                None,
-                                self.tr("Mask plugin error"),
-                                self.tr("Cannot create data source !"),
-                            )
-                        elif m == 3:
-                            QMessageBox.critical(
-                                None,
-                                self.tr("Mask plugin error"),
-                                self.tr("Cannot create layer !"),
-                            )
-                        elif m == 4:
-                            QMessageBox.critical(
-                                None,
-                                self.tr("Mask plugin error"),
-                                self.tr("Attribute type unsupported !"),
-                            )
-                        elif m == 5:
-                            QMessageBox.critical(
-                                None,
-                                self.tr("Mask plugin error"),
-                                self.tr("Attribute creation failed !"),
-                            )
-                        elif m == 6:
-                            QMessageBox.critical(
-                                None,
-                                self.tr("Mask plugin error"),
-                                self.tr("Projection error !"),
-                            )
-                        elif m == 7:
-                            QMessageBox.critical(
-                                None,
-                                self.tr("Mask plugin error"),
-                                self.tr("Feature write failed !"),
-                            )
-                        elif m == 8:
-                            QMessageBox.critical(
-                                None,
-                                self.tr("Mask plugin error"),
-                                self.tr("Invalid layer !"),
-                            )
-                        return
-
-                if nlayer is None:
-                    QMessageBox.critical(
-                        None,
-                        self.tr("Mask plugin error"),
-                        self.tr("Problem saving the mask layer"),
-                    )
+                    self.iface.messageBar().pushMessage(self.tr("Mask plugin error"), 
+                        self.tr("Unknown error. The mask is lost."), level=Qgis.Critical)
                     return
 
                 # add the new layer
                 layer = nlayer
-                QgsProject.instance().writeEntry("Mask", "layer_id", nlayer.id())
+                QgsProject.instance().writeEntry("Mask", "layer_id", layer.id())
                 self.add_layer(layer)
                 parameters.layer = layer
             else:
@@ -722,10 +679,10 @@ class aeag_mask(QObject):
 
         if not layer:
             if not poly:
-                QMessageBox.critical(
-                    None,
+                self.iface.messageBar().pushMessage(
                     self.tr("Mask plugin error"),
                     self.tr("No polygon selection !"),
+                    level=Qgis.Info
                 )
                 return
             layer = QgsVectorLayer(
@@ -876,19 +833,23 @@ class aeag_mask(QObject):
         QgsMessageLog.logMessage(
             "Mask saving '{}' as {}".format(save_as, file_format), "Extensions"
         )
-        error = QgsVectorFileWriter.writeAsVectorFormat(
-            layer, save_as, "System", dest_crs, file_format
+        save_options = QgsVectorFileWriter.SaveVectorOptions()
+        save_options.driverName = file_format
+        #save_options.fileEncoding = "UTF-8"
+        transform_context = QgsProject.instance().transformContext()
+        error = QgsVectorFileWriter.writeAsVectorFormatV2(
+            layer, save_as, transform_context, save_options
         )
 
-        if error[0] == 0:
-            QgsMessageLog.logMessage("Error = 0", "Extensions")
+        if error[0] == QgsVectorFileWriter.NoError:
             nlayer = QgsVectorLayer(save_as, name, "ogr")
             if not nlayer.dataProvider().isValid():
-                QgsMessageLog.logMessage("Invalid dataProvider", "Extensions")
-                return None
+                self.iface.messageBar().pushMessage(self.tr("Mask plugin error"), self.tr("Invalid dataProvider. The mask remains in memory. Check file name, format and extension."), level=Qgis.Warning)
+                return layer
             if not nlayer.isSpatial():
-                QgsMessageLog.logMessage("No GeometryType", "Extensions")
-                return None
+                self.iface.messageBar().pushMessage(self.tr("Mask plugin error"), self.tr("No GeometryType. The mask remains in memory. Check file name, format and extension."), level=Qgis.Warning)
+                return layer
+
             # force CRS
             nlayer.setCrs(dest_crs)
 
@@ -897,9 +858,8 @@ class aeag_mask(QObject):
             self.set_layer_style(nlayer, layer_style)
             return nlayer
         else:
-            raise RuntimeError(error)
-
-        return None
+            self.iface.messageBar().pushMessage(self.tr("Mask plugin error"), self.tr(self.WRITE_ERRORS[error]) + ", " + self.tr("The mask remains in memory. Check file name, format and extension."), level=Qgis.Warning)
+            return layer
 
     def mask_geometry(self):
         if not self.parameters.geometry:

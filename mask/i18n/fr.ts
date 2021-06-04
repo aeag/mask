@@ -3,7 +3,7 @@
 <context>
     <name>InMaskFunction</name>
     <message>
-        <location filename="../aeag_mask.py" line="118"/>
+        <location filename="../aeag_mask.py" line="120"/>
         <source>&lt;h1&gt;in_mask function&lt;/h1&gt;
 Expression function added by mask plugin. Returns true if current feature
 crosses mask geometry.&lt;br/&gt;
@@ -159,7 +159,7 @@ in_mask(2154)</translation>
         <translation>Charger les valeurs par défaut</translation>
     </message>
     <message>
-        <location filename="../ui/maindialog.py" line="363"/>
+        <location filename="../ui/maindialog.py" line="365"/>
         <source>Warning</source>
         <translation>Attention</translation>
     </message>
@@ -214,7 +214,7 @@ in_mask(2154)</translation>
         <translation>Est-ce que la couche de masque doit être sauvegardée. Par défaut une couche mémoire est créée.</translation>
     </message>
     <message>
-        <location filename="../ui/maindialog.py" line="236"/>
+        <location filename="../ui/maindialog.py" line="238"/>
         <source>Select a filename to save the mask layer to</source>
         <translation>Sélectionnez un nom de fichier pour sauvegarder la couche de masque</translation>
     </message>
@@ -224,7 +224,7 @@ in_mask(2154)</translation>
         <translation>&apos;&apos;</translation>
     </message>
     <message>
-        <location filename="../ui/maindialog.py" line="363"/>
+        <location filename="../ui/maindialog.py" line="365"/>
         <source>Some layer have rendering simplification turned on,                     which is not compatible with the labeling filtering you choose.                     Force simplification disabling ?</source>
         <translation>La simplification à la volée est activée sur certaines couches, ce qui n&apos;est pas compatible avec la méthode de filtrage des étiquettes choisie. Désactiver la simplification à la volée sur ces couches ?</translation>
     </message>
@@ -242,7 +242,7 @@ in_mask(2154)</translation>
 <context>
     <name>MaskGeometryFunction</name>
     <message>
-        <location filename="../aeag_mask.py" line="91"/>
+        <location filename="../aeag_mask.py" line="93"/>
         <source>&lt;h1&gt;$mask_geometry&lt;/h1&gt;
 Variable filled by mask plugin.&lt;br/&gt;
 When mask has been triggered on some polygon, mask_geometry is filled with the
@@ -261,74 +261,90 @@ La géométrie courante du masque</translation>
 <context>
     <name>aeag_mask</name>
     <message>
-        <location filename="../aeag_mask.py" line="717"/>
+        <location filename="../aeag_mask.py" line="858"/>
         <source>Mask plugin error</source>
         <translation>Erreur du plugin Mask</translation>
     </message>
     <message>
-        <location filename="../aeag_mask.py" line="717"/>
+        <location filename="../aeag_mask.py" line="679"/>
         <source>No polygon selection !</source>
         <translation>Aucune sélection !</translation>
     </message>
     <message>
-        <location filename="../aeag_mask.py" line="760"/>
+        <location filename="../aeag_mask.py" line="722"/>
         <source>Create a mask</source>
         <translation>Créer un masque</translation>
     </message>
     <message>
-        <location filename="../aeag_mask.py" line="758"/>
+        <location filename="../aeag_mask.py" line="720"/>
         <source>Update the current mask</source>
         <translation>Mettre à jour le masque existant</translation>
     </message>
     <message>
-        <location filename="../aeag_mask.py" line="654"/>
-        <source>Problem saving the mask layer</source>
-        <translation>Problème lors de la sauvegarde de la couche masque</translation>
+        <location filename="../aeag_mask.py" line="259"/>
+        <source>Documentation</source>
+        <translation>Documentation</translation>
     </message>
     <message>
-        <location filename="../aeag_mask.py" line="604"/>
-        <source>Driver not found !</source>
-        <translation>Pilote introuvable !</translation>
+        <location filename="../aeag_mask.py" line="844"/>
+        <source>Invalid dataProvider. The mask remains in memory. Check file name, format and extension.</source>
+        <translation>dataProvider invalide, la couche reste en mémoire. Vérifier l&apos;adéquation nom de fichier/format/extension</translation>
     </message>
     <message>
-        <location filename="../aeag_mask.py" line="610"/>
-        <source>Cannot create data source !</source>
-        <translation>Impossible de créer la source de données !</translation>
+        <location filename="../aeag_mask.py" line="847"/>
+        <source>No GeometryType. The mask remains in memory. Check file name, format and extension.</source>
+        <translation>Geométrie invalide, la couche reste en mémoire. Vérifier l&apos;adéquation nom de fichier/format/extension</translation>
     </message>
     <message>
-        <location filename="../aeag_mask.py" line="616"/>
-        <source>Cannot create layer !</source>
-        <translation>Impossible de créer la couche !</translation>
+        <location filename="../aeag_mask.py" line="858"/>
+        <source>The mask remains in memory. Check file name, format and extension.</source>
+        <translation>La couche reste en mémoire. Vérifier l&apos;adéquation nom de fichier/format/extension</translation>
     </message>
     <message>
-        <location filename="../aeag_mask.py" line="622"/>
-        <source>Attribute type unsupported !</source>
-        <translation>Type d&apos;attribut non supporté !</translation>
+        <location filename="../aeag_mask.py"/>
+        <source>Cannot create layer</source>
+        <translation>Impossible de créer la couche</translation>
     </message>
     <message>
-        <location filename="../aeag_mask.py" line="628"/>
-        <source>Attribute creation failed !</source>
-        <translation>Echec de création d&apos;attribut !</translation>
+        <location filename="../aeag_mask.py" />
+        <source>Attribute type unsupported</source>
+        <translation>Type d&apos;attribut non supporté</translation>
     </message>
     <message>
-        <location filename="../aeag_mask.py" line="634"/>
-        <source>Projection error !</source>
-        <translation>Erreur de projection !</translation>
+        <location filename="../aeag_mask.py" />
+        <source>Attribute creation failed</source>
+        <translation>Echec de création d&apos;attribut</translation>
     </message>
     <message>
-        <location filename="../aeag_mask.py" line="640"/>
-        <source>Feature write failed !</source>
-        <translation>Echec d&apos;écriture !</translation>
+        <location filename="../aeag_mask.py" />
+        <source>Projection error</source>
+        <translation>Erreur de projection</translation>
     </message>
     <message>
-        <location filename="../aeag_mask.py" line="646"/>
-        <source>Invalid layer !</source>
-        <translation>Couche invalide !</translation>
+        <location filename="../aeag_mask.py" />
+        <source>Feature write failed</source>
+        <translation>Echec d&apos;écriture</translation>
+    </message>
+    <message>
+        <location filename="../aeag_mask.py" />
+        <source>Invalid layer</source>
+        <translation>Couche invalide</translation>
+    </message>
+    <message>
+        <location filename="../aeag_mask.py" />
+        <source>Invalid layer</source>
+        <translation>Couche invalide</translation>
+    </message>
+    <message>
+        <location filename="../aeag_mask.py" />
+        <source>Metadata saving error</source>
+        <translation>Sauvegarde des métadonnées impossible</translation>
     </message>
     <message>
         <location filename="../aeag_mask.py" line="244"/>
         <source>Documentation</source>
         <translation>Documentation</translation>
     </message>
+
 </context>
 </TS>
