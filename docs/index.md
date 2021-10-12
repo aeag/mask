@@ -65,6 +65,8 @@ sr = QgsCoordinateReferenceSystem()
 sr.createFromSrid(2154)
 geom = QgsGeometry.fromWkt("POLYGON((356419 6120047, 1051423 6120047, 1051423 6595985, 356419 6595985, 356419 6120047))")
 aeag_mask.do(sr, { geom }, "MyMask")
+
+# or with parameter keep_layer=True to keep previous layer id (map theme use case).
 ```
 
 ### **An alternative, to combine mask and Atlas without plugin (3.x)**
@@ -128,6 +130,9 @@ sr = QgsCoordinateReferenceSystem()
 sr.createFromSrid(2154)
 geom = QgsGeometry.fromWkt("POLYGON((356419 6120047, 1051423 6120047, 1051423 6595985, 356419 6595985, 356419 6120047))")
 aeag_mask.do(sr, { geom }, "MyMask")
+
+# avec le paramètre keep_layer=True pour conserver l'identifiant du masque précédent (peut ainsi persister avec l'utilisation de thème de carte)
+
 ```
 
 ### **Une alternative, pour utiliser le masque avec un atlas, sans ce plugin**

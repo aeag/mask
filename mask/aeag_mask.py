@@ -635,6 +635,10 @@ class aeag_mask(QObject):
                 for f in pr.getFeatures():
                     fid = f.id()
 
+                # the mask name
+                if mask_name is not None:
+                    layer.setName(mask_name)
+
                 pr.truncate()
                 fet1 = QgsFeature(fid)
                 fet1.setFields(layer.fields())
