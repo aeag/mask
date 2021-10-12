@@ -70,13 +70,13 @@ aeag_mask_instance = None
 # to be called from another plugin
 # from mask import aeag_mask
 # aeag_mask.do()
-def do(crs=None, poly=None, name=None):
+def do(crs=None, poly=None, name=None, keep_layer=False):
     # crs = QgsCoordinateReferenceSystem
     # poly = list of geometries
     global aeag_mask_instance
     this = aeag_mask_instance
     this.layer = this.apply_mask_parameters(
-        this.layer, this.parameters, crs, poly, name, keep_layer=False
+        this.layer, this.parameters, crs, poly, name, keep_layer=keep_layer
     )
     this.save_to_project(this.layer, this.parameters)
 
