@@ -23,7 +23,8 @@ from qgis.core import (
     QgsVectorSimplifyMethod,
 )
 from qgis.gui import QgsRendererPropertiesDialog
-from qgis.utils import showPluginHelp
+#from qgis.utils import showPluginHelp
+from mask.logic import utils
 
 from mask.__about__ import DIR_PLUGIN_ROOT
 from qgis.PyQt import uic
@@ -84,7 +85,7 @@ class MainDialog(QDialog):
         )
         self.ui.loadDefaultsBtn.clicked.connect(self.load_defaults)
         # connect the "help" button
-        self.ui.buttonBox.helpRequested.connect(lambda: showPluginHelp(filename="../doc/index"))
+        self.ui.buttonBox.helpRequested.connect(lambda: utils.showPluginHelp(filename="../doc/index"))
 
         self.ui.layer_list.ui.polygonOperatorCombo.currentIndexChanged[int].connect(
             self.on_polygon_operator_changed

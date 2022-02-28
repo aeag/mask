@@ -26,11 +26,10 @@ from qgis.PyQt.QtCore import (
     QObject,
     QSettings,
     QTranslator,
-    QUrl,
     QVariant,
     QFileInfo,
 )
-from qgis.PyQt.QtGui import QIcon, QDesktopServices
+from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction
 
 from qgis.core import (
@@ -56,7 +55,8 @@ from qgis.core import (
     QgsExpressionContextUtils,
     QgsLayoutItemMap,
 )
-from qgis.utils import showPluginHelp
+# from qgis.utils import showPluginHelp
+from .logic import utils
 
 from .ui.maindialog import MainDialog
 from .logic import mask_filter
@@ -258,7 +258,7 @@ class aeag_mask(QObject):
 
         # Add documentation links to the menu
         self.act_aeag_doc = QAction(self.tr("Documentation"), self.iface.mainWindow())
-        self.act_aeag_doc.triggered.connect(lambda: showPluginHelp(filename="doc/index"))
+        self.act_aeag_doc.triggered.connect(lambda: utils.showPluginHelp(filename="doc/index"))
         self.iface.addPluginToMenu("&Mask", self.act_aeag_doc)
 
         # Add actions to the toolbar
