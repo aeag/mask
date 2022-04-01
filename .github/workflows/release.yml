@@ -20,7 +20,7 @@ jobs:
     #   run: sudo apt install qt5-default qttools5-dev-tools
 
     - name: Setup Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v3.1.0
       with:
         python-version: ${{ env.PYTHON_VERSION }}
 
