@@ -21,11 +21,11 @@ jobs:
         uses: actions/checkout@master
 
       - name: Setup Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v3
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
+          python-version: '${{ env.PYTHON_VERSION }}'
 
-      - uses: actions/cache@v2.1.7
+      - uses: actions/cache@v3.0.8
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('requirements/documentation.txt') }}
@@ -40,7 +40,7 @@ jobs:
       - name: Build doc using Sphinx
         run: sphinx-build -b html docs docs/_build/html
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: ${{ env.PROJECT_FOLDER }}-doc-latest
           path: docs/_build/html
