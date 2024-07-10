@@ -923,6 +923,12 @@ class aeag_mask(QObject):
         if self.layer.featureCount() == 0:
             return True
 
+        # mask layer is not visible > no filtering
+        layer_tree_root = QgsProject.instance().layerTreeRoot()
+        layer_tree_layer = layer_tree_root.findLayer(self.layer.id())
+        if not layer_tree_layer.isVisible():
+            return True
+
         mask_geom, bbox = self.mask_geometry()
         geom = QgsGeometry(feature.geometry())
         if not geom.isGeosValid():
