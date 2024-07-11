@@ -58,9 +58,11 @@ class MaskParameters:
                 style,
                 self.polygon_mask_method,
                 self.line_mask_method,
-                [g.asWkb() for g in self.orig_geometry]
-                if self.orig_geometry is not None
-                else None,
+                (
+                    [g.asWkb() for g in self.orig_geometry]
+                    if self.orig_geometry is not None
+                    else None
+                ),
                 self.geometry.asWkb() if self.geometry is not None else None,
                 self.do_atlas_interaction,
             ],

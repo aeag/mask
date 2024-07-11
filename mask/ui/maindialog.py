@@ -22,14 +22,16 @@ from qgis.core import (
     QgsGeometry,
     QgsVectorSimplifyMethod,
     QgsExpressionContext,
-    QgsExpressionContextUtils
+    QgsExpressionContextUtils,
 )
 from qgis.gui import QgsRendererPropertiesDialog
-#from qgis.utils import showPluginHelp
+
+# from qgis.utils import showPluginHelp
 from mask.logic import utils
 
 from mask.__about__ import DIR_PLUGIN_ROOT
 from qgis.PyQt import uic
+
 Ui_MainDialog, _ = uic.loadUiType(DIR_PLUGIN_ROOT / "ui/ui_plugin_mask.ui")
 
 from mask.ui.layerlist import LayerListWidget
@@ -87,7 +89,9 @@ class MainDialog(QDialog):
         )
         self.ui.loadDefaultsBtn.clicked.connect(self.load_defaults)
         # connect the "help" button
-        self.ui.buttonBox.helpRequested.connect(lambda: utils.showPluginHelp(filename="../doc/index"))
+        self.ui.buttonBox.helpRequested.connect(
+            lambda: utils.showPluginHelp(filename="../doc/index")
+        )
 
         self.ui.layer_list.ui.polygonOperatorCombo.currentIndexChanged[int].connect(
             self.on_polygon_operator_changed
@@ -306,7 +310,9 @@ class MainDialog(QDialog):
         if len(syms) > 0:
             pix = QPixmap()
             context = QgsExpressionContext()
-            context.appendScopes(QgsExpressionContextUtils.globalProjectLayerScopes(layer))
+            context.appendScopes(
+                QgsExpressionContextUtils.globalProjectLayerScopes(layer)
+            )
             pix.convertFromImage(syms[0].bigSymbolPreviewImage(context))
             self.ui.stylePreview.setPixmap(pix)
 
