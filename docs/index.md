@@ -19,7 +19,7 @@ On QGIS Plugins repository <https://plugins.qgis.org/plugins/mask/>
 ### **About**
 
 That tool is designed to help users to quickly generate cartographic masking layer to enlight an area of interest.  
-  
+
 Please notify any issue or enhancement request [here](https://github.com/aeag/mask_plugin/issues/)
 
 ### **How to use it ?**
@@ -32,7 +32,7 @@ Then you can modifies the mask layer properties:
   - buffer around mask
   - filter labels of features falling outside area of interest (achieved by a **in_mask(SRID)** function filter on labeling placement options)
   choose mask layer format (Memory or any OGR datasource)
-      
+
 ### **Mask and labels**
 
 The configuration interface allows you to fine-tune the filtering of the labels, by adding for you the expression 'in_mask ()' in the property 'show label' of the corresponding layers.

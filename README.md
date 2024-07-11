@@ -30,7 +30,7 @@ Lorqu'un masque est défini, il sera appliqué (synchronisé) avec l'utilisation
 
 Ce plugin nécessite une version de QGIS >= 3.4
 
-Les contributeurs : Hugo Mercier (Oslandia - https://github.com/mhugo), Xavier Culos (Agence de l'eau Adour-Garonne - https://github.com/xcaeag), Régis Haubourg (https://github.com/haubourg) 
+Les contributeurs : Hugo Mercier (Oslandia - https://github.com/mhugo), Xavier Culos (Agence de l'eau Adour-Garonne - https://github.com/xcaeag), Régis Haubourg (https://github.com/haubourg)
 
 Financement Agence de l'eau Adour Garonne eau-adour-garonne.fr https://github.com/aeag
 

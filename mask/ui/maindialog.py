@@ -21,7 +21,7 @@ from qgis.core import (
     QgsRenderContext,
     QgsGeometry,
     QgsVectorSimplifyMethod,
-    QgsExpressionContext, 
+    QgsExpressionContext,
     QgsExpressionContextUtils
 )
 from qgis.gui import QgsRendererPropertiesDialog
