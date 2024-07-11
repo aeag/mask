@@ -7,7 +7,7 @@ qgisMaximumVersion=3.98
 
 description=Help to create mask, filter labels in it
 description[fr]=Aide à la création de masque, filtrage d'étiquette
-version=1.10.3
+version=1.10.4
 # end of mandatory metadata
 
 # Optional items:
@@ -15,10 +15,11 @@ about=This plugin allows user to quickly transform a polygon selection into a ma
 about[fr]=Cette extension permet de générer un masque à partir d'une sélection de polygones. Le plugin permet également de filtrer l'étiquetage uniquement pour les objets à l'intérieur de ce masque.
 # Uncomment the following line and add your changelog entries:
 changelog=
+    1.10.4 : fix #115 : Rules based labeling filter
     1.10.3 : fix #82 : Do not filter labels when the mask is invisible
     1.10.2 : fix #89 : Help not showing Extensions
     1.10.1 : pull request #85 : Add the keep_layer argument to the DO function
-    1.10.0 : Code reorganization, enhanced documentation, optional mask/atlas interaction 
+    1.10.0 : Code reorganization, enhanced documentation, optional mask/atlas interaction
     1.9.4 : fix #78 : Python error atlas + mask, fix #79 locale.Error
     1.9.3 : fix #77 : The absence of 'locale' probably behind the bug.
     1.9.2 : fix #76 : Updating the existing mask doesn't update extents, and mask little less blue by default
@@ -44,18 +45,6 @@ changelog=
     0.9 : Can be used with atlas, 2.4 compatible - test version
     0.5 : QGis 2.0 Compatible
     0.4 : Python console callable
-    --fr--
-    1.4 : Zoom sur le masque et nettoyage de la sélection à la volée. Corrections mineures liées au renommage des répertoire de mask_plugin en mask
-    1.3 : Amélioration de l'opérateur spatial exact de filtre des étiquettes. Avant:"contains", après:  "contains" OU "overlaps"
-    1.2 : correction de bugs :
-    - Crash après la suppression d'un couche de masque
-    - Ne gèle plus l'affichage si la prévisualisation d'Atlas est activée
-    - Désactive le filtrage d'étiquette si la couche de masque est vide
-    1.1 : bugfixe release
-    1.0 : Ajoute la capacité à masquer les cartes du générateur d'Atlas
-    0.9 : Can be used with atlas, 2.4 compatible - test version
-    0.5 : Version QGis 2.0
-    0.4 : ajoute une classe permettant d'appeler le plugin depuis la console python ou un autre plugin.
 
 # tags are comma separated with spaces allowed
 tags=mask, ROI, filter labels, étiquettes, masque, zone d'intérêt
