@@ -1,4 +1,4 @@
-from qgis.PyQt.QtCore import Qt, QUrl, QSettings, QDir
+from qgis.PyQt.QtCore import Qt, QSettings, QDir
 from qgis.PyQt import QtCore
 
 from qgis.PyQt.QtWidgets import (
@@ -10,7 +10,7 @@ from qgis.PyQt.QtWidgets import (
     QMessageBox,
 )
 
-from qgis.PyQt.QtGui import QDoubleValidator, QIntValidator, QDesktopServices, QPixmap
+from qgis.PyQt.QtGui import QDoubleValidator, QIntValidator, QPixmap
 
 from qgis.core import (
     QgsVectorLayer,
@@ -21,6 +21,8 @@ from qgis.core import (
     QgsRenderContext,
     QgsGeometry,
     QgsVectorSimplifyMethod,
+    QgsExpressionContext, 
+    QgsExpressionContextUtils
 )
 from qgis.gui import QgsRendererPropertiesDialog
 #from qgis.utils import showPluginHelp
@@ -303,7 +305,9 @@ class MainDialog(QDialog):
         # only display the first symbol
         if len(syms) > 0:
             pix = QPixmap()
-            pix.convertFromImage(syms[0].bigSymbolPreviewImage())
+            context = QgsExpressionContext()
+            context.appendScopes(QgsExpressionContextUtils.globalProjectLayerScopes(layer))
+            pix.convertFromImage(syms[0].bigSymbolPreviewImage(context))
             self.ui.stylePreview.setPixmap(pix)
 
     def exec_(self):
@@ -352,7 +356,7 @@ class MainDialog(QDialog):
             # test if some limited layers have simplification turned on
             limited = self.ui.layer_list.get_limited_layers()
             slayers = []
-            for name, layer in QgsProject.instance().mapLayers().items():
+            for _, layer in QgsProject.instance().mapLayers().items():
                 if not isinstance(layer, QgsVectorLayer):
                     continue
                 if (
@@ -375,7 +379,7 @@ class MainDialog(QDialog):
                 )
 
                 if r == QMessageBox.Yes:
-                    for l in slayers:
+                    for _ in slayers:
                         m = layer.simplifyMethod()
                         m.setSimplifyHints(QgsVectorSimplifyMethod.SimplifyHints(0))
                         layer.setSimplifyMethod(m)
