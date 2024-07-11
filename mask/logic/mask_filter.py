@@ -6,6 +6,7 @@ from qgis.core import (
     QgsProperty,
     QgsMessageLog,
     QgsVectorLayerSimpleLabeling,
+    QgsRuleBasedLabeling
 )
 
 SPATIAL_FILTER = "in_mask"
@@ -19,13 +20,25 @@ def has_mask_filter(layer):
     if layer.labeling() is None:
         return False
 
-    settings = layer.labeling().settings()
-    show_expr = settings.dataDefinedProperties().property(QgsPalLayerSettings.Show)
-    if show_expr is None:
-        return False
+    # simple labelling
+    if isinstance(layer.labeling(), QgsVectorLayerSimpleLabeling):
+        settings = layer.labeling().settings()
+        show_expr = settings.dataDefinedProperties().property(QgsPalLayerSettings.Show)
+        if show_expr is None:
+            return False
 
-    return show_expr.expressionString().startswith(SPATIAL_FILTER)
+        return show_expr.expressionString().startswith(SPATIAL_FILTER)
 
+    # rules based labeling
+    if isinstance(layer.labeling(), QgsRuleBasedLabeling):
+        # we test only the first rule
+        for rule in layer.labeling().rootRule().children():
+            settings = rule.settings()
+            show_expr = settings.dataDefinedProperties().property(QgsPalLayerSettings.Show)
+            if show_expr is None:
+                return False
+
+            return show_expr.expressionString().startswith(SPATIAL_FILTER)
 
 def remove_mask_filter(layer):
     if not isinstance(layer, QgsVectorLayer):
@@ -38,18 +51,32 @@ def remove_mask_filter(layer):
     settings = layer.labeling().settings()
 
     try:
+        # simple labeling. new settings
         if settings.dataDefinedProperties().hasProperty(
             QgsPalLayerSettings.Show
         ) and settings.dataDefinedProperties().property(
             QgsPalLayerSettings.Show
         ).expressionString().startswith(
             SPATIAL_FILTER
-        ):
-            # new settings
+        ) and isinstance(layer.labeling(), QgsVectorLayerSimpleLabeling):
             settings = QgsPalLayerSettings(layer.labeling().settings())
             settings.dataDefinedProperties().setProperty(QgsPalLayerSettings.Show, True)
-            if isinstance(layer.labeling(), QgsVectorLayerSimpleLabeling):
-                layer.setLabeling(QgsVectorLayerSimpleLabeling(settings))
+            layer.setLabeling(QgsVectorLayerSimpleLabeling(settings))
+
+        # rules based labeling filter
+        if isinstance(layer.labeling(), QgsRuleBasedLabeling):
+            for rule in layer.labeling().rootRule().children():
+                settings = rule.settings()
+                if settings.dataDefinedProperties().hasProperty(
+                    QgsPalLayerSettings.Show
+                ) and settings.dataDefinedProperties().property(
+                    QgsPalLayerSettings.Show
+                ).expressionString().startswith(
+                    SPATIAL_FILTER
+                ) :
+                    settings.dataDefinedProperties().setProperty(QgsPalLayerSettings.Show, True)
+                    rule.setSettings(settings)
+
     except Exception as e:
         for m in e.args:
             QgsMessageLog.logMessage(m, "Extensions")
@@ -68,11 +95,18 @@ def add_mask_filter(layer):
         prop = QgsProperty()
         prop.setExpressionString(expr)
 
-        # new settings
-        settings = QgsPalLayerSettings(layer.labeling().settings())
-        settings.dataDefinedProperties().setProperty(QgsPalLayerSettings.Show, prop)
+        # simple labeling. new settings
         if isinstance(layer.labeling(), QgsVectorLayerSimpleLabeling):
+            settings = QgsPalLayerSettings(layer.labeling().settings())
+            settings.dataDefinedProperties().setProperty(QgsPalLayerSettings.Show, prop)
             layer.setLabeling(QgsVectorLayerSimpleLabeling(settings))
+
+        # rules based labeling filter
+        if isinstance(layer.labeling(), QgsRuleBasedLabeling):
+            for rule in layer.labeling().rootRule().children():
+                settings = rule.settings()
+                settings.dataDefinedProperties().setProperty(QgsPalLayerSettings.Show, prop)
+                rule.setSettings(settings)
 
     except Exception as e:
         for m in e.args:
