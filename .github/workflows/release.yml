@@ -1,82 +1,168 @@
-name: Release 🚀
+name: "📦 Packaging & 🚀 Release"
 
 env:
   PROJECT_FOLDER: "mask"
-  PYTHON_VERSION: 3.8
+  PYTHON_VERSION: 3.9
 
 on:
   push:
+    branches:
+      - master
     tags:
-      - '*'
+      - "*"
+
+  pull_request:
+    branches:
+      - master
+    paths:
+      - .github/workflows/release.yml
+      - requirements/packaging.txt
+      - mask/**/*
+
+# Allow one concurrent deployment per branch/pr
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  package:
+  translation:
+    name: "💬 i18n compilation"
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+      - name: Get source code
+        uses: actions/checkout@v4
 
-    # - name: Install Qt lrelease
-    #   run: sudo apt install qt5-default qttools5-dev-tools
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: "pip"
 
-    - name: Setup Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '${{ env.PYTHON_VERSION }}'
+      - name: Install system requirements
+        run: |
+          sudo apt update
+          sudo apt install qt5-qmake qttools5-dev-tools
+          python3 -m pip install -U pyqt5-tools
 
-    - name: Get tag name as version
-      id: get_version
-      run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+      - name: Update translations
+        run: pylupdate5 -noobsolete -verbose ${{ env.PROJECT_FOLDER }}/plugin_translation.pro
 
-    - name: Install project requirements
-      run: |
-        python -m pip install -U pip setuptools wheel
-        python -m pip install -U 'qgis-plugin-ci>=2.2,<2.4'
+      - name: Compile translations
+        run: lrelease ${{ env.PROJECT_FOLDER }}/i18n/*.ts
 
-    - id: get-myversion
-      run: |
-        myversion=$(echo ${{ github.ref }} | cut -dv -f2)
-        echo "::set-output name=myversion::$myversion"
-    - run: echo "${{steps.get-myversion.outputs.myversion}}"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: translations-build
+          path: ${{ env.PROJECT_FOLDER }}/**/*.qm
+          if-no-files-found: error
 
-    - name: Package the version
-      run: |
-        qgis-plugin-ci package ${{steps.get-myversion.outputs.myversion}}
+  packaging:
+    name: "📦 Packaging plugin"
+    runs-on: ubuntu-latest
+    needs:
+      - translation
 
-    #- uses: actions/upload-artifact@v2
-    #  with:
-    #    name: ${{ env.PROJECT_FOLDER }}-${{steps.get-myversion.outputs.myversion}}
-    #    path: ${{ env.PROJECT_FOLDER }}.${{steps.get-myversion.outputs.myversion}}.zip
-    #    if-no-files-found: error
+    if: ${{ !startsWith(github.ref, 'refs/tags/') }}
 
-    - name : Get current changelog for ${{ github.ref }}
-      run: qgis-plugin-ci changelog ${{steps.get-myversion.outputs.myversion}} >> release.md
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-    - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        draft: false
-        prerelease: false
-        tag_name: ${{ github.ref }}
-        release_name: ${{ github.ref }}
-        body_path: release.md
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "${{ env.PYTHON_VERSION }}"
+          cache: "pip"
+          cache-dependency-path: "requirements/packaging.txt"
 
-    - name: upload plugin artifact
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ${{ env.PROJECT_FOLDER }}.${{steps.get-myversion.outputs.myversion}}.zip
-        asset_name: ${{ env.PROJECT_FOLDER }}-${{steps.get-myversion.outputs.myversion}}.zip
-        asset_content_type: application/zip
+      - name: Install project requirements
+        run: |
+          python -m pip install -U pip setuptools wheel
+          python -m pip install -U -r requirements/packaging.txt
 
-    # - name: Deploy plugin
-    #   run: >-
-    #     qgis-plugin-ci
-    #     release ${GITHUB_REF/refs\/tags\//}
-    #     --github-token ${{ secrets.BOT_HUB_TOKEN }}
-    #     --transifex-token ${{ secrets.TRANSIFEX_TOKEN }}
+      - name: Download translations
+        uses: actions/download-artifact@v4
+        with:
+          name: translations-build
+          path: ${{ env.PROJECT_FOLDER }}
+
+      - name: Amend gitignore to include compiled translations and add it to tracked files
+        run: |
+          # include compiled translations
+          sed -i "s|^*.qm.*| |" .gitignore
+
+          # git add full project
+          git add ${{ env.PROJECT_FOLDER }}/
+
+      - name: Package the latest version
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          qgis-plugin-ci package latest \
+            --allow-uncommitted-changes \
+            --plugin-repo-url $(gh api "repos/$GITHUB_REPOSITORY/pages" --jq '.html_url')
+
+      - name:
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.PROJECT_FOLDER }}-latest
+          path: |
+            plugins.xml
+            ${{ env.PROJECT_FOLDER }}.*.zip
+          if-no-files-found: error
+
+# -- ONLY TAGS ----------------------------------------------------------------------
+  release:
+    name: "🚀 Release on tag"
+    runs-on: ubuntu-latest
+    needs:
+      - translation
+
+    if: startsWith(github.ref, 'refs/tags/')
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: "pip"
+          cache-dependency-path: "requirements/packaging.txt"
+
+      - name: Install project requirements
+        run: |
+          python -m pip install -U pip setuptools wheel
+          python -m pip install -U -r requirements/packaging.txt
+
+      - name: Download translations
+        uses: actions/download-artifact@v4
+        with:
+          name: translations-build
+          path: ${{ env.PROJECT_FOLDER }}
+
+      - name: Amend gitignore to include compiled translations and add it to tracked files
+        run: |
+          # include compiled translations
+          sed -i "s|^*.qm.*| |" .gitignore
+
+          # git add full project
+          git add ${{ env.PROJECT_FOLDER }}/
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          fail_on_unmatched_files: true
+          generate_release_notes: true
+
+      - name: Deploy plugin
+        run: >-
+          qgis-plugin-ci
+          release ${GITHUB_REF/refs\/tags\//}
+          --allow-uncommitted-changes
+          --create-plugin-repo
+          --github-token ${{ secrets.GITHUB_TOKEN }}
+          --osgeo-username ${{ secrets.OSGEO_USER }}
+          --osgeo-password ${{ secrets.OSGEO_PASSWORD }}
