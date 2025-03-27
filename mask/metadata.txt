@@ -2,7 +2,7 @@
 
 [general]
 name=Mask
-qgisMinimumVersion=3.38
+qgisMinimumVersion=3.34
 qgisMaximumVersion=3.98
 
 description=Help to create mask, filter labels in it
