@@ -71,14 +71,14 @@ class LayerListWidget(QWidget):
 
             self.ui.layerTable.insertRow(n)
             name_item = QTableWidgetItem()
-            name_item.setData(Qt.DisplayRole, layer.name())
+            name_item.setData(Qt.ItemDataRole.DisplayRole, layer.name())
             self.ui.layerTable.setItem(n, 1, name_item)
             w = QCheckBox(self.ui.layerTable)
             w.setEnabled(layer.labeling() is not None)
             w.setChecked(do_limit or is_new)
             self.ui.layerTable.setCellWidget(n, 0, w)
             item = QTableWidgetItem()
-            item.setData(Qt.UserRole, layer)
+            item.setData(Qt.ItemDataRole.UserRole, layer)
             self.ui.layerTable.setItem(n, 0, item)
             n += 1
 
@@ -90,7 +90,7 @@ class LayerListWidget(QWidget):
 
         for i in range(ll.rowCount()):
             do_limit = ll.cellWidget(i, 0).isChecked()
-            layer = ll.item(i, 0).data(Qt.UserRole)
+            layer = ll.item(i, 0).data(Qt.ItemDataRole.UserRole)
             did_limit = layer.id() in self.limited
 
             if not did_limit and do_limit:
@@ -112,9 +112,9 @@ class LayerListDialog(QDialog):
 
         self.layer_list = LayerListWidget(self)
         self.button_box = QDialogButtonBox(self)
-        self.button_box.setOrientation(Qt.Horizontal)
+        self.button_box.setOrientation(Qt.Orientation.Horizontal)
         self.button_box.setStandardButtons(
-            QDialogButtonBox.Cancel | QDialogButtonBox.Ok
+            QDialogButtonBox.StandardButton.Cancel | QDialogButtonBox.StandardButton.Ok
         )
         self.button_box.accepted.connect(self.accept)
         self.button_box.rejected.connect(self.reject)
@@ -127,9 +127,9 @@ class LayerListDialog(QDialog):
     def set_labeling_model(self, model):
         self.layer_list.set_model(model)
 
-    def exec_(self):
+    def exec(self):
         self.layer_list.update_from_layers()
-        return QDialog.exec_(self)
+        return QDialog.exec(self)
 
     def accept(self):
         # update layers
