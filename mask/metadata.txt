@@ -2,12 +2,13 @@
 
 [general]
 name=Mask
-qgisMinimumVersion=3.4
+qgisMinimumVersion=3.34
 qgisMaximumVersion=3.98
 
 description=Help to create mask, filter labels in it
 description[fr]=Aide à la création de masque, filtrage d'étiquette
-version=1.10.4
+version=1.11.0
+supportsQt6=True
 # end of mandatory metadata
 
 # Optional items:
@@ -15,6 +16,7 @@ about=This plugin allows user to quickly transform a polygon selection into a ma
 about[fr]=Cette extension permet de générer un masque à partir d'une sélection de polygones. Le plugin permet également de filtrer l'étiquetage uniquement pour les objets à l'intérieur de ce masque.
 # Uncomment the following line and add your changelog entries:
 changelog=
+    1.11.0 : support Qt6
     1.10.4 : fix #115 : Rules based labeling filter
     1.10.3 : fix #82 : Do not filter labels when the mask is invisible
     1.10.2 : fix #89 : Help not showing Extensions
