@@ -1,44 +1,40 @@
-from qgis.PyQt.QtCore import Qt, QSettings, QDir
-from qgis.PyQt import QtCore
-
+from qgis.core import (
+    QgsExpressionContext,
+    QgsExpressionContextUtils,
+    QgsGeometry,
+    QgsMessageLog,
+    QgsProject,
+    QgsRenderContext,
+    QgsStyle,
+    QgsVectorFileWriter,
+    QgsVectorLayer,
+    QgsVectorSimplifyMethod,
+)
+from qgis.gui import QgsRendererPropertiesDialog
+from qgis.PyQt import QtCore, uic
+from qgis.PyQt.QtCore import QDir, QSettings, Qt
+from qgis.PyQt.QtGui import QDoubleValidator, QIntValidator, QPixmap
 from qgis.PyQt.QtWidgets import (
     QDialog,
     QDialogButtonBox,
-    QVBoxLayout,
-    QPushButton,
     QFileDialog,
     QMessageBox,
+    QPushButton,
+    QVBoxLayout,
 )
 
-from qgis.PyQt.QtGui import QDoubleValidator, QIntValidator, QPixmap
-
-from qgis.core import (
-    QgsVectorLayer,
-    QgsMessageLog,
-    QgsStyle,
-    QgsProject,
-    QgsVectorFileWriter,
-    QgsRenderContext,
-    QgsGeometry,
-    QgsVectorSimplifyMethod,
-    QgsExpressionContext,
-    QgsExpressionContextUtils,
-)
-from qgis.gui import QgsRendererPropertiesDialog
+from mask.__about__ import DIR_PLUGIN_ROOT
 
 # from qgis.utils import showPluginHelp
 from mask.logic import utils
 
-from mask.__about__ import DIR_PLUGIN_ROOT
-from qgis.PyQt import uic
-
 Ui_MainDialog, _ = uic.loadUiType(DIR_PLUGIN_ROOT / "ui/ui_plugin_mask.ui")
 
-from mask.ui.layerlist import LayerListWidget
-from mask.logic.mask_parameters import MaskParameters
+import locale
 
 from mask.logic import style_tools
-import locale
+from mask.logic.mask_parameters import MaskParameters
+from mask.ui.layerlist import LayerListWidget
 
 
 def is_in_qgis_core(sym):

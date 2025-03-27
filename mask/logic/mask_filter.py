@@ -1,12 +1,12 @@
 #! python3  # noqa: E265
 
 from qgis.core import (
-    QgsVectorLayer,
+    QgsMessageLog,
     QgsPalLayerSettings,
     QgsProperty,
-    QgsMessageLog,
-    QgsVectorLayerSimpleLabeling,
     QgsRuleBasedLabeling,
+    QgsVectorLayer,
+    QgsVectorLayerSimpleLabeling,
 )
 
 SPATIAL_FILTER = "in_mask"

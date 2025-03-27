@@ -11,9 +11,10 @@ Class to store mask parameters
  ***************************************************************************/
 """
 
-from qgis.core import QgsGeometry, QgsProject, QgsFeature, QgsMessageLog
-import pickle
 import base64
+import pickle
+
+from qgis.core import QgsFeature, QgsGeometry, QgsMessageLog, QgsProject
 
 
 class MaskParameters:

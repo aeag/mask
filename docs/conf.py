@@ -1,7 +1,6 @@
 #
-from os import environ, path
-
 import sys
+from os import environ, path
 
 sys.path.insert(0, path.abspath(".."))
 

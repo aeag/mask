@@ -1,20 +1,20 @@
+from qgis.core import QgsProject, QgsVectorLayer
+from qgis.PyQt import uic
 from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtWidgets import (
-    QWidget,
-    QTableWidgetItem,
-    QDialog,
     QCheckBox,
+    QDialog,
     QDialogButtonBox,
+    QTableWidgetItem,
     QVBoxLayout,
+    QWidget,
 )
-from qgis.core import QgsProject, QgsVectorLayer
-from mask.__about__ import DIR_PLUGIN_ROOT
 
-from qgis.PyQt import uic
+from mask.__about__ import DIR_PLUGIN_ROOT
 
 Ui_LayerListWidget, _ = uic.loadUiType(DIR_PLUGIN_ROOT / "ui/ui_layer_list.ui")
 
-from mask.logic.mask_filter import has_mask_filter, add_mask_filter, remove_mask_filter
+from mask.logic.mask_filter import add_mask_filter, has_mask_filter, remove_mask_filter
 
 
 class LayerListWidget(QWidget):
