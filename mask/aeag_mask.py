@@ -55,7 +55,7 @@ from qgis.PyQt.QtCore import (
     QObject,
     QSettings,
     QTranslator,
-    QVariant,
+    QMetaType,
 )
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction
@@ -829,7 +829,7 @@ class aeag_mask(QObject):
         )
         pr = layer.dataProvider()
         layer.startEditing()
-        layer.addAttribute(QgsField("params", QVariant.String))
+        layer.addAttribute(QgsField("params", QMetaType.Type.QString))
         fet1 = QgsFeature(0)
         fet1.setFields(layer.fields())
         fet1.setAttribute("params", str(serialized)[2:-1])
