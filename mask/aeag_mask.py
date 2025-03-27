@@ -18,53 +18,54 @@ email                : geocatalogue@eau-adour-garonne.fr
  ***************************************************************************/
 """
 
+import base64
+
 # Import the PyQt and QGIS libraries
 import os
-import base64
+from functools import partial
+
+from qgis.core import (
+    Qgis,
+    QgsCoordinateReferenceSystem,
+    QgsCoordinateTransform,
+    QgsExpression,
+    QgsExpressionContextUtils,
+    QgsExpressionFunction,
+    QgsFeature,
+    QgsField,
+    QgsGeometry,
+    QgsLayerTreeLayer,
+    QgsLayoutItemMap,
+    QgsMapLayer,
+    QgsMapToPixelSimplifier,
+    QgsMessageLog,
+    QgsPointXY,
+    QgsProject,
+    QgsRectangle,
+    QgsSettings,
+    QgsVectorFileWriter,
+    QgsVectorLayer,
+    QgsVectorSimplifyMethod,
+    QgsWkbTypes,
+)
 from qgis.PyQt.QtCore import (
     QCoreApplication,
+    QFileInfo,
+    QLocale,
     QObject,
     QSettings,
     QTranslator,
     QVariant,
-    QFileInfo,
 )
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction
 
-from qgis.core import (
-    Qgis,
-    QgsExpression,
-    QgsExpressionFunction,
-    QgsGeometry,
-    QgsPointXY,
-    QgsProject,
-    QgsMapLayer,
-    QgsVectorLayer,
-    QgsWkbTypes,
-    QgsLayerTreeLayer,
-    QgsField,
-    QgsFeature,
-    QgsVectorFileWriter,
-    QgsRectangle,
-    QgsMapToPixelSimplifier,
-    QgsCoordinateReferenceSystem,
-    QgsCoordinateTransform,
-    QgsVectorSimplifyMethod,
-    QgsMessageLog,
-    QgsExpressionContextUtils,
-    QgsLayoutItemMap,
-)
+from .__about__ import DIR_PLUGIN_ROOT
 
 # from qgis.utils import showPluginHelp
-from .logic import utils
-
-from .ui.maindialog import MainDialog
-from .logic import mask_filter
+from .logic import mask_filter, style_tools, utils
 from .logic.mask_parameters import MaskParameters
-from .logic import style_tools
-from functools import partial
-from .__about__ import DIR_PLUGIN_ROOT
+from .ui.maindialog import MainDialog
 
 aeag_mask_instance = None
 
@@ -176,7 +177,9 @@ class aeag_mask(QObject):
 
         try:
             # install translator
-            self.myLocale = QSettings().value("locale/userLocale")[0:2]
+            self.myLocale = QgsSettings().value("locale/userLocale", QLocale().name())[
+                0:2
+            ]
             # dictionary
             localePath = self.path + "/i18n/" + self.myLocale + ".qm"
             # translator
