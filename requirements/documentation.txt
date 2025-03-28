@@ -2,5 +2,5 @@
 # -------------
 
 ghp-import>=2.0,<2.1
-furo==2022.06.21
+furo==2024.8.6
 myst-parser[linkify]>=0.13,<0.18
