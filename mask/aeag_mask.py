@@ -1,4 +1,4 @@
-"""
+﻿"""
 /***************************************************************************
 Name                  : Mask
 Description          : Aide à la création de masque
@@ -55,7 +55,7 @@ from qgis.PyQt.QtCore import (
     QObject,
     QSettings,
     QTranslator,
-    QMetaType,
+    QVariant,
 )
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction
@@ -289,9 +289,7 @@ class aeag_mask(QObject):
         # register to the change of active layer for enabling/disabling
         #   of the action
         self.old_active_layer = None
-        self.iface.mapCanvas().currentLayerChanged.connect(
-            self.on_current_layer_changed
-        )
+        self.iface.mapCanvas().currentLayerChanged.connect(self.on_current_layer_changed)
         self.on_current_layer_changed(None)
 
         # register to project reading
@@ -668,14 +666,14 @@ class aeag_mask(QObject):
                 layer.updateExtents()
 
                 # RH 04 05 2015 > clean up selection of all layers
-                for l in self.canvas.layers():
-                    if l.type() != QgsMapLayer.LayerType.VectorLayer:
+                for alayer in self.canvas.layers():
+                    if alayer.type() != QgsMapLayer.LayerType.VectorLayer:
                         # Ignore this layer as it's not a vector
                         continue
-                    if l.featureCount() == 0:
+                    if alayer.featureCount() == 0:
                         # There are no features - skip
                         continue
-                    l.removeSelection()
+                    alayer.removeSelection()
 
                 # RH 04 05 2015 > zooms to mask layer
                 canvas = self.iface.mapCanvas()
@@ -767,8 +765,7 @@ class aeag_mask(QObject):
         for feature in layer.selectedFeatures():
             if (
                 feature.geometry()
-                and feature.geometry().type()
-                == QgsWkbTypes.GeometryType.PolygonGeometry
+                and feature.geometry().type() == QgsWkbTypes.GeometryType.PolygonGeometry
             ):
                 geos.append(QgsGeometry(feature.geometry()))
         return layer.crs(), geos
@@ -824,12 +821,10 @@ class aeag_mask(QObject):
         serialized = base64.b64encode(parameters.serialize(with_style=False))
 
         # save geometry
-        layer = QgsVectorLayer(
-            "MultiPolygon?crs=%s" % dest_crs.authid(), name, "memory"
-        )
+        layer = QgsVectorLayer("MultiPolygon?crs=%s" % dest_crs.authid(), name, "memory")
         pr = layer.dataProvider()
         layer.startEditing()
-        layer.addAttribute(QgsField("params", QMetaType.Type.QString))
+        layer.addAttribute(QgsField("params", QVariant.String))
         fet1 = QgsFeature(0)
         fet1.setFields(layer.fields())
         fet1.setAttribute("params", str(serialized)[2:-1])
@@ -953,7 +948,7 @@ class aeag_mask(QObject):
         try:
             # layer is not None but destroyed ?
             self.layer.id()
-        except:
+        except Exception:
             self.reset_mask_layer()
             return False
 
@@ -989,10 +984,7 @@ class aeag_mask(QObject):
                     pass
 
         if geom.type() == QgsWkbTypes.GeometryType.PolygonGeometry:
-            if (
-                self.parameters.polygon_mask_method == 2
-                and not self.has_point_on_surface
-            ):
+            if self.parameters.polygon_mask_method == 2 and not self.has_point_on_surface:
                 self.parameters.polygon_mask_method = 1
 
             if self.parameters.polygon_mask_method == 0:
