@@ -1,44 +1,40 @@
-from qgis.PyQt.QtCore import Qt, QSettings, QDir
-from qgis.PyQt import QtCore
-
+from qgis.core import (
+    QgsExpressionContext,
+    QgsExpressionContextUtils,
+    QgsGeometry,
+    QgsMessageLog,
+    QgsProject,
+    QgsRenderContext,
+    QgsStyle,
+    QgsVectorFileWriter,
+    QgsVectorLayer,
+    QgsVectorSimplifyMethod,
+)
+from qgis.gui import QgsRendererPropertiesDialog
+from qgis.PyQt import QtCore, uic
+from qgis.PyQt.QtCore import QDir, QSettings, Qt
+from qgis.PyQt.QtGui import QDoubleValidator, QIntValidator, QPixmap
 from qgis.PyQt.QtWidgets import (
     QDialog,
     QDialogButtonBox,
-    QVBoxLayout,
-    QPushButton,
     QFileDialog,
     QMessageBox,
+    QPushButton,
+    QVBoxLayout,
 )
 
-from qgis.PyQt.QtGui import QDoubleValidator, QIntValidator, QPixmap
-
-from qgis.core import (
-    QgsVectorLayer,
-    QgsMessageLog,
-    QgsStyle,
-    QgsProject,
-    QgsVectorFileWriter,
-    QgsRenderContext,
-    QgsGeometry,
-    QgsVectorSimplifyMethod,
-    QgsExpressionContext,
-    QgsExpressionContextUtils,
-)
-from qgis.gui import QgsRendererPropertiesDialog
+from mask.__about__ import DIR_PLUGIN_ROOT
 
 # from qgis.utils import showPluginHelp
 from mask.logic import utils
 
-from mask.__about__ import DIR_PLUGIN_ROOT
-from qgis.PyQt import uic
-
 Ui_MainDialog, _ = uic.loadUiType(DIR_PLUGIN_ROOT / "ui/ui_plugin_mask.ui")
 
-from mask.ui.layerlist import LayerListWidget
-from mask.logic.mask_parameters import MaskParameters
+import locale
 
 from mask.logic import style_tools
-import locale
+from mask.logic.mask_parameters import MaskParameters
+from mask.ui.layerlist import LayerListWidget
 
 
 def is_in_qgis_core(sym):
@@ -77,7 +73,7 @@ class MainDialog(QDialog):
             self.tr("Save as defaults"), self.ui.buttonBox
         )
         self.ui.buttonBox.addButton(
-            self.ui.saveDefaultsBtn, QDialogButtonBox.ActionRole
+            self.ui.saveDefaultsBtn, QDialogButtonBox.ButtonRole.ActionRole
         )
         self.ui.saveDefaultsBtn.clicked.connect(self.on_save_defaults)
         # add a "load defaults" button
@@ -85,7 +81,7 @@ class MainDialog(QDialog):
             self.tr("Load defaults"), self.ui.buttonBox
         )
         self.ui.buttonBox.addButton(
-            self.ui.loadDefaultsBtn, QDialogButtonBox.ActionRole
+            self.ui.loadDefaultsBtn, QDialogButtonBox.ButtonRole.ActionRole
         )
         self.ui.loadDefaultsBtn.clicked.connect(self.load_defaults)
         # connect the "help" button
@@ -99,7 +95,10 @@ class MainDialog(QDialog):
 
         # connect the "apply" button
         for btn in self.ui.buttonBox.buttons():
-            if self.ui.buttonBox.buttonRole(btn) == QDialogButtonBox.ApplyRole:
+            if (
+                self.ui.buttonBox.buttonRole(btn)
+                == QDialogButtonBox.ButtonRole.ApplyRole
+            ):
                 btn.clicked.connect(self.on_apply)
                 break
 
@@ -260,8 +259,8 @@ class MainDialog(QDialog):
             self.save_format = filterMap[ff]
 
         fd.filterSelected.connect(on_filter_selected)
-        fd.setAcceptMode(QFileDialog.AcceptSave)
-        r = fd.exec_()
+        fd.setAcceptMode(QFileDialog.AcceptMode.AcceptSave)
+        r = fd.exec()
         if r == 1:
             fn = fd.selectedFiles()[0]
             driver, ext, glob = self.save_format
@@ -288,8 +287,10 @@ class MainDialog(QDialog):
         dlg.layout.addWidget(dlg.widget)
         dlg.layout.addWidget(dlg.buttons)
 
-        dlg.buttons.setOrientation(Qt.Horizontal)
-        dlg.buttons.setStandardButtons(QDialogButtonBox.Cancel | QDialogButtonBox.Ok)
+        dlg.buttons.setOrientation(Qt.Orientation.Horizontal)
+        dlg.buttons.setStandardButtons(
+            QDialogButtonBox.StandardButton.Cancel | QDialogButtonBox.StandardButton.Ok
+        )
 
         def on_style_edit_accept(d):
             # this will update the layer's style
@@ -299,7 +300,7 @@ class MainDialog(QDialog):
         dlg.buttons.accepted.connect(lambda d=dlg: on_style_edit_accept(d))
         dlg.buttons.rejected.connect(dlg.reject)
 
-        r = dlg.exec_()
+        r = dlg.exec()
         if r == 1:
             self.update_style_preview(self.parameters.layer)
 
@@ -316,7 +317,7 @@ class MainDialog(QDialog):
             pix.convertFromImage(syms[0].bigSymbolPreviewImage(context))
             self.ui.stylePreview.setPixmap(pix)
 
-    def exec_(self):
+    def exec(self):
         self.ui.layer_list.update_from_layers(self.is_new)
 
         if self.parameters.style is None:
@@ -340,7 +341,7 @@ class MainDialog(QDialog):
             for m in e.args:
                 QgsMessageLog.logMessage(m, "Extensions")
 
-        return QDialog.exec_(self)
+        return QDialog.exec(self)
 
     def reject(self):
         # restore layer's style on cancel
@@ -381,10 +382,11 @@ class MainDialog(QDialog):
                     which is not compatible with the labeling filtering you choose. \
                     Force simplification disabling ?"
                     ),
-                    buttons=QMessageBox.Yes | QMessageBox.No,
+                    buttons=QMessageBox.StandardButton.Yes
+                    | QMessageBox.StandardButton.No,
                 )
 
-                if r == QMessageBox.Yes:
+                if r == QMessageBox.StandardButton.Yes:
                     for _ in slayers:
                         m = layer.simplifyMethod()
                         m.setSimplifyHints(QgsVectorSimplifyMethod.SimplifyHints(0))

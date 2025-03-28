@@ -1,12 +1,12 @@
 #! python3  # noqa: E265
 
 from qgis.core import (
-    QgsVectorLayer,
+    QgsMessageLog,
     QgsPalLayerSettings,
     QgsProperty,
-    QgsMessageLog,
-    QgsVectorLayerSimpleLabeling,
     QgsRuleBasedLabeling,
+    QgsVectorLayer,
+    QgsVectorLayerSimpleLabeling,
 )
 
 SPATIAL_FILTER = "in_mask"
@@ -23,7 +23,9 @@ def has_mask_filter(layer):
     # simple labelling
     if isinstance(layer.labeling(), QgsVectorLayerSimpleLabeling):
         settings = layer.labeling().settings()
-        show_expr = settings.dataDefinedProperties().property(QgsPalLayerSettings.Show)
+        show_expr = settings.dataDefinedProperties().property(
+            QgsPalLayerSettings.Property.Show
+        )
         if show_expr is None:
             return False
 
@@ -35,7 +37,7 @@ def has_mask_filter(layer):
         for rule in layer.labeling().rootRule().children():
             settings = rule.settings()
             show_expr = settings.dataDefinedProperties().property(
-                QgsPalLayerSettings.Show
+                QgsPalLayerSettings.Property.Show
             )
             if show_expr is None:
                 return False
@@ -56,15 +58,19 @@ def remove_mask_filter(layer):
     try:
         # simple labeling. new settings
         if (
-            settings.dataDefinedProperties().hasProperty(QgsPalLayerSettings.Show)
+            settings.dataDefinedProperties().hasProperty(
+                QgsPalLayerSettings.Property.Show
+            )
             and settings.dataDefinedProperties()
-            .property(QgsPalLayerSettings.Show)
+            .property(QgsPalLayerSettings.Property.Show)
             .expressionString()
             .startswith(SPATIAL_FILTER)
             and isinstance(layer.labeling(), QgsVectorLayerSimpleLabeling)
         ):
             settings = QgsPalLayerSettings(layer.labeling().settings())
-            settings.dataDefinedProperties().setProperty(QgsPalLayerSettings.Show, True)
+            settings.dataDefinedProperties().setProperty(
+                QgsPalLayerSettings.Property.Show, True
+            )
             layer.setLabeling(QgsVectorLayerSimpleLabeling(settings))
 
         # rules based labeling filter
@@ -72,14 +78,14 @@ def remove_mask_filter(layer):
             for rule in layer.labeling().rootRule().children():
                 settings = rule.settings()
                 if settings.dataDefinedProperties().hasProperty(
-                    QgsPalLayerSettings.Show
+                    QgsPalLayerSettings.Property.Show
                 ) and settings.dataDefinedProperties().property(
-                    QgsPalLayerSettings.Show
+                    QgsPalLayerSettings.Property.Show
                 ).expressionString().startswith(
                     SPATIAL_FILTER
                 ):
                     settings.dataDefinedProperties().setProperty(
-                        QgsPalLayerSettings.Show, True
+                        QgsPalLayerSettings.Property.Show, True
                     )
                     rule.setSettings(settings)
 
@@ -104,7 +110,9 @@ def add_mask_filter(layer):
         # simple labeling. new settings
         if isinstance(layer.labeling(), QgsVectorLayerSimpleLabeling):
             settings = QgsPalLayerSettings(layer.labeling().settings())
-            settings.dataDefinedProperties().setProperty(QgsPalLayerSettings.Show, prop)
+            settings.dataDefinedProperties().setProperty(
+                QgsPalLayerSettings.Property.Show, prop
+            )
             layer.setLabeling(QgsVectorLayerSimpleLabeling(settings))
 
         # rules based labeling filter
@@ -112,7 +120,7 @@ def add_mask_filter(layer):
             for rule in layer.labeling().rootRule().children():
                 settings = rule.settings()
                 settings.dataDefinedProperties().setProperty(
-                    QgsPalLayerSettings.Show, prop
+                    QgsPalLayerSettings.Property.Show, prop
                 )
                 rule.setSettings(settings)
 

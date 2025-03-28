@@ -18,53 +18,54 @@ email                : geocatalogue@eau-adour-garonne.fr
  ***************************************************************************/
 """
 
+import base64
+
 # Import the PyQt and QGIS libraries
 import os
-import base64
+from functools import partial
+
+from qgis.core import (
+    Qgis,
+    QgsCoordinateReferenceSystem,
+    QgsCoordinateTransform,
+    QgsExpression,
+    QgsExpressionContextUtils,
+    QgsExpressionFunction,
+    QgsFeature,
+    QgsField,
+    QgsGeometry,
+    QgsLayerTreeLayer,
+    QgsLayoutItemMap,
+    QgsMapLayer,
+    QgsMapToPixelSimplifier,
+    QgsMessageLog,
+    QgsPointXY,
+    QgsProject,
+    QgsRectangle,
+    QgsSettings,
+    QgsVectorFileWriter,
+    QgsVectorLayer,
+    QgsVectorSimplifyMethod,
+    QgsWkbTypes,
+)
 from qgis.PyQt.QtCore import (
     QCoreApplication,
+    QFileInfo,
+    QLocale,
     QObject,
     QSettings,
     QTranslator,
     QVariant,
-    QFileInfo,
 )
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction
 
-from qgis.core import (
-    Qgis,
-    QgsExpression,
-    QgsExpressionFunction,
-    QgsGeometry,
-    QgsPointXY,
-    QgsProject,
-    QgsMapLayer,
-    QgsVectorLayer,
-    QgsWkbTypes,
-    QgsLayerTreeLayer,
-    QgsField,
-    QgsFeature,
-    QgsVectorFileWriter,
-    QgsRectangle,
-    QgsMapToPixelSimplifier,
-    QgsCoordinateReferenceSystem,
-    QgsCoordinateTransform,
-    QgsVectorSimplifyMethod,
-    QgsMessageLog,
-    QgsExpressionContextUtils,
-    QgsLayoutItemMap,
-)
+from .__about__ import DIR_PLUGIN_ROOT
 
 # from qgis.utils import showPluginHelp
-from .logic import utils
-
-from .ui.maindialog import MainDialog
-from .logic import mask_filter
+from .logic import mask_filter, style_tools, utils
 from .logic.mask_parameters import MaskParameters
-from .logic import style_tools
-from functools import partial
-from .__about__ import DIR_PLUGIN_ROOT
+from .ui.maindialog import MainDialog
 
 aeag_mask_instance = None
 
@@ -152,17 +153,17 @@ in_mask(2154)"""
 
 class aeag_mask(QObject):
     WRITE_ERRORS = {
-        QgsVectorFileWriter.NoError: "Ok",
-        QgsVectorFileWriter.ErrDriverNotFound: "Driver not found",
-        QgsVectorFileWriter.ErrCreateDataSource: "Cannot create data source",
-        QgsVectorFileWriter.ErrCreateLayer: "Cannot create layer",
-        QgsVectorFileWriter.ErrAttributeTypeUnsupported: "Attribute type unsupported",
-        QgsVectorFileWriter.ErrAttributeCreationFailed: "Attribute creation failed",
-        QgsVectorFileWriter.ErrProjection: "Projection error",
-        QgsVectorFileWriter.ErrFeatureWriteFailed: "Feature write failed",
-        QgsVectorFileWriter.ErrInvalidLayer: "Invalid layer",
+        QgsVectorFileWriter.WriterError.NoError: "Ok",
+        QgsVectorFileWriter.WriterError.ErrDriverNotFound: "Driver not found",
+        QgsVectorFileWriter.WriterError.ErrCreateDataSource: "Cannot create data source",
+        QgsVectorFileWriter.WriterError.ErrCreateLayer: "Cannot create layer",
+        QgsVectorFileWriter.WriterError.ErrAttributeTypeUnsupported: "Attribute type unsupported",
+        QgsVectorFileWriter.WriterError.ErrAttributeCreationFailed: "Attribute creation failed",
+        QgsVectorFileWriter.WriterError.ErrProjection: "Projection error",
+        QgsVectorFileWriter.WriterError.ErrFeatureWriteFailed: "Feature write failed",
+        QgsVectorFileWriter.WriterError.ErrInvalidLayer: "Invalid layer",
         # QgsVectorFileWriter.ErrSavingMetadata : "Metadata saving error",
-        QgsVectorFileWriter.Canceled: "Canceled",
+        QgsVectorFileWriter.WriterError.Canceled: "Canceled",
     }
 
     def __init__(self, iface):
@@ -176,7 +177,9 @@ class aeag_mask(QObject):
 
         try:
             # install translator
-            self.myLocale = QSettings().value("locale/userLocale")[0:2]
+            self.myLocale = QgsSettings().value("locale/userLocale", QLocale().name())[
+                0:2
+            ]
             # dictionary
             localePath = self.path + "/i18n/" + self.myLocale + ".qm"
             # translator
@@ -286,9 +289,7 @@ class aeag_mask(QObject):
         # register to the change of active layer for enabling/disabling
         #   of the action
         self.old_active_layer = None
-        self.iface.mapCanvas().currentLayerChanged.connect(
-            self.on_current_layer_changed
-        )
+        self.iface.mapCanvas().currentLayerChanged.connect(self.on_current_layer_changed)
         self.on_current_layer_changed(None)
 
         # register to project reading
@@ -304,9 +305,12 @@ class aeag_mask(QObject):
             if not ok:
                 # no parameters in the project
                 # look for a vector layer called 'Mask'
-                for _id, l in list(QgsProject.instance().mapLayers().items()):
-                    if l.type() == QgsMapLayer.VectorLayer and l.name() == "Mask":
-                        return self.load_from_layer(l)
+                for _, layer in list(QgsProject.instance().mapLayers().items()):
+                    if (
+                        layer.type() == QgsMapLayer.LayerType.VectorLayer
+                        and layer.name() == "Mask"
+                    ):
+                        return self.load_from_layer(layer)
 
             layer_id, ok = QgsProject.instance().readEntry("Mask", "layer_id")
             layer = QgsProject.instance().mapLayer(layer_id)
@@ -353,7 +357,7 @@ class aeag_mask(QObject):
         else:
             self.act_aeag_mask.setEnabled(True)
 
-        if layer and layer.type() != QgsMapLayer.VectorLayer:
+        if layer and layer.type() != QgsMapLayer.LayerType.VectorLayer:
             self.old_active_layer = None
             return
 
@@ -583,7 +587,7 @@ class aeag_mask(QObject):
             self.iface.messageBar().pushMessage(
                 self.tr("Mask plugin error"),
                 self.tr("No polygon selection !"),
-                level=Qgis.Warning,
+                level=Qgis.MessageLevel.Warning,
             )
             return
 
@@ -632,7 +636,7 @@ class aeag_mask(QObject):
                     self.iface.messageBar().pushMessage(
                         self.tr("Mask plugin error"),
                         self.tr("Unknown error. The mask is lost."),
-                        level=Qgis.Critical,
+                        level=Qgis.MessageLevel.Critical,
                     )
                     return
 
@@ -662,14 +666,14 @@ class aeag_mask(QObject):
                 layer.updateExtents()
 
                 # RH 04 05 2015 > clean up selection of all layers
-                for l in self.canvas.layers():
-                    if l.type() != QgsMapLayer.VectorLayer:
+                for alayer in self.canvas.layers():
+                    if alayer.type() != QgsMapLayer.LayerType.VectorLayer:
                         # Ignore this layer as it's not a vector
                         continue
-                    if l.featureCount() == 0:
+                    if alayer.featureCount() == 0:
                         # There are no features - skip
                         continue
-                    l.removeSelection()
+                    alayer.removeSelection()
 
                 # RH 04 05 2015 > zooms to mask layer
                 canvas = self.iface.mapCanvas()
@@ -699,7 +703,7 @@ class aeag_mask(QObject):
                 self.iface.messageBar().pushMessage(
                     self.tr("Mask plugin error"),
                     self.tr("No polygon selection !"),
-                    level=Qgis.Info,
+                    level=Qgis.MessageLevel.Info,
                 )
                 return
             layer = QgsVectorLayer(
@@ -728,7 +732,7 @@ class aeag_mask(QObject):
 
         # connect apply
         dlg.applied.connect(on_applied_)
-        r = dlg.exec_()
+        r = dlg.exec()
         if r == 1:  # Ok
             on_applied_()
 
@@ -761,7 +765,7 @@ class aeag_mask(QObject):
         for feature in layer.selectedFeatures():
             if (
                 feature.geometry()
-                and feature.geometry().type() == QgsWkbTypes.PolygonGeometry
+                and feature.geometry().type() == QgsWkbTypes.GeometryType.PolygonGeometry
             ):
                 geos.append(QgsGeometry(feature.geometry()))
         return layer.crs(), geos
@@ -817,9 +821,7 @@ class aeag_mask(QObject):
         serialized = base64.b64encode(parameters.serialize(with_style=False))
 
         # save geometry
-        layer = QgsVectorLayer(
-            "MultiPolygon?crs=%s" % dest_crs.authid(), name, "memory"
-        )
+        layer = QgsVectorLayer("MultiPolygon?crs=%s" % dest_crs.authid(), name, "memory")
         pr = layer.dataProvider()
         layer.startEditing()
         layer.addAttribute(QgsField("params", QVariant.String))
@@ -856,7 +858,7 @@ class aeag_mask(QObject):
             layer, save_as, transform_context, save_options
         )
 
-        if error[0] == QgsVectorFileWriter.NoError:
+        if error[0] == QgsVectorFileWriter.WriterError.NoError:
             nlayer = QgsVectorLayer(save_as, name, "ogr")
             if not nlayer.dataProvider().isValid():
                 self.iface.messageBar().pushMessage(
@@ -864,7 +866,7 @@ class aeag_mask(QObject):
                     self.tr(
                         "Invalid dataProvider. The mask remains in memory. Check file name, format and extension."
                     ),
-                    level=Qgis.Warning,
+                    level=Qgis.MessageLevel.Warning,
                 )
                 return layer
             if not nlayer.isSpatial():
@@ -873,7 +875,7 @@ class aeag_mask(QObject):
                     self.tr(
                         "No GeometryType. The mask remains in memory. Check file name, format and extension."
                     ),
-                    level=Qgis.Warning,
+                    level=Qgis.MessageLevel.Warning,
                 )
                 return layer
 
@@ -892,7 +894,7 @@ class aeag_mask(QObject):
                 + self.tr(
                     "The mask remains in memory. Check file name, format and extension."
                 ),
-                level=Qgis.Warning,
+                level=Qgis.MessageLevel.Warning,
             )
             return layer
 
@@ -920,7 +922,7 @@ class aeag_mask(QObject):
             else:
                 if self.has_simplifier:
                     simplifier = QgsMapToPixelSimplifier(
-                        QgsMapToPixelSimplifier.SimplifyGeometry, tol
+                        QgsMapToPixelSimplifier.SimplifyFlag.SimplifyGeometry, tol
                     )
                     geom = simplifier.simplify(geom)
                     if not geom.isGeosValid():
@@ -946,7 +948,7 @@ class aeag_mask(QObject):
         try:
             # layer is not None but destroyed ?
             self.layer.id()
-        except:
+        except Exception:
             self.reset_mask_layer()
             return False
 
@@ -981,11 +983,8 @@ class aeag_mask(QObject):
                     # transformation error. Check layer projection.
                     pass
 
-        if geom.type() == QgsWkbTypes.PolygonGeometry:
-            if (
-                self.parameters.polygon_mask_method == 2
-                and not self.has_point_on_surface
-            ):
+        if geom.type() == QgsWkbTypes.GeometryType.PolygonGeometry:
+            if self.parameters.polygon_mask_method == 2 and not self.has_point_on_surface:
                 self.parameters.polygon_mask_method = 1
 
             if self.parameters.polygon_mask_method == 0:
@@ -1005,14 +1004,14 @@ class aeag_mask(QObject):
                 )
             else:
                 return False
-        elif geom.type() == QgsWkbTypes.LineGeometry:
+        elif geom.type() == QgsWkbTypes.GeometryType.LineGeometry:
             if self.parameters.line_mask_method == 0:
                 return mask_geom.intersects(geom)
             elif self.parameters.line_mask_method == 1:
                 return mask_geom.contains(geom)
             else:
                 return False
-        elif geom.type() == QgsWkbTypes.PointGeometry:
+        elif geom.type() == QgsWkbTypes.GeometryType.PointGeometry:
             return mask_geom.intersects(geom)
         else:
             return False

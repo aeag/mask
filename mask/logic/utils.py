@@ -1,5 +1,6 @@
 import os
-from qgis.PyQt.QtCore import QLocale, QUrl, QDir
+
+from qgis.PyQt.QtCore import QDir, QLocale, QUrl
 from qgis.PyQt.QtGui import QDesktopServices
 
 """
