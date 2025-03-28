@@ -1,4 +1,4 @@
-﻿"""
+"""
 /***************************************************************************
 Name                  : Mask
 Description          : Aide à la création de masque
@@ -53,7 +53,6 @@ from qgis.PyQt.QtCore import (
     QFileInfo,
     QLocale,
     QObject,
-    QSettings,
     QTranslator,
     QVariant,
 )
@@ -173,15 +172,13 @@ class aeag_mask(QObject):
         global aeag_mask_instance
         aeag_mask_instance = self
         self.iface = iface
-        self.path = QFileInfo(os.path.realpath(__file__)).path()
+        self.path = DIR_PLUGIN_ROOT
 
         try:
             # install translator
-            self.myLocale = QgsSettings().value("locale/userLocale", QLocale().name())[
-                0:2
-            ]
+            myLocale = QgsSettings().value("locale/userLocale", QLocale().name())[0:2]
             # dictionary
-            localePath = self.path + "/i18n/" + self.myLocale + ".qm"
+            localePath = str(DIR_PLUGIN_ROOT / "i18n" / f"{myLocale}.qm")
             # translator
             if QFileInfo(localePath).exists():
                 self.translator = QTranslator()
@@ -243,7 +240,7 @@ class aeag_mask(QObject):
         self.project.layerWillBeRemoved.connect(self.on_remove_mask)
 
         self.act_aeag_mask = QAction(
-            QIcon(str(DIR_PLUGIN_ROOT / "resources/aeag_mask.png")),
+            QIcon(str(DIR_PLUGIN_ROOT / "resources" / "aeag_mask.png")),
             self.tr("Create a mask"),
             self.iface.mainWindow(),
         )
@@ -251,17 +248,6 @@ class aeag_mask(QObject):
         self.toolBar = self.iface.pluginToolBar()
         self.toolBar.addAction(self.act_aeag_mask)
         self.iface.addPluginToMenu("&Mask", self.act_aeag_mask)
-
-        # turn it to true to enable test
-        if False:
-            self.act_test = QAction(
-                QIcon(str(DIR_PLUGIN_ROOT / "resources/aeag_mask.png")),
-                "Test",
-                self.iface.mainWindow(),
-            )
-            self.toolBar.addAction(self.act_test)
-            self.iface.addPluginToMenu("&Mask", self.act_test)
-            self.act_test.triggered.connect(self.do_test)
 
         # Add documentation links to the menu
         self.act_aeag_doc = QAction(self.tr("Documentation"), self.iface.mainWindow())
@@ -289,7 +275,9 @@ class aeag_mask(QObject):
         # register to the change of active layer for enabling/disabling
         #   of the action
         self.old_active_layer = None
-        self.iface.mapCanvas().currentLayerChanged.connect(self.on_current_layer_changed)
+        self.iface.mapCanvas().currentLayerChanged.connect(
+            self.on_current_layer_changed
+        )
         self.on_current_layer_changed(None)
 
         # register to project reading
@@ -765,7 +753,8 @@ class aeag_mask(QObject):
         for feature in layer.selectedFeatures():
             if (
                 feature.geometry()
-                and feature.geometry().type() == QgsWkbTypes.GeometryType.PolygonGeometry
+                and feature.geometry().type()
+                == QgsWkbTypes.GeometryType.PolygonGeometry
             ):
                 geos.append(QgsGeometry(feature.geometry()))
         return layer.crs(), geos
@@ -801,19 +790,6 @@ class aeag_mask(QObject):
         nlayer.setBlendMode(style[2])
         nlayer.setRenderer(style[3])
 
-    def set_default_layer_style(self, layer):
-        settings = QSettings()
-
-        parameters = MaskParameters()
-        defaults = settings.value("mask/defaults", None)
-        if defaults is not None:
-            parameters.unserialize(defaults)
-        else:
-            default_style = os.path.join(
-                os.path.dirname(__file__), "/resources/default_mask_style.qml"
-            )
-            layer.loadNamedStyle(default_style)
-
     def create_layer(self, parameters, name, is_memory, dest_crs, layer_style=None):
         save_as = parameters.file_path
         file_format = parameters.file_format
@@ -821,7 +797,9 @@ class aeag_mask(QObject):
         serialized = base64.b64encode(parameters.serialize(with_style=False))
 
         # save geometry
-        layer = QgsVectorLayer("MultiPolygon?crs=%s" % dest_crs.authid(), name, "memory")
+        layer = QgsVectorLayer(
+            "MultiPolygon?crs=%s" % dest_crs.authid(), name, "memory"
+        )
         pr = layer.dataProvider()
         layer.startEditing()
         layer.addAttribute(QgsField("params", QVariant.String))
@@ -984,7 +962,10 @@ class aeag_mask(QObject):
                     pass
 
         if geom.type() == QgsWkbTypes.GeometryType.PolygonGeometry:
-            if self.parameters.polygon_mask_method == 2 and not self.has_point_on_surface:
+            if (
+                self.parameters.polygon_mask_method == 2
+                and not self.has_point_on_surface
+            ):
                 self.parameters.polygon_mask_method = 1
 
             if self.parameters.polygon_mask_method == 0:
