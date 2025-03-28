@@ -30,12 +30,12 @@ Then you can modifies the mask layer properties:
 
   - style options (default is inverted polygon renderer + border shading)
   - buffer around mask
-  - filter labels of features falling outside area of interest (achieved by a **in_mask(SRID)** function filter on labeling placement options)
+  - filter labels of features falling outside area of interest (achieved by a `in_mask(SRID)` function filter on labeling placement options)
   choose mask layer format (Memory or any OGR datasource)
 
 ### **Mask and labels**
 
-The configuration interface allows you to fine-tune the filtering of the labels, by adding for you the expression 'in_mask ()' in the property 'show label' of the corresponding layers.
+The configuration interface allows you to fine-tune the filtering of the labels, by adding for you the expression `in_mask()` in the property 'show label' of the corresponding layers.
 
 ![tuto-labels](https://raw.githubusercontent.com/aeag/mask/master/docs/static/mask-labels.gif)
 
@@ -92,15 +92,14 @@ Merci de notifier tout problème ou demande d'évolution [ici](https://github.co
 Lorsqu'un ou plusieurs polygones sont sélectionnés, l'activation du masque est rendue possible (l'icône s'active), pour créer une nouvelle couche de masque.
 
 Vous pouvez alors modifier les propriétés du masque :
-
   - options de style (par défaut: polygone inversé avec bords flous)
   - tampon autour du masque
-  - filtre des étiquettes pour les entités qui sont à l'intérieur de la zone (avec la fonction filtre booléenne **in_mask(SRID)** sur les options de positionnement des étiquettes)
+  - filtre des étiquettes pour les entités qui sont à l'intérieur de la zone (avec la fonction filtre booléenne `in_mask(SRID)` sur les options de positionnement des étiquettes)
   - choix du format de la couche de masque (couche mémoire ou OGR)
 
 ### **Le masque et les étiquettes**
 
-L'interface de configuration vous permet de régler finement le filtrage des étiquettes, en ajoutant pour vous l'expression 'in_mask()' dans la propriété 'montrer l'étiquette' des couches correspondantes.
+L'interface de configuration vous permet de régler finement le filtrage des étiquettes, en ajoutant pour vous l'expression `in_mask()` dans la propriété 'montrer l'étiquette' des couches correspondantes.
 
 ![tuto-labels](https://raw.githubusercontent.com/aeag/mask/master/docs/static/mask-labels.gif)
 
@@ -117,7 +116,7 @@ Attention : à la création d'une mise en page, le masque n'est pas synchronisé
 
 ### **Usage avancé**
 
-La création d'un masque peut s'effectuer par un appel à la fonction do_mask, de sorte que la génération de masque peut être pilotée par d'autres plugins.
+La création d'un masque peut s'effectuer par un appel à la fonction `do_mask()`, de sorte que la génération de masque peut être pilotée par d'autres plugins.
 
 ```python
 # import du plugin
