@@ -1,8 +1,8 @@
-import os
-
 from qgis.core import QgsReadWriteContext
 from qgis.PyQt.QtCore import QSettings
 from qgis.PyQt.QtXml import QDomDocument, QDomImplementation
+
+from mask.__about__ import DIR_PLUGIN_ROOT
 
 from .mask_parameters import MaskParameters
 
@@ -39,7 +39,5 @@ def set_default_layer_symbology(layer):
         parameters.unserialize(defaults)
         set_layer_symbology(layer, parameters.style)
     else:
-        default_style = os.path.join(
-            os.path.dirname(__file__), "../resources/default_mask_style.qml"
-        )
+        default_style = str(DIR_PLUGIN_ROOT / "resources" / "default_mask_style.qml")
         layer.loadNamedStyle(default_style)
