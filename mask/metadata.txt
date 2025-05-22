@@ -7,7 +7,7 @@ qgisMaximumVersion=3.98
 
 description=Help to create mask, filter labels in it
 description[fr]=Aide à la création de masque, filtrage d'étiquette
-version=1.11.0
+version=1.11.1-dev
 supportsQt6=True
 # end of mandatory metadata
 
