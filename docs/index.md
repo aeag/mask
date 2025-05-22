@@ -37,7 +37,26 @@ Then you can modifies the mask layer properties:
 
 The configuration interface allows you to fine-tune the filtering of the labels, by adding for you the expression `in_mask()` in the property 'show label' of the corresponding layers.
 
+Labels will be filtered according to whether the geometry is contained within or crosses the mask.
+
 ![tuto-labels](https://raw.githubusercontent.com/aeag/mask/master/docs/static/mask-labels.gif)
+
+But the positioning chosen by the labelling engine is not known, so is not taken into account. And in the case of large linear objects, or polygons, labels may appear outside the mask (the object intersects the mask).
+
+![longline](static/mask-label-longline.png)
+
+The solution to this problem is to use the label geometry generator (‘position’ tab), and use an expression like :
+
+```python
+ case when is_layer_visible( 'Mask_cc0d2b12' /*layer id*/)
+    then intersection( $geometry, $mask_geometry)
+    else $geometry
+ end
+```
+
+![generator](static/mask-label-expression.png)
+
+Mask activated, only the interection will be used, otherwise the original geometry will be used.
 
 ### **Mask and Atlas generation**
 
@@ -49,6 +68,7 @@ Remember to define extent 'controlled by the atlas', on the map object.
 Warning: when creating a layout, the mask is not synchronized with atlas. It will be during the following openings.
 
 ![tuto-atlas](https://raw.githubusercontent.com/aeag/mask/master/docs/static/mask-atlas.gif)
+
 
 ### **Advanced usage**
 
@@ -101,7 +121,26 @@ Vous pouvez alors modifier les propriétés du masque :
 
 L'interface de configuration vous permet de régler finement le filtrage des étiquettes, en ajoutant pour vous l'expression `in_mask()` dans la propriété 'montrer l'étiquette' des couches correspondantes.
 
+Les étiquettes vont être filtrés selon que la géométrie est contenue ou croise le masque.
+
 ![tuto-labels](https://raw.githubusercontent.com/aeag/mask/master/docs/static/mask-labels.gif)
+
+Mais le positionnement choisi par le moteur d'étiquetage n'est pas connu, donc non pris en compte. Et dans le cas de grands objets linéaires, ou polygones, des étiquettes peuvent aparaître en dehors du masque (l'objet intersecte le masque).
+
+![longline](static/mask-label-longline.png)
+
+La solution pour y remédier est d'exploiter le générateur de géométrie de l'étiquetage (onglet 'position'), et d'utiliser une expression comme :
+
+```python
+ case when is_layer_visible( 'Mask_cc0d2b12' /*layer id*/)
+    then intersection( $geometry, $mask_geometry)
+    else $geometry
+ end
+```
+
+Masque activé, seule l'interection sera exploitée, la géométrie originale sera utilisée sinon.
+
+![intersection](static/mask-label-expression.png)
 
 ### **Le masque et la production d'atlas**
 
