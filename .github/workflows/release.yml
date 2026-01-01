@@ -51,7 +51,7 @@ jobs:
       - name: Compile translations
         run: lrelease ${{ env.PROJECT_FOLDER }}/i18n/*.ts
 
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         with:
           name: translations-build
           path: ${{ env.PROJECT_FOLDER }}/**/*.qm
@@ -104,7 +104,7 @@ jobs:
             --plugin-repo-url $(gh api "repos/$GITHUB_REPOSITORY/pages" --jq '.html_url')
 
       - name:
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: ${{ env.PROJECT_FOLDER }}-latest
           path: |
