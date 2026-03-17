@@ -309,12 +309,17 @@ class MainDialog(QDialog):
 
         # only display the first symbol
         if len(syms) > 0:
-            pix = QPixmap()
             context = QgsExpressionContext()
             context.appendScopes(
                 QgsExpressionContextUtils.globalProjectLayerScopes(layer)
             )
-            pix.convertFromImage(syms[0].bigSymbolPreviewImage(context))
+            try:
+                img = syms[0].bigSymbolPreviewImageV2(context)
+            except Exception:
+                img = syms[0].bigSymbolPreviewImage(context)
+
+            pix = QPixmap()
+            pix.convertFromImage(img)
             self.ui.stylePreview.setPixmap(pix)
 
     def exec(self):
