@@ -52,9 +52,9 @@ from qgis.PyQt.QtCore import (
     QCoreApplication,
     QFileInfo,
     QLocale,
+    QMetaType,
     QObject,
     QTranslator,
-    QVariant,
 )
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction
@@ -802,13 +802,15 @@ class aeag_mask(QObject):
         )
         pr = layer.dataProvider()
         layer.startEditing()
-        layer.addAttribute(QgsField("params", QVariant.String))
-        fet1 = QgsFeature(0)
-        fet1.setFields(layer.fields())
-        fet1.setAttribute("params", str(serialized)[2:-1])
-        fet1.setGeometry(parameters.geometry)
-        pr.addFeatures([fet1])
-        layer.commitChanges()
+        try:
+            layer.addAttribute(QgsField("params", QMetaType.QString))
+            fet1 = QgsFeature(0)
+            fet1.setFields(layer.fields())
+            fet1.setAttribute("params", str(serialized)[2:-1])
+            fet1.setGeometry(parameters.geometry)
+            pr.addFeatures([fet1])
+        finally:
+            layer.commitChanges()
 
         # copy layer style
         if layer_style is not None:
