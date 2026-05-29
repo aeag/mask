@@ -61,7 +61,7 @@ class MainDialog(QDialog):
 
         self.parameters = parameters
         if self.parameters.file_format is None:
-            self.parameters.file_format = "ESRI Shapefile"
+            self.parameters.file_format = "GeoPackage"
         self.style = QgsStyle()
 
         # connect edit style
