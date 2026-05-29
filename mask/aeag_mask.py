@@ -834,7 +834,7 @@ class aeag_mask(QObject):
         save_options.driverName = file_format
         # save_options.fileEncoding = "UTF-8"
         transform_context = QgsProject.instance().transformContext()
-        error = QgsVectorFileWriter.writeAsVectorFormatV2(
+        error = QgsVectorFileWriter.writeAsVectorFormatV3(
             layer, save_as, transform_context, save_options
         )
 
