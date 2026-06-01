@@ -3,7 +3,7 @@ name: Documentation publisher
 
 env:
   PROJECT_FOLDER: "mask"
-  PYTHON_VERSION: "3.10"
+  PYTHON_VERSION: "3.11"
 
 on:
   push:
