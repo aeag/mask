@@ -10,4 +10,4 @@ flake8-qgis>=2.1.0
 
 pre-commit>=3.7,<5
 
-qgis-plugin-ci==2.9.*
+qgis-plugin-ci==2.10.*
