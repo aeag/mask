@@ -107,7 +107,7 @@ def add_mask_filter(layer):
         return False
 
     try:
-        expr = "%s(%d)" % (SPATIAL_FILTER, layer.crs().postgisSrid())
+        expr = f"{SPATIAL_FILTER}({int(layer.crs().postgisSrid())})"
         prop = QgsProperty()
         prop.setExpressionString(expr)
 
