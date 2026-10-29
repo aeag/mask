@@ -36,6 +36,8 @@ def has_mask_filter(layer):
         # we test only the first rule
         for rule in layer.labeling().rootRule().children():
             settings = rule.settings()
+            if settings is None:
+                return False
             show_expr = settings.dataDefinedProperties().property(
                 QgsPalLayerSettings.Property.Show
             )
@@ -77,6 +79,8 @@ def remove_mask_filter(layer):
         if isinstance(layer.labeling(), QgsRuleBasedLabeling):
             for rule in layer.labeling().rootRule().children():
                 settings = rule.settings()
+                if settings is None:
+                    return False
                 if settings.dataDefinedProperties().hasProperty(
                     QgsPalLayerSettings.Property.Show
                 ) and settings.dataDefinedProperties().property(
@@ -103,7 +107,7 @@ def add_mask_filter(layer):
         return False
 
     try:
-        expr = "%s(%d)" % (SPATIAL_FILTER, layer.crs().postgisSrid())
+        expr = f"{SPATIAL_FILTER}({int(layer.crs().postgisSrid())})"
         prop = QgsProperty()
         prop.setExpressionString(expr)
 
@@ -119,6 +123,8 @@ def add_mask_filter(layer):
         if isinstance(layer.labeling(), QgsRuleBasedLabeling):
             for rule in layer.labeling().rootRule().children():
                 settings = rule.settings()
+                if settings is None:
+                    return False
                 settings.dataDefinedProperties().setProperty(
                     QgsPalLayerSettings.Property.Show, prop
                 )
