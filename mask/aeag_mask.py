@@ -66,6 +66,7 @@ from .logic import mask_filter, style_tools, utils
 from .logic.mask_parameters import MaskParameters
 from .ui.maindialog import MainDialog
 
+global aeag_mask_instance
 aeag_mask_instance = None
 
 
