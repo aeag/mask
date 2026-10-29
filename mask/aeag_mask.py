@@ -74,9 +74,9 @@ aeag_mask_instance = None
 # from mask import aeag_mask
 # aeag_mask.do()
 def do(crs=None, poly=None, name=None, keep_layer=False):
-    global aeag_mask_instance
     if aeag_mask_instance is None:
         return
+
     aeag_mask_instance.layer = aeag_mask_instance.apply_mask_parameters(
         aeag_mask_instance.layer,
         aeag_mask_instance.parameters,
