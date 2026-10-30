@@ -296,18 +296,8 @@ class aeag_mask(QObject):
         parameters = MaskParameters()
         try:
             # return layer, parameters
-            ok = parameters.load_from_project()
-            if not ok:
-                # no parameters in the project
-                # look for a vector layer called 'Mask'
-                for _, layer in list(QgsProject.instance().mapLayers().items()):
-                    if (
-                        layer.type() == QgsMapLayer.LayerType.VectorLayer
-                        and layer.name() == "Mask"
-                    ):
-                        return self.load_from_layer(layer)
-
-            layer_id, ok = QgsProject.instance().readEntry("Mask", "layer_id")
+            parameters.load_from_project()
+            layer_id, _ = QgsProject.instance().readEntry("Mask", "layer_id")
             layer = QgsProject.instance().mapLayer(layer_id)
             return layer, parameters
 
@@ -403,25 +393,6 @@ class aeag_mask(QObject):
             self.on_current_layer_changed
         )
         self.iface.mainWindow().projectRead.disconnect(self.on_project_open)
-
-    # force loading of parameters from a layer
-    # for backward compatibility with older versions
-    def load_from_layer(self, layer):
-        # return layer, parameters
-        parameters = MaskParameters()
-        ok = parameters.load_from_layer(layer)
-        if not ok:
-            return layer, parameters
-        QgsProject.instance().writeEntry("Mask", "layer_id", layer.id())
-        layer = self.apply_mask_parameters(
-            layer,
-            parameters,
-            dest_crs=None,
-            poly=None,
-            name=layer.name(),
-            keep_layer=False,
-        )
-        return layer, parameters
 
     def connect_layout_events(self, layout):
         try:
