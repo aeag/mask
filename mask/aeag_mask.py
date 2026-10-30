@@ -300,10 +300,6 @@ class aeag_mask(QObject):
                     "ERROR load_from_project",
                     "Extensions",
                 )
-                parameters = MaskParameters()
-                if layer is not None:
-                    # apply default style
-                    style_tools.set_default_layer_symbology(layer)
 
             return layer, parameters
 

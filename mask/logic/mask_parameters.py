@@ -8,6 +8,7 @@ class MaskParameters:
     SERIAL_VERSION = 2
 
     def __init__(self):
+        self.initial = True
         self.do_buffer = False
         self.buffer_units = 1
         self.buffer_segments = 5
@@ -24,25 +25,6 @@ class MaskParameters:
         self.geometry = None
         self.do_atlas_interaction = True
 
-    def forSettings(self):
-        settings = MaskParameters()
-        settings.do_buffer = self.do_buffer
-        settings.buffer_units = self.buffer_units
-        settings.buffer_segments = self.buffer_segments
-        settings.do_simplify = self.do_simplify
-        settings.simplify_tolerance = self.simplify_tolerance
-        settings.do_save_as = self.do_save_as
-        settings.file_path = self.file_path
-        settings.file_format = self.file_format
-        settings.style = self.style
-        settings.polygon_mask_method = self.polygon_mask_method
-        settings.line_mask_method = self.line_mask_method
-        settings.limited_layers_obsolete = self.limited_layers_obsolete
-        settings.orig_geometry = []
-        settings.geometry = None
-        settings.do_atlas_interaction = self.do_atlas_interaction
-        return settings
-
     @staticmethod
     def _style_to_serializable(style):
         if style is None:
@@ -53,6 +35,10 @@ class MaskParameters:
             return style.decode("utf-8", errors="replace")
         if hasattr(style, "toUtf8"):
             return bytes(style.toUtf8()).decode("utf-8", errors="replace")
+        if hasattr(style, "data"):
+            data = style.data()
+            if isinstance(data, (bytes, bytearray)):
+                return data.decode("utf-8", errors="replace")
         return str(style)
 
     @staticmethod
@@ -154,6 +140,8 @@ class MaskParameters:
         except Exception as e:
             QgsMessageLog.logMessage(f"Mask error when unserialize - {e}", "Extensions")
             raise e
+
+        self.initial = False
 
     def have_same_layer_options(self, other):
         """Returns true if the other parameters have the same layer options

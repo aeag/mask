@@ -1,4 +1,4 @@
-from qgis.core import QgsMessageLog, QgsReadWriteContext
+from qgis.core import QgsReadWriteContext
 from qgis.PyQt.QtCore import QSettings
 from qgis.PyQt.QtXml import QDomDocument, QDomImplementation
 
@@ -13,8 +13,7 @@ def set_layer_symbology(layer, symbology):
         doc.setContent(symbology)
         errorMsg = ""
         ctx = QgsReadWriteContext()
-        r = layer.readSymbology(doc.firstChildElement("qgis"), errorMsg, ctx)
-        QgsMessageLog.logMessage(f"set_layer_symbology {r}", "Extensions")
+        layer.readSymbology(doc.firstChildElement("qgis"), errorMsg, ctx)
 
 
 def get_layer_symbology(layer):
@@ -43,22 +42,22 @@ def set_default_layer_symbology(layer):
 
     parameters = MaskParameters()
     defaults = settings.value("mask/defaults", None)
+    if defaults == "@Invalid()":
+        defaults = None
     if defaults is not None:
-        parameters.unserialize(defaults)
+        try:
+            parameters.unserialize(defaults)
 
-        QgsMessageLog.logMessage(
-            f"set_default_layer_symbology LAYER= {layer}", "Extensions"
-        )
-        QgsMessageLog.logMessage(
-            f"set_default_layer_symbology STYLE= {parameters.style}", "Extensions"
-        )
+        except Exception:
+            default_style = str(
+                DIR_PLUGIN_ROOT / "resources" / "default_mask_style.qml"
+            )
+            layer.loadNamedStyle(default_style)
+            parameters = MaskParameters()
+            parameters.style = get_layer_symbology(layer)
 
         set_layer_symbology(layer, parameters.style)
 
-        s = get_layer_symbology(layer)
-        QgsMessageLog.logMessage(
-            f"set_default_layer_symbology AFTER= {s}", "Extensions"
-        )
     else:
         default_style = str(DIR_PLUGIN_ROOT / "resources" / "default_mask_style.qml")
         layer.loadNamedStyle(default_style)
