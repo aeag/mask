@@ -18,8 +18,6 @@ email                : geocatalogue@eau-adour-garonne.fr
  ***************************************************************************/
 """
 
-import base64
-
 # Import the PyQt and QGIS libraries
 import os
 from functools import partial
@@ -32,7 +30,6 @@ from qgis.core import (
     QgsExpressionContextUtils,
     QgsExpressionFunction,
     QgsFeature,
-    QgsField,
     QgsGeometry,
     QgsLayerTreeLayer,
     QgsLayoutItemMap,
@@ -48,14 +45,7 @@ from qgis.core import (
     QgsVectorSimplifyMethod,
     QgsWkbTypes,
 )
-from qgis.PyQt.QtCore import (
-    QCoreApplication,
-    QFileInfo,
-    QLocale,
-    QMetaType,
-    QObject,
-    QTranslator,
-)
+from qgis.PyQt.QtCore import QCoreApplication, QFileInfo, QLocale, QObject, QTranslator
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction
 
@@ -562,6 +552,7 @@ class aeag_mask(QObject):
             layer = QgsVectorLayer(
                 "MultiPolygon?crs=%s" % dest_crs.authid(), mask_name, "memory"
             )
+            # apply default style
             style_tools.set_default_layer_symbology(layer)
             # add a mask filter to all layer
             for name, l in self.project.mapLayers().items():
@@ -675,6 +666,7 @@ class aeag_mask(QObject):
             layer = QgsVectorLayer(
                 "MultiPolygon?crs=%s" % dest_crs.authid(), self.MASK_NAME, "memory"
             )
+            # apply default style
             style_tools.set_default_layer_symbology(layer)
             is_new = True
 
@@ -771,8 +763,6 @@ class aeag_mask(QObject):
     def create_layer(self, parameters, name, is_memory, dest_crs, layer_style=None):
         save_as = parameters.file_path
         file_format = parameters.file_format
-        # save paramaters
-        serialized = base64.b64encode(parameters.serialize(with_style=False))
 
         # save geometry
         layer = QgsVectorLayer(
@@ -781,10 +771,8 @@ class aeag_mask(QObject):
         pr = layer.dataProvider()
         layer.startEditing()
         try:
-            layer.addAttribute(QgsField("params", QMetaType.QString))
             fet1 = QgsFeature(0)
             fet1.setFields(layer.fields())
-            fet1.setAttribute("params", str(serialized)[2:-1])
             fet1.setGeometry(parameters.geometry)
             pr.addFeatures([fet1])
         finally:
