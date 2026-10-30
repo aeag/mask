@@ -1,3 +1,4 @@
+# pylupdate6 --verbose --ts i18n/fr.ts aeag_mask.py logic/mask_filter.py logic/mask_parameters.py logic/style_tools.py ui/layerlist.py ui/maindialog.py  ui/ui_layer_list.ui ui/ui_plugin_mask.ui
 SOURCES         = aeag_mask.py \
                   logic/mask_filter.py \
                   logic/mask_parameters.py \
