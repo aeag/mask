@@ -45,7 +45,14 @@ from qgis.core import (
     QgsVectorSimplifyMethod,
     QgsWkbTypes,
 )
-from qgis.PyQt.QtCore import QCoreApplication, QFileInfo, QLocale, QObject, QTranslator
+from qgis.PyQt.QtCore import (
+    QCoreApplication,
+    QFileInfo,
+    QLocale,
+    QObject,
+    QSettings,
+    QTranslator,
+)
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction
 
@@ -288,18 +295,25 @@ class aeag_mask(QObject):
             # return layer, parameters
             layer_id, _ = QgsProject.instance().readEntry("Mask", "layer_id")
             layer = QgsProject.instance().mapLayer(layer_id)
-            QgsMessageLog.logMessage(
-                "load_from_project LAYER= {}".format(layer),
-                "Extensions",
-            )
+
             try:
                 parameters.load_from_project()
             except:
-                # TODO : prévenir utilisateur
-                QgsMessageLog.logMessage(
-                    "ERROR load_from_project",
-                    "Extensions",
+                self.iface.messageBar().pushMessage(
+                    self.tr("Mask plugin warning"),
+                    self.tr(
+                        "The mask is not compatible with the previous version; it must be reconfigured."
+                    ),
+                    level=Qgis.MessageLevel.Warning,
                 )
+
+                settings = QSettings()
+                parameters = MaskParameters()
+                defaults = settings.value("mask/defaults", None)
+                if defaults == "@Invalid()":
+                    defaults = None
+                if defaults is not None:
+                    parameters.unserialize(defaults)
 
             return layer, parameters
 
@@ -602,11 +616,7 @@ class aeag_mask(QObject):
                         QgsMessageLog.logMessage(
                             "apply_mask_parameters - {}".format(m), "Extensions"
                         )
-                    self.iface.messageBar().pushMessage(
-                        self.tr("Mask plugin error"),
-                        self.tr("Unknown error. The mask is lost."),
-                        level=Qgis.MessageLevel.Critical,
-                    )
+
                     return
 
                 # add the new layer
@@ -662,7 +672,6 @@ class aeag_mask(QObject):
 
     # run method that performs all the real work
     def run(self):
-        QgsMessageLog.logMessage("RUN", "Extensions")
         dest_crs, poly = self.get_selected_polygons()
         is_new = False
 
@@ -680,9 +689,6 @@ class aeag_mask(QObject):
                 "MultiPolygon?crs=%s" % dest_crs.authid(), self.MASK_NAME, "memory"
             )
             # apply default style
-            QgsMessageLog.logMessage(
-                f"set_default_layer_symbology {layer}", "Extensions"
-            )
             style_tools.set_default_layer_symbology(layer)
             is_new = True
 

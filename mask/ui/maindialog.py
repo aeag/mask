@@ -210,11 +210,6 @@ class MainDialog(QDialog):
         parameters = MaskParameters()
         self.update_parameters_from_ui(parameters)
 
-        QgsMessageLog.logMessage(
-            "on_save_defaults STYLE= {}".format(parameters.style),
-            "Extensions",
-        )
-
         # QSettings stores QVariant-compatible values; raw Python bytes are not
         # persisted correctly in .ini files and end up as "@Invalid()".
         defaults = parameters.serialize()
@@ -317,11 +312,6 @@ class MainDialog(QDialog):
             self.update_style_preview(self.parameters.layer)
 
     def update_style_preview(self, layer):
-        QgsMessageLog.logMessage(
-            "update_style_preview LAYER= {}".format(layer),
-            "Extensions",
-        )
-
         syms = layer.renderer().symbols(QgsRenderContext())
 
         # only display the first symbol
