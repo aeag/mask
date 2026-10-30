@@ -50,6 +50,8 @@ class MainDialog(QDialog):
     def __init__(self, parameters, is_new):
         QDialog.__init__(self, None)
 
+        QgsMessageLog.logMessage(f"MainDialog {is_new}", "Extensions")
+
         self.ui = Ui_MainDialog()
         self.ui.setupUi(self)
         self.ui.layer_list = LayerListWidget(self.ui.labelingGroup)
@@ -198,7 +200,10 @@ class MainDialog(QDialog):
         defaults = settings.value("mask/defaults", None)
         if defaults is not None:
             self.parameters.unserialize(defaults)
-
+            QgsMessageLog.logMessage(
+                "load_defaults STYLE= {}".format(self.parameters.style),
+                "Extensions",
+            )
         self.parameters.layer = mlayer
         self.update_ui_from_parameters(self.parameters)
 
@@ -207,6 +212,12 @@ class MainDialog(QDialog):
 
         parameters = MaskParameters()
         self.update_parameters_from_ui(parameters)
+
+        QgsMessageLog.logMessage(
+            "on_save_defaults STYLE= {}".format(parameters.style),
+            "Extensions",
+        )
+
         defaults = parameters.serialize()
         settings.setValue("mask/defaults", defaults)
 
@@ -305,6 +316,11 @@ class MainDialog(QDialog):
             self.update_style_preview(self.parameters.layer)
 
     def update_style_preview(self, layer):
+        QgsMessageLog.logMessage(
+            "update_style_preview LAYER= {}".format(layer),
+            "Extensions",
+        )
+
         syms = layer.renderer().symbols(QgsRenderContext())
 
         # only display the first symbol

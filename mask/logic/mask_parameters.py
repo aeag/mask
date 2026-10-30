@@ -106,6 +106,8 @@ class MaskParameters:
         ).encode("utf-8")
 
     def _apply_payload(self, payload):
+        QgsMessageLog.logMessage("_apply_payload", "Extensions")
+
         self.do_buffer = payload.get("do_buffer", False)
         self.buffer_units = payload.get("buffer_units", 1)
         self.buffer_segments = payload.get("buffer_segments", 5)

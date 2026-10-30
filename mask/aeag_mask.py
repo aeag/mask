@@ -286,9 +286,25 @@ class aeag_mask(QObject):
         parameters = MaskParameters()
         try:
             # return layer, parameters
-            parameters.load_from_project()
             layer_id, _ = QgsProject.instance().readEntry("Mask", "layer_id")
             layer = QgsProject.instance().mapLayer(layer_id)
+            QgsMessageLog.logMessage(
+                "load_from_project LAYER= {}".format(layer),
+                "Extensions",
+            )
+            try:
+                parameters.load_from_project()
+            except:
+                # TODO : prévenir utilisateur
+                QgsMessageLog.logMessage(
+                    "ERROR load_from_project",
+                    "Extensions",
+                )
+                parameters = MaskParameters()
+                if layer is not None:
+                    # apply default style
+                    style_tools.set_default_layer_symbology(layer)
+
             return layer, parameters
 
         except Exception as e:
@@ -650,6 +666,7 @@ class aeag_mask(QObject):
 
     # run method that performs all the real work
     def run(self):
+        QgsMessageLog.logMessage("RUN", "Extensions")
         dest_crs, poly = self.get_selected_polygons()
         is_new = False
 
@@ -667,6 +684,9 @@ class aeag_mask(QObject):
                 "MultiPolygon?crs=%s" % dest_crs.authid(), self.MASK_NAME, "memory"
             )
             # apply default style
+            QgsMessageLog.logMessage(
+                f"set_default_layer_symbology {layer}", "Extensions"
+            )
             style_tools.set_default_layer_symbology(layer)
             is_new = True
 
