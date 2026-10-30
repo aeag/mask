@@ -1,25 +1,13 @@
-"""
-Class to store mask parameters
-
-/***************************************************************************
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- ***************************************************************************/
-"""
-
 import base64
-import pickle
+import json
 
-from qgis.core import QgsFeature, QgsGeometry, QgsMessageLog, QgsProject
+from qgis.core import QgsGeometry, QgsMessageLog, QgsProject
 
 
 class MaskParameters:
+    SERIAL_VERSION = 2
+
     def __init__(self):
-        # selection | mask
         self.do_buffer = False
         self.buffer_units = 1
         self.buffer_segments = 5
@@ -29,103 +17,141 @@ class MaskParameters:
         self.file_path = None
         self.file_format = None
         self.style = None
-        # polygon mask method : 0: exact, 1: centroid, 2: pointOnSurface
         self.polygon_mask_method = 2
-        # line mask method = 0: intersects, 1: contains
         self.line_mask_method = 0
-        # layers (list of id) where labeling has to be limited
         self.limited_layers_obsolete = []
         self.orig_geometry = []
         self.geometry = None
         self.do_atlas_interaction = True
 
-    def serialize(self, with_style=True):
-        if with_style:
-            style = self.style
-        else:
-            style = None
+    def forSettings(self):
+        settings = MaskParameters()
+        settings.do_buffer = self.do_buffer
+        settings.buffer_units = self.buffer_units
+        settings.buffer_segments = self.buffer_segments
+        settings.do_simplify = self.do_simplify
+        settings.simplify_tolerance = self.simplify_tolerance
+        settings.do_save_as = self.do_save_as
+        settings.file_path = self.file_path
+        settings.file_format = self.file_format
+        settings.style = self.style
+        settings.polygon_mask_method = self.polygon_mask_method
+        settings.line_mask_method = self.line_mask_method
+        settings.limited_layers_obsolete = self.limited_layers_obsolete
+        settings.orig_geometry = []
+        settings.geometry = None
+        settings.do_atlas_interaction = self.do_atlas_interaction
+        return settings
 
-        t = pickle.dumps(
-            [
-                self.do_buffer,
-                self.buffer_units,
-                self.buffer_segments,
-                self.do_simplify,
-                self.simplify_tolerance,
-                self.do_save_as,
-                self.file_path,
-                self.file_format,
-                self.limited_layers_obsolete,
-                style,
-                self.polygon_mask_method,
-                self.line_mask_method,
-                (
-                    [g.asWkb() for g in self.orig_geometry]
-                    if self.orig_geometry is not None
-                    else None
-                ),
-                self.geometry.asWkb() if self.geometry is not None else None,
-                self.do_atlas_interaction,
-            ],
-            protocol=0,
-            fix_imports=True,
-        )
-        return t
+    @staticmethod
+    def _style_to_serializable(style):
+        if style is None:
+            return None
+        if isinstance(style, str):
+            return style
+        if isinstance(style, (bytes, bytearray)):
+            return style.decode("utf-8", errors="replace")
+        if hasattr(style, "toUtf8"):
+            return bytes(style.toUtf8()).decode("utf-8", errors="replace")
+        return str(style)
+
+    @staticmethod
+    def _json_default(value):
+        # S'assure que les objets non-JSONables sont convertibles
+        if value is None or isinstance(value, (str, int, float, bool, list, dict)):
+            return value
+        if hasattr(value, "toUtf8"):
+            return bytes(value.toUtf8()).decode("utf-8", errors="replace")
+        return str(value)
+
+    @staticmethod
+    def _geom_to_b64(geom):
+        if geom is None:
+            return None
+        return base64.b64encode(geom.asWkb()).decode("ascii")
+
+    @staticmethod
+    def _geom_from_b64(data):
+        if data is None:
+            return None
+        geom = QgsGeometry()
+        geom.fromWkb(base64.b64decode(data))
+        return geom
+
+    def serialize(self, with_style=True):
+        payload = {
+            "version": self.SERIAL_VERSION,
+            "do_buffer": self.do_buffer,
+            "buffer_units": self.buffer_units,
+            "buffer_segments": self.buffer_segments,
+            "do_simplify": self.do_simplify,
+            "simplify_tolerance": self.simplify_tolerance,
+            "do_save_as": self.do_save_as,
+            "file_path": self.file_path,
+            "file_format": self.file_format,
+            "limited_layers_obsolete": self.limited_layers_obsolete,
+            "style": self._style_to_serializable(self.style) if with_style else None,
+            "polygon_mask_method": self.polygon_mask_method,
+            "line_mask_method": self.line_mask_method,
+            "orig_geometry": [self._geom_to_b64(g) for g in (self.orig_geometry or [])],
+            "geometry": self._geom_to_b64(self.geometry),
+            "do_atlas_interaction": self.do_atlas_interaction,
+        }
+
+        return json.dumps(
+            payload,
+            default=self._json_default,
+            separators=(",", ":"),
+            ensure_ascii=False,
+        ).encode("utf-8")
+
+    def _apply_payload(self, payload):
+        self.do_buffer = payload.get("do_buffer", False)
+        self.buffer_units = payload.get("buffer_units", 1)
+        self.buffer_segments = payload.get("buffer_segments", 5)
+        self.do_simplify = payload.get("do_simplify", True)
+        self.simplify_tolerance = payload.get("simplify_tolerance", 1.0)
+        self.do_save_as = payload.get("do_save_as", False)
+        self.file_path = payload.get("file_path")
+        self.file_format = payload.get("file_format")
+        self.limited_layers_obsolete = payload.get("limited_layers_obsolete", [])
+        self.style = payload.get("style")
+        self.polygon_mask_method = payload.get("polygon_mask_method", 2)
+        self.line_mask_method = payload.get("line_mask_method", 0)
+        self.do_atlas_interaction = payload.get("do_atlas_interaction", True)
+
+        self.orig_geometry = []
+        for g in payload.get("orig_geometry", []):
+            geom = self._geom_from_b64(g)
+            if geom is not None:
+                self.orig_geometry.append(geom)
+
+        self.geometry = self._geom_from_b64(payload.get("geometry"))
 
     def unserialize(self, st):
-        style = None
-        orig_geom = None
-        geom = None
+        if st is None:
+            raise ValueError("No parameters to unserialize")
+
+        if isinstance(st, str):
+            st = st.encode("utf-8")
+        elif hasattr(st, "toByteArray"):
+            st = st.toByteArray()
+        elif not isinstance(st, (bytes, bytearray)):
+            st = str(st).encode("utf-8")
 
         try:
-            t = pickle.loads(st)
-        except:
-            try:
-                t = pickle.loads(st, encoding="utf-8")
-            except Exception as e:
-                for m in e.args:
-                    QgsMessageLog.logMessage(str(m), "Extensions")
+            payload = json.loads(bytes(st).decode("utf-8"))
+            if not isinstance(payload, dict):
+                raise ValueError("JSON payload invalid")
 
-                raise Exception("Mask - Error when loading mask")
+            if payload.get("version") is None:
+                raise ValueError("Incompatible parameters")
 
-        (
-            self.do_buffer,
-            self.buffer_units,
-            self.buffer_segments,
-            self.do_simplify,
-            self.simplify_tolerance,
-            self.do_save_as,
-            self.file_path,
-            self.file_format,
-            self.limited_layers_obsolete,
-            style,
-            self.polygon_mask_method,
-            self.line_mask_method,
-        ) = t[0:12]
+            self._apply_payload(payload)
 
-        if len(t) >= 13:
-            orig_geom = t[12]
-
-        if len(t) >= 14:
-            geom = t[13]
-
-        if len(t) >= 15:
-            self.do_atlas_interaction = t[14]
-
-        self.style = None
-        self.geometry = None
-        if style is not None:
-            self.style = style
-        if geom is not None:
-            self.geometry = QgsGeometry()
-            self.geometry.fromWkb(geom)
-        if orig_geom is not None:
-            gl = []
-            for g in orig_geom:
-                geo = QgsGeometry()
-                geo.fromWkb(g)
-                gl.append(geo)
-            self.orig_geometry = gl
+        except Exception as e:
+            QgsMessageLog.logMessage(f"Mask error when unserialize - {e}", "Extensions")
+            raise e
 
     def have_same_layer_options(self, other):
         """Returns true if the other parameters have the same layer options
@@ -143,50 +169,15 @@ class MaskParameters:
                 )
 
     def save_to_project(self):
-        serialized = base64.b64encode(self.serialize())
-        try:
-            QgsProject.instance().writeEntry("Mask", "parameters", serialized)
-        except:
-            # strange behaviour, pickle change his format ?
-            QgsProject.instance().writeEntry(
-                "Mask", "parameters", str(serialized)[2:-1]
-            )
+        serialized = self.serialize()
+        encoded = base64.b64encode(serialized).decode("ascii")
 
+        QgsProject.instance().writeEntry("Mask", "parameters", encoded)
         return True
 
     def load_from_project(self):
         st, ok = QgsProject.instance().readEntry("Mask", "parameters")
-        if st == "":
+        if not ok or st == "":
             return False
 
         self.unserialize(base64.b64decode(st))
-        return True
-
-    # try to load parameters from a mask layer
-    # for compatibility with older versions where parameters were saved in
-    # attributes of the mask layer
-    def load_from_layer(self, layer):
-        # return False on failure
-        pr = layer.dataProvider()
-        fields = pr.fields()
-        if fields.size() < 1:
-            return False
-        field = None
-        for i, f in enumerate(fields):
-            if f.name() == "params":
-                field = i
-        if field is None:
-            return False
-
-        it = pr.getFeatures()
-        fet = QgsFeature()
-        it.nextFeature(fet)
-        st = fet.attribute(field)
-
-        self.unserialize(base64.b64decode(st))
-
-        if self.geometry is None:
-            self.geometry = QgsGeometry(fet.geometry())
-            self.orig_geometry = [QgsGeometry(fet.geometry())]
-
-        return True
