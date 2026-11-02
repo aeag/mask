@@ -12,9 +12,10 @@ Class to store mask parameters
 """
 
 import base64
-import pickle
+import json
 
 from qgis.core import QgsFeature, QgsGeometry, QgsMessageLog, QgsProject
+from qgis.PyQt.QtCore import QByteArray
 
 
 class MaskParameters:
@@ -39,13 +40,28 @@ class MaskParameters:
         self.geometry = None
         self.do_atlas_interaction = True
 
+    def byte_array_to_str(self, byte_array: QByteArray) -> str:
+        """Convert a QByteArray to str."""
+        # Source - https://stackoverflow.com/a/44263807
+        # Posted by ekhumoro
+        # Retrieved 2026-11-02, License - CC BY-SA 3.0
+        return None if byte_array is None else bytes(byte_array.toHex()).decode("ascii")
+
+    def str_to_byte_array(self, text_array: str) -> QByteArray:
+        """Convert a str to QByteArray."""
+        return (
+            None
+            if text_array is None
+            else QByteArray.fromHex(bytes(text_array, "ascii"))
+        )
+
     def serialize(self, with_style=True):
         if with_style:
-            style = self.style
+            style = self.byte_array_to_str(self.style)
         else:
             style = None
 
-        t = pickle.dumps(
+        t = json.dumps(
             [
                 self.do_buffer,
                 self.buffer_units,
@@ -60,17 +76,17 @@ class MaskParameters:
                 self.polygon_mask_method,
                 self.line_mask_method,
                 (
-                    [g.asWkb() for g in self.orig_geometry]
+                    [self.byte_array_to_str(g.asWkb()) for g in self.orig_geometry]
                     if self.orig_geometry is not None
                     else None
                 ),
-                self.geometry.asWkb() if self.geometry is not None else None,
+                self.byte_array_to_str(self.geometry.asWkb())
+                if self.geometry is not None
+                else None,
                 self.do_atlas_interaction,
             ],
-            protocol=0,
-            fix_imports=True,
         )
-        return t
+        return t.encode("ascii")
 
     def unserialize(self, st):
         style = None
@@ -78,15 +94,12 @@ class MaskParameters:
         geom = None
 
         try:
-            t = pickle.loads(st)
-        except:
-            try:
-                t = pickle.loads(st, encoding="utf-8")
-            except Exception as e:
-                for m in e.args:
-                    QgsMessageLog.logMessage(str(m), "Extensions")
+            t = json.loads(st.decode("ascii"))
+        except Exception as e:
+            for m in e.args:
+                QgsMessageLog.logMessage(str(m), "Extensions")
 
-                raise Exception("Mask - Error when loading mask")
+            raise Exception("Mask - Error when loading mask")
 
         (
             self.do_buffer,
@@ -104,10 +117,10 @@ class MaskParameters:
         ) = t[0:12]
 
         if len(t) >= 13:
-            orig_geom = t[12]
+            orig_geom = [self.str_to_byte_array(i) for i in t[12]]
 
         if len(t) >= 14:
-            geom = t[13]
+            geom = self.str_to_byte_array(t[13])
 
         if len(t) >= 15:
             self.do_atlas_interaction = t[14]
@@ -115,7 +128,7 @@ class MaskParameters:
         self.style = None
         self.geometry = None
         if style is not None:
-            self.style = style
+            self.style = self.str_to_byte_array(style)
         if geom is not None:
             self.geometry = QgsGeometry()
             self.geometry.fromWkb(geom)
@@ -155,7 +168,7 @@ class MaskParameters:
         return True
 
     def load_from_project(self):
-        st, ok = QgsProject.instance().readEntry("Mask", "parameters")
+        st, _ = QgsProject.instance().readEntry("Mask", "parameters")
         if st == "":
             return False
 

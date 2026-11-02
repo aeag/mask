@@ -66,9 +66,7 @@ from .logic import mask_filter, style_tools, utils
 from .logic.mask_parameters import MaskParameters
 from .ui.maindialog import MainDialog
 
-global aeag_mask_instance
 aeag_mask_instance = None
-
 
 # to be called from another plugin
 # from mask import aeag_mask
@@ -240,7 +238,6 @@ class aeag_mask(QObject):
         self.in_mask_function = InMaskFunction(self)
         QgsExpression.registerFunction(self.in_mask_function)
 
-        #
         self.disable_remove_mask_signal = False
         self.disable_add_layer_signal = False
         self.project = QgsProject.instance()
@@ -267,7 +264,7 @@ class aeag_mask(QObject):
         self.act_aeag_mask.triggered.connect(self.run)
 
         # look for an existing mask layer
-        mask_id, ok = QgsProject.instance().readEntry("Mask", "layer_id")
+        mask_id, _ = QgsProject.instance().readEntry("Mask", "layer_id")
         self.layer = self.project.mapLayer(mask_id)
 
         # register layout signals
@@ -314,7 +311,7 @@ class aeag_mask(QObject):
         except Exception as e:
             for m in e.args:
                 QgsMessageLog.logMessage(
-                    "Mask error when loading - {}".format(m), "Extensions"
+                    f"Mask error when loading - {m}", "Extensions"
                 )
 
             return None, parameters
@@ -328,7 +325,7 @@ class aeag_mask(QObject):
         except Exception as e:
             for m in e.args:
                 QgsMessageLog.logMessage(
-                    "Mask error when saving - {}".format(m), "Extensions"
+                    f"Mask error when saving - {m}", "Extensions"
                 )
 
     def on_project_open(self):
@@ -365,7 +362,7 @@ class aeag_mask(QObject):
         except Exception as e:
             for m in e.args:
                 QgsMessageLog.logMessage(
-                    "on_current_layer_changed - {}".format(m), "Extensions"
+                    f"on_current_layer_changed - {m}", "Extensions"
                 )
 
         if layer is not None:
@@ -589,7 +586,7 @@ class aeag_mask(QObject):
         if layer is None:
             # create a new layer
             layer = QgsVectorLayer(
-                "MultiPolygon?crs=%s" % dest_crs.authid(), mask_name, "memory"
+                f"MultiPolygon?crs={dest_crs.authid()}", mask_name, "memory"
             )
             style_tools.set_default_layer_symbology(layer)
             # add a mask filter to all layer
@@ -619,21 +616,21 @@ class aeag_mask(QObject):
                 # (re)create the layer
                 is_mem = not parameters.do_save_as
                 nlayer = None
-                try:
-                    nlayer = self.create_layer(
-                        parameters, mask_name, is_mem, dest_crs, layer_style
-                    )
-                except Exception as e:
-                    for m in e.args:
-                        QgsMessageLog.logMessage(
-                            "apply_mask_parameters - {}".format(m), "Extensions"
-                        )
-                    self.iface.messageBar().pushMessage(
-                        self.tr("Mask plugin error"),
-                        self.tr("Unknown error. The mask is lost."),
-                        level=Qgis.MessageLevel.Critical,
-                    )
-                    return
+                #try:
+                nlayer = self.create_layer(
+                    parameters, mask_name, is_mem, dest_crs, layer_style
+                )
+                #except Exception as e:
+                #    for m in e.args:
+                #        QgsMessageLog.logMessage(
+                #            "apply_mask_parameters - {}".format(m), "Extensions"
+                #        )
+                #    self.iface.messageBar().pushMessage(
+                #        self.tr("Mask plugin error"),
+                #        self.tr("Unknown error. The mask is lost."),
+                #        level=Qgis.MessageLevel.Critical,
+                #    )
+                #    return
 
                 # add the new layer
                 layer = nlayer
@@ -702,7 +699,7 @@ class aeag_mask(QObject):
                 )
                 return
             layer = QgsVectorLayer(
-                "MultiPolygon?crs=%s" % dest_crs.authid(), self.MASK_NAME, "memory"
+                f"MultiPolygon?crs={dest_crs.authid()}", self.MASK_NAME, "memory"
             )
             style_tools.set_default_layer_symbology(layer)
             is_new = True
@@ -769,7 +766,7 @@ class aeag_mask(QObject):
     def add_layer(self, layer):
         # add a layer to the registry, if not already there
         layers = self.project.mapLayers()
-        for name, alayer in layers.items():
+        for alayer in layers.values():
             if alayer == layer:
                 return
 
@@ -805,7 +802,7 @@ class aeag_mask(QObject):
 
         # save geometry
         layer = QgsVectorLayer(
-            "MultiPolygon?crs=%s" % dest_crs.authid(), name, "memory"
+            f"MultiPolygon?crs={dest_crs.authid()}", name, "memory"
         )
         pr = layer.dataProvider()
         layer.startEditing()
@@ -835,7 +832,7 @@ class aeag_mask(QObject):
 
         # create the disk layer
         QgsMessageLog.logMessage(
-            "Mask saving '{}' as {}".format(save_as, file_format), "Extensions"
+            f"Mask saving '{save_as}' as {file_format}", "Extensions"
         )
         save_options = QgsVectorFileWriter.SaveVectorOptions()
         save_options.driverName = file_format
@@ -966,7 +963,7 @@ class aeag_mask(QObject):
 
             except Exception as e:
                 for m in e.args:
-                    QgsMessageLog.logMessage("in_mask - {}".format(m), "Extensions")
+                    QgsMessageLog.logMessage(f"in_mask - {m}", "Extensions")
                     # transformation error. Check layer projection.
                     pass
 
