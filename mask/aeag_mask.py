@@ -67,6 +67,10 @@ from .logic.mask_parameters import MaskParameters
 from .ui.maindialog import MainDialog
 
 aeag_mask_instance = None
+try:
+    metatype_qstring = QMetaType.QString
+except AttributeError:
+    metatype_qstring = QMetaType.Type.QString
 
 # to be called from another plugin
 # from mask import aeag_mask
@@ -807,7 +811,7 @@ class aeag_mask(QObject):
         pr = layer.dataProvider()
         layer.startEditing()
         try:
-            layer.addAttribute(QgsField("params", QMetaType.QString))
+            layer.addAttribute(QgsField("params", metatype_qstring))
             fet1 = QgsFeature(0)
             fet1.setFields(layer.fields())
             fet1.setAttribute("params", str(serialized)[2:-1])
