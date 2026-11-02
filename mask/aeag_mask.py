@@ -620,21 +620,21 @@ class aeag_mask(QObject):
                 # (re)create the layer
                 is_mem = not parameters.do_save_as
                 nlayer = None
-                #try:
-                nlayer = self.create_layer(
-                    parameters, mask_name, is_mem, dest_crs, layer_style
-                )
-                #except Exception as e:
-                #    for m in e.args:
-                #        QgsMessageLog.logMessage(
-                #            "apply_mask_parameters - {}".format(m), "Extensions"
-                #        )
-                #    self.iface.messageBar().pushMessage(
-                #        self.tr("Mask plugin error"),
-                #        self.tr("Unknown error. The mask is lost."),
-                #        level=Qgis.MessageLevel.Critical,
-                #    )
-                #    return
+                try:
+                    nlayer = self.create_layer(
+                        parameters, mask_name, is_mem, dest_crs, layer_style
+                    )
+                except Exception as e:
+                    for m in e.args:
+                        QgsMessageLog.logMessage(
+                            "apply_mask_parameters - {}".format(m), "Extensions"
+                        )
+                    self.iface.messageBar().pushMessage(
+                        self.tr("Mask plugin error"),
+                        self.tr("Unknown error. The mask is lost."),
+                        level=Qgis.MessageLevel.Critical,
+                    )
+                    return
 
                 # add the new layer
                 layer = nlayer
