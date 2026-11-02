@@ -31,13 +31,33 @@ def get_layer_symbology(layer):
 
 
 def set_default_layer_symbology(layer):
+    """Applique le style par défaut (du QGis/ini) à la couche
+    A partir du fichier QML sinon
+
+    Args:
+        layer (QgsVectorLayer): La couche masque
+    """
+
     settings = QSettings()
 
     parameters = MaskParameters()
     defaults = settings.value("mask/defaults", None)
+    if defaults == "@Invalid()":
+        defaults = None
     if defaults is not None:
-        parameters.unserialize(defaults)
+        try:
+            parameters.unserialize(defaults)
+
+        except Exception:
+            default_style = str(
+                DIR_PLUGIN_ROOT / "resources" / "default_mask_style.qml"
+            )
+            layer.loadNamedStyle(default_style)
+            parameters = MaskParameters()
+            parameters.style = get_layer_symbology(layer)
+
         set_layer_symbology(layer, parameters.style)
+
     else:
         default_style = str(DIR_PLUGIN_ROOT / "resources" / "default_mask_style.qml")
         layer.loadNamedStyle(default_style)

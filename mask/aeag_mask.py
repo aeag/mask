@@ -18,8 +18,6 @@ email                : geocatalogue@eau-adour-garonne.fr
  ***************************************************************************/
 """
 
-import base64
-
 # Import the PyQt and QGIS libraries
 import os
 from functools import partial
@@ -32,7 +30,6 @@ from qgis.core import (
     QgsExpressionContextUtils,
     QgsExpressionFunction,
     QgsFeature,
-    QgsField,
     QgsGeometry,
     QgsLayerTreeLayer,
     QgsLayoutItemMap,
@@ -52,8 +49,8 @@ from qgis.PyQt.QtCore import (
     QCoreApplication,
     QFileInfo,
     QLocale,
-    QMetaType,
     QObject,
+    QSettings,
     QTranslator,
 )
 from qgis.PyQt.QtGui import QIcon
@@ -296,19 +293,28 @@ class aeag_mask(QObject):
         parameters = MaskParameters()
         try:
             # return layer, parameters
-            ok = parameters.load_from_project()
-            if not ok:
-                # no parameters in the project
-                # look for a vector layer called 'Mask'
-                for _, layer in list(QgsProject.instance().mapLayers().items()):
-                    if (
-                        layer.type() == QgsMapLayer.LayerType.VectorLayer
-                        and layer.name() == "Mask"
-                    ):
-                        return self.load_from_layer(layer)
-
-            layer_id, ok = QgsProject.instance().readEntry("Mask", "layer_id")
+            layer_id, _ = QgsProject.instance().readEntry("Mask", "layer_id")
             layer = QgsProject.instance().mapLayer(layer_id)
+
+            try:
+                parameters.load_from_project()
+            except:
+                self.iface.messageBar().pushMessage(
+                    self.tr("Mask plugin warning"),
+                    self.tr(
+                        "The mask is not compatible with the previous version; it must be reconfigured."
+                    ),
+                    level=Qgis.MessageLevel.Warning,
+                )
+
+                settings = QSettings()
+                parameters = MaskParameters()
+                defaults = settings.value("mask/defaults", None)
+                if defaults == "@Invalid()":
+                    defaults = None
+                if defaults is not None:
+                    parameters.unserialize(defaults)
+
             return layer, parameters
 
         except Exception as e:
@@ -403,25 +409,6 @@ class aeag_mask(QObject):
             self.on_current_layer_changed
         )
         self.iface.mainWindow().projectRead.disconnect(self.on_project_open)
-
-    # force loading of parameters from a layer
-    # for backward compatibility with older versions
-    def load_from_layer(self, layer):
-        # return layer, parameters
-        parameters = MaskParameters()
-        ok = parameters.load_from_layer(layer)
-        if not ok:
-            return layer, parameters
-        QgsProject.instance().writeEntry("Mask", "layer_id", layer.id())
-        layer = self.apply_mask_parameters(
-            layer,
-            parameters,
-            dest_crs=None,
-            poly=None,
-            name=layer.name(),
-            keep_layer=False,
-        )
-        return layer, parameters
 
     def connect_layout_events(self, layout):
         try:
@@ -591,6 +578,7 @@ class aeag_mask(QObject):
             layer = QgsVectorLayer(
                 "MultiPolygon?crs=%s" % dest_crs.authid(), mask_name, "memory"
             )
+            # apply default style
             style_tools.set_default_layer_symbology(layer)
             # add a mask filter to all layer
             for name, l in self.project.mapLayers().items():
@@ -628,11 +616,7 @@ class aeag_mask(QObject):
                         QgsMessageLog.logMessage(
                             "apply_mask_parameters - {}".format(m), "Extensions"
                         )
-                    self.iface.messageBar().pushMessage(
-                        self.tr("Mask plugin error"),
-                        self.tr("Unknown error. The mask is lost."),
-                        level=Qgis.MessageLevel.Critical,
-                    )
+
                     return
 
                 # add the new layer
@@ -704,6 +688,7 @@ class aeag_mask(QObject):
             layer = QgsVectorLayer(
                 "MultiPolygon?crs=%s" % dest_crs.authid(), self.MASK_NAME, "memory"
             )
+            # apply default style
             style_tools.set_default_layer_symbology(layer)
             is_new = True
 
@@ -800,8 +785,6 @@ class aeag_mask(QObject):
     def create_layer(self, parameters, name, is_memory, dest_crs, layer_style=None):
         save_as = parameters.file_path
         file_format = parameters.file_format
-        # save paramaters
-        serialized = base64.b64encode(parameters.serialize(with_style=False))
 
         # save geometry
         layer = QgsVectorLayer(
@@ -810,10 +793,8 @@ class aeag_mask(QObject):
         pr = layer.dataProvider()
         layer.startEditing()
         try:
-            layer.addAttribute(QgsField("params", QMetaType.QString))
             fet1 = QgsFeature(0)
             fet1.setFields(layer.fields())
-            fet1.setAttribute("params", str(serialized)[2:-1])
             fet1.setGeometry(parameters.geometry)
             pr.addFeatures([fet1])
         finally:

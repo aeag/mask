@@ -196,6 +196,8 @@ class MainDialog(QDialog):
         mlayer = self.parameters.layer
         self.parameters = MaskParameters()
         defaults = settings.value("mask/defaults", None)
+        if defaults == "@Invalid()":
+            defaults = None
         if defaults is not None:
             self.parameters.unserialize(defaults)
 
@@ -207,7 +209,12 @@ class MainDialog(QDialog):
 
         parameters = MaskParameters()
         self.update_parameters_from_ui(parameters)
+
+        # QSettings stores QVariant-compatible values; raw Python bytes are not
+        # persisted correctly in .ini files and end up as "@Invalid()".
         defaults = parameters.serialize()
+        if isinstance(defaults, (bytes, bytearray)):
+            defaults = defaults.decode("utf-8")
         settings.setValue("mask/defaults", defaults)
 
     def on_file_browse(self):
@@ -325,7 +332,7 @@ class MainDialog(QDialog):
     def exec(self):
         self.ui.layer_list.update_from_layers(self.is_new)
 
-        if self.parameters.style is None:
+        if self.parameters.initial:
             self.load_defaults()
         else:
             self.update_ui_from_parameters(self.parameters)
